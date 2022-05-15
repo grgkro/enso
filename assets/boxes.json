@@ -1,0 +1,67 @@
+{
+    "boxes": [
+        {
+            "address": "Auf dem Haigst 45\n70597 Stuttgart\nDeutschland",
+            "uuid": "04bf1f13-9204-4f47-a8ba-0ea6a76b3d5e",
+            "image": "https://enso-box.s3.eu-central-1.amazonaws.com/VorlageBox.PNG",
+            "lat": 48.7553846205735,
+            "lng": 9.172653858386855,
+            "zoom": 10,
+            "name": "El Palito Box",
+            "owner": "Georg Kromer",
+            "owner_phone": "015126448312",
+            "owner_email": "grg.kro@gmail.com",
+            "country": "Deutschland",
+            "state": "Baden-Württemberg",
+            "website": "elpalito.de",
+            "item": "Bohrmaschine Bosch GBM 6 RE 350 W",
+            "description": "Mit Bosch 25tlg. Metallbohrer-Set HSS-Co (Cobalt-Legierung) DIN 338 in ProBox",
+            "item_images": [
+                "https://enso-box.s3.eu-central-1.amazonaws.com/Bohrmaschine.PNG",
+                "https://enso-box.s3.eu-central-1.amazonaws.com/Metallbohrer.PNG"
+            ]
+        },
+        {
+            "address": "Theater Rampe\n70597 Stuttgart\nDeutschland",
+            "uuid": "04bf1f13-9204-4f47-a8ba-0ea6a76b3d5e",
+            "image": "https://enso-box.s3.eu-central-1.amazonaws.com/VorlageBox.PNG",
+            "lat": 48.76337353546124, 
+            "lng": 9.170519675890487,
+            "zoom": 12,
+            "name": "Theater Rampe",
+            "owner": "Georg Kromer",
+            "owner_phone": "015126448312",
+            "owner_email": "grg.kro@gmail.com",
+            "country": "Deutschland",
+            "state": "Baden-Württemberg",
+            "website": "elpalito.de",
+            "item": "Bohrmaschine Bosch GBM 6 RE 350 W",
+            "description": "Mit Bosch 25tlg. Metallbohrer-Set HSS-Co (Cobalt-Legierung) DIN 338 in ProBox",
+            "item_images": [
+                "https://enso-box.s3.eu-central-1.amazonaws.com/Bohrmaschine.PNG",
+                "https://enso-box.s3.eu-central-1.amazonaws.com/Metallbohrer.PNG"
+            ]
+        },
+        {
+            "address": "Skatepark\n70597 Stuttgart\nDeutschland",
+            "uuid": "04bf1f13-9204-4f47-a8ba-0ea6a76b3d5e",
+            "image": "https://enso-box.s3.eu-central-1.amazonaws.com/VorlageBox.PNG",
+            "lat": 48.773149087167326,  
+            "lng": 9.181830400663667,
+            "zoom": 9,
+            "name": "Skateparkbox",
+            "owner": "Georg Kromer",
+            "owner_phone": "015126448312",
+            "owner_email": "grg.kro@gmail.com",
+            "country": "Deutschland",
+            "state": "Baden-Württemberg",
+            "website": "elpalito.de",
+            "item": "Bohrmaschine Bosch GBM 6 RE 350 W",
+            "description": "Mit Bosch 25tlg. Metallbohrer-Set HSS-Co (Cobalt-Legierung) DIN 338 in ProBox",
+            "item_images": [
+                "https://enso-box.s3.eu-central-1.amazonaws.com/Bohrmaschine.PNG",
+                "https://enso-box.s3.eu-central-1.amazonaws.com/Metallbohrer.PNG"
+            ]
+        }
+    ]
+}
