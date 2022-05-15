@@ -25,6 +25,7 @@ class Home extends StatefulWidget {
 
 class _MyAppState extends State<Home> {
   final Map<String, Marker> _markers = {};
+
   Future<void> _onMapCreated(GoogleMapController controller) async {
     final ensoBoxes = await locations.getBoxLocations();
     setState(() {
@@ -50,28 +51,40 @@ class _MyAppState extends State<Home> {
         title: const Text('Enso Box Locations'),
         backgroundColor: Colors.green[700],
       ),
-      body: Column(children: <Widget>[
-        SizedBox(
-          // width: 200,
-          // height: 200,
-          width:
-              MediaQuery.of(context).size.width, // or use fixed size like 200
-          height: MediaQuery.of(context).size.height - 106,
-          child: GoogleMap(
-            onMapCreated: _onMapCreated,
-            initialCameraPosition: const CameraPosition(
-              target: LatLng(48.7553846205735, 9.172653858386855),
-              zoom: 15,
+      body: Column(
+        children: <Widget>[
+          SizedBox(
+            width:
+                MediaQuery.of(context).size.width, // or use fixed size like 200
+            height: MediaQuery.of(context).size.height / 2,
+            child: GoogleMap(
+              onMapCreated: _onMapCreated,
+              initialCameraPosition: const CameraPosition(
+                target: LatLng(48.7553846205735, 9.172653858386855),
+                zoom: 15,
+              ),
+              markers: _markers.values.toSet(),
             ),
-            markers: _markers.values.toSet(),
           ),
-        ),
-        Container(
-          child: Card(
-            child: Text('Hello'),
+          Container(
+            width:
+                MediaQuery.of(context).size.width, // or use fixed size like 200
+            height: MediaQuery.of(context).size.height / 2 - 100,
+            child: ListView(
+              shrinkWrap: true,
+              scrollDirection: Axis.vertical,
+              children: [
+                Card(
+                  child: Text('Hello'),
+                ),
+                Card(
+                  child: Text('Hello2'),
+                ),
+              ],
+            ),
           ),
-        ),
-      ]),
+        ],
+      ),
     );
   }
 }
