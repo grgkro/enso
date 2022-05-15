@@ -4,17 +4,26 @@ import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'src/locations.dart' as locations;
 
 void main() {
-  runApp(const MyApp());
+  runApp(MyApp());
 }
 
-class MyApp extends StatefulWidget {
-  const MyApp({Key? key}) : super(key: key);
+class MyApp extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      home: Home(),
+    );
+  }
+}
+
+class Home extends StatefulWidget {
+  const Home({Key? key}) : super(key: key);
 
   @override
   _MyAppState createState() => _MyAppState();
 }
 
-class _MyAppState extends State<MyApp> {
+class _MyAppState extends State<Home> {
   final Map<String, Marker> _markers = {};
   Future<void> _onMapCreated(GoogleMapController controller) async {
     final ensoBoxes = await locations.getBoxLocations();
@@ -36,21 +45,33 @@ class _MyAppState extends State<MyApp> {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      home: Scaffold(
-        appBar: AppBar(
-          title: const Text('Enso Box Locations'),
-          backgroundColor: Colors.green[700],
-        ),
-        body: GoogleMap(
-          onMapCreated: _onMapCreated,
-          initialCameraPosition: const CameraPosition(
-            target: LatLng(0, 0),
-            zoom: 2,
-          ),
-          markers: _markers.values.toSet(),
-        ),
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('Enso Box Locations'),
+        backgroundColor: Colors.green[700],
       ),
+      body: Column(children: <Widget>[
+        SizedBox(
+          // width: 200,
+          // height: 200,
+          width:
+              MediaQuery.of(context).size.width, // or use fixed size like 200
+          height: MediaQuery.of(context).size.height - 106,
+          child: GoogleMap(
+            onMapCreated: _onMapCreated,
+            initialCameraPosition: const CameraPosition(
+              target: LatLng(48.7553846205735, 9.172653858386855),
+              zoom: 15,
+            ),
+            markers: _markers.values.toSet(),
+          ),
+        ),
+        Container(
+          child: Card(
+            child: Text('Hello'),
+          ),
+        ),
+      ]),
     );
   }
 }
