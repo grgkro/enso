@@ -25,6 +25,26 @@ class Home extends StatefulWidget {
 
 class _MyAppState extends State<Home> {
   final Map<String, Marker> _markers = {};
+  final List<locations.Box> _boxes = [
+    locations.Box(
+        address: "address",
+        uuid: "uuid",
+        image: "image",
+        lat: 9.9,
+        lng: 1.0,
+        name: "name",
+        owner_phone: "owner_phone",
+        state: "state"),
+    locations.Box(
+        address: "address2",
+        uuid: "uuid2",
+        image: "image",
+        lat: 9.9,
+        lng: 2.0,
+        name: "name2",
+        owner_phone: "owner_phone",
+        state: "state")
+  ];
 
   Future<void> _onMapCreated(GoogleMapController controller) async {
     final ensoBoxes = await locations.getBoxLocations();
@@ -73,14 +93,8 @@ class _MyAppState extends State<Home> {
             child: ListView(
               shrinkWrap: true,
               scrollDirection: Axis.vertical,
-              children: [
-                Card(
-                  child: Text('Hello'),
-                ),
-                Card(
-                  child: Text('Hello2'),
-                ),
-              ],
+              children:
+                  _boxes.map((box) => Card(child: Text(box.name))).toList(),
             ),
           ),
         ],
