@@ -47,7 +47,7 @@ android {
         applicationId "com.example.ensobox"
         // You can update the following values to match your application needs.
         // For more information, see: https://docs.flutter.dev/deployment/android#reviewing-the-build-configuration.
-        minSdkVersion 20  // Update from 16 to 20 for Google Maps
+        minSdkVersion 21  // Update from 16 to 20 for Google Maps and to 21 for reactive_bluetooth lib
         targetSdkVersion flutter.targetSdkVersion
         versionCode flutterVersionCode.toInteger()
         versionName flutterVersionName

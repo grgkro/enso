@@ -1,7 +1,8 @@
+import 'package:ensobox/widgets/box_list.dart';
 import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 
-import 'src/locations.dart' as locations;
+import 'models/locations.dart' as locations;
 
 void main() {
   runApp(MyApp());
@@ -25,62 +26,6 @@ class Home extends StatefulWidget {
 
 class _MyAppState extends State<Home> {
   final Map<String, Marker> _markers = {};
-  final List<locations.Box> _boxes = [
-    locations.Box(
-        address: "address",
-        uuid: "uuid",
-        image: "image",
-        lat: 9.9,
-        lng: 1.0,
-        name: "name",
-        owner_phone: "owner_phone",
-        state: "state"),
-    locations.Box(
-        address: "address2",
-        uuid: "uuid2",
-        image: "image",
-        lat: 9.9,
-        lng: 2.0,
-        name: "name2",
-        owner_phone: "owner_phone",
-        state: "state"),
-    locations.Box(
-        address: "address",
-        uuid: "uuid",
-        image: "image",
-        lat: 9.9,
-        lng: 1.0,
-        name: "name",
-        owner_phone: "owner_phone",
-        state: "state"),
-    locations.Box(
-        address: "address2",
-        uuid: "uuid2",
-        image: "image",
-        lat: 9.9,
-        lng: 2.0,
-        name: "name2",
-        owner_phone: "owner_phone",
-        state: "state"),
-    locations.Box(
-        address: "address",
-        uuid: "uuid",
-        image: "image",
-        lat: 9.9,
-        lng: 1.0,
-        name: "name",
-        owner_phone: "owner_phone",
-        state: "state"),
-    locations.Box(
-        address: "address2",
-        uuid: "uuid2",
-        image: "image",
-        lat: 9.9,
-        lng: 2.0,
-        name: "name2",
-        owner_phone: "owner_phone",
-        state: "state")
-  ];
 
   Future<void> _onMapCreated(GoogleMapController controller) async {
     final ensoBoxes = await locations.getBoxLocations();
@@ -128,47 +73,7 @@ class _MyAppState extends State<Home> {
                   .size
                   .width, // or use fixed size like 200
               // height: MediaQuery.of(context).size.height / 2 - 100,
-              child: ListView(
-                shrinkWrap: true,
-                scrollDirection: Axis.vertical,
-                children: _boxes
-                    .map((box) => Card(
-                            child: Row(children: <Widget>[
-                          Container(
-                            margin: EdgeInsets.symmetric(
-                                vertical: 10, horizontal: 15),
-                            decoration: BoxDecoration(
-                              border: Border.all(color: Colors.black, width: 1),
-                            ),
-                            padding: EdgeInsets.all(10),
-                            child: Text(
-                              box.image,
-                              style: TextStyle(
-                                fontWeight: FontWeight.bold,
-                                fontSize: 20,
-                                color: Colors.purple,
-                              ),
-                            ),
-                          ),
-                          Column(children: [
-                            Text(
-                              box.name,
-                              style: TextStyle(
-                                fontWeight: FontWeight.bold,
-                                fontSize: 15,
-                              ),
-                            ),
-                            Text(
-                              box.address,
-                              style: TextStyle(
-                                fontWeight: FontWeight.bold,
-                                fontSize: 15,
-                              ),
-                            ),
-                          ]),
-                        ])))
-                    .toList(),
-              ),
+              child: BoxList(),
             ),
           ),
         ],
