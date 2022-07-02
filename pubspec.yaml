@@ -36,9 +36,11 @@ dependencies:
   cupertino_icons: ^1.0.2
   google_maps_flutter: ^2.1.5
   google_maps_flutter_web: ^0.3.2+2
-  flutter_reactive_ble: ^5.0.2
+  flutter_reactive_ble: ^5.0.2  # best of the 3 bluetooth libs: https://leancode.co/blog/bluetooth-low-energy-in-flutter
+  location_permissions: ^4.0.0 # needed for example https://www.ubiqueiot.com/posts/flutter-reactive-ble
   http: ^0.13.4
   json_serializable: ^6.2.0
+  pay: ^1.0.10
 
 dev_dependencies:
   flutter_test:

@@ -10,7 +10,7 @@ class BLE {
   late QualifiedCharacteristic tx;
   late QualifiedCharacteristic rx;
   String status = 'not connected';
-  static final String BASE = "-0000-1000-8000-00805f9b34fb";
+  static final String BASE = "-1fb5-459e-8fcc-c5c9c331914b";
   static int response = 0;
   int value = 0;
 
@@ -31,9 +31,11 @@ class BLE {
     return response;
   }
 
+// id: 30:C6:F7:55:A4:FE
   void connectToBLE() async {
     subscription = frb.scanForDevices(
-        withServices: [Uuid.parse("0000ffe0" + BASE)]).listen((device) {
+        withServices: [Uuid.parse("4fafc201" + BASE)],
+        scanMode: ScanMode.lowLatency).listen((device) {
       connection = frb.connectToDevice(id: device.id).listen((state) {
         if (state.connectionState == DeviceConnectionState.connected) {
           // get tx

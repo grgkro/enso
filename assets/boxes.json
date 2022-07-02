@@ -2,7 +2,9 @@
     "boxes": [
         {
             "address": "Auf dem Haigst 45\n70597 Stuttgart\nDeutschland",
-            "uuid": "04bf1f13-9204-4f47-a8ba-0ea6a76b3d5e",
+            "service_uuid": "4fafc201-1fb5-459e-8fcc-c5c9c331914b",
+            "characteristic_uui": "beb5483e-36e1-4688-b7f5-ea07361b26a8",
+            "id": "30:C6:F7:55:A4:FE",
             "image": "https://enso-box.s3.eu-central-1.amazonaws.com/VorlageBox.PNG",
             "lat": 48.7553846205735,
             "lng": 9.172653858386855,
