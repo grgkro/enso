@@ -53,7 +53,7 @@ class _BoxDetailsScreenState extends State<BoxDetailsScreen> {
               FlatButton(
                 color: Colors.blue,
                 child: Text(
-                  'Connect',
+                  'Verbinden',
                   style: TextStyle(color: Colors.white),
                 ),
                 onPressed: () {},
@@ -65,7 +65,7 @@ class _BoxDetailsScreenState extends State<BoxDetailsScreen> {
     }
 
     return ListView(
-      padding: const EdgeInsets.all(8),
+      padding: const EdgeInsets.only(left: 4, bottom: 8, right: 4, top: 50),
       children: <Widget>[
         ...containers,
       ],
@@ -74,12 +74,18 @@ class _BoxDetailsScreenState extends State<BoxDetailsScreen> {
 
   _addDeviceTolist(final DiscoveredDevice device) {
     if (devicesList
-            .indexWhere((deviceInList) => device.id == deviceInList.id) ==
-        -1) {
+                .indexWhere((deviceInList) => device.id == deviceInList.id) ==
+            -1 &&
+        device.id == widget.selectedBox.id) {
       setState(() {
         devicesList.add(device);
         log(device.toString());
         log('current devicesList: $devicesList');
+        log('found it');
+        setState(() {
+          _discoveredDevice = device;
+          _foundDeviceWaitingToConnect = true;
+        });
       });
     }
   }
@@ -114,13 +120,6 @@ class _BoxDetailsScreenState extends State<BoxDetailsScreen> {
 
         // log('device: $device.name');
         _addDeviceTolist(device);
-        if (device.id == "30:C6:F7:55:A4:FE") {
-          log('found it');
-          setState(() {
-            _discoveredDevice = device;
-            _foundDeviceWaitingToConnect = true;
-          });
-        }
       });
     }
   }
@@ -128,12 +127,17 @@ class _BoxDetailsScreenState extends State<BoxDetailsScreen> {
   void _connectToDevice() {
     // We're done scanning, we can cancel it
     _scanStream.cancel();
+    log("Trying to connect to " + _discoveredDevice.id);
+    log("characteristicUuid " + characteristicUuid.toString());
     // Let's listen to our connection so we can make updates on a state change
     Stream<ConnectionStateUpdate> _currentConnectionStream = flutterReactiveBle
         .connectToAdvertisingDevice(
             id: _discoveredDevice.id,
             prescanDuration: const Duration(seconds: 1),
-            withServices: [serviceUuid, characteristicUuid]);
+            withServices: [
+          Uuid.parse("4fafc201-1fb5-459e-8fcc-c5c9c331914b"),
+          characteristicUuid
+        ]);
     _currentConnectionStream.listen((event) {
       switch (event.connectionState) {
         // We're connected and good to go!

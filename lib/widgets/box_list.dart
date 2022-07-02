@@ -91,15 +91,3 @@ class _BoxListState extends State<BoxList> {
     );
   }
 }
-
-// Column(children: [
-
-// Text(
-// box.address,
-// style: TextStyle(
-// color: Colors.grey,
-// ),
-// ),
-// ]
-// ,
-// ],
