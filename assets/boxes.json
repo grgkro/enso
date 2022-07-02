@@ -3,7 +3,7 @@
         {
             "address": "Auf dem Haigst 45\n70597 Stuttgart\nDeutschland",
             "service_uuid": "4fafc201-1fb5-459e-8fcc-c5c9c331914b",
-            "characteristic_uui": "beb5483e-36e1-4688-b7f5-ea07361b26a8",
+            "characteristic_uuid": "beb5483e-36e1-4688-b7f5-ea07361b26a8",
             "id": "30:C6:F7:55:A4:FE",
             "image": "https://enso-box.s3.eu-central-1.amazonaws.com/VorlageBox.PNG",
             "lat": 48.7553846205735,
@@ -25,7 +25,9 @@
         },
         {
             "address": "Theater Rampe\n70597 Stuttgart\nDeutschland",
-            "uuid": "04bf1f13-9204-4f47-a8ba-0ea6a76b3d5e",
+            "service_uuid": "04bf1f13-9204-4f47-a8ba-0ea6a76b3d5e",
+            "characteristic_uuid": "04bf1f13-9204-4f47-a8ba-0ea6a76b3d5e",
+            "id": "0C:4E:...",
             "image": "https://enso-box.s3.eu-central-1.amazonaws.com/VorlageBox.PNG",
             "lat": 48.76337353546124, 
             "lng": 9.170519675890487,
@@ -46,7 +48,9 @@
         },
         {
             "address": "Skatepark\n70597 Stuttgart\nDeutschland",
-            "uuid": "04bf1f13-9204-4f47-a8ba-0ea6a76b3d5e",
+            "service_uuid": "04bf1f13-9204-4f47-a8ba-0ea6a76b3d5e",
+            "characteristic_uuid": "04bf1f13-9204-4f47-a8ba-0ea6a76b3d5e",
+            "id": "04bf1f13-9204-4f47-a8ba-0ea6a76b3d5e",
             "image": "https://enso-box.s3.eu-central-1.amazonaws.com/VorlageBox.PNG",
             "lat": 48.773149087167326,  
             "lng": 9.181830400663667,

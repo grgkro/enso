@@ -18,7 +18,9 @@ Map<String, dynamic> _$LatLngToJson(LatLng instance) => <String, dynamic>{
 
 Box _$BoxFromJson(Map<String, dynamic> json) => Box(
       address: json['address'] as String,
-      uuid: json['uuid'] as String,
+      service_uuid: json['service_uuid'] as String,
+      characteristic_uuid: json['characteristic_uuid'] as String,
+      id: json['id'] as String,
       image: json['image'] as String,
       lat: (json['lat'] as num).toDouble(),
       lng: (json['lng'] as num).toDouble(),
@@ -29,7 +31,9 @@ Box _$BoxFromJson(Map<String, dynamic> json) => Box(
 
 Map<String, dynamic> _$BoxToJson(Box instance) => <String, dynamic>{
       'address': instance.address,
-      'uuid': instance.uuid,
+      'service_uuid': instance.service_uuid,
+      'characteristic_uuid': instance.characteristic_uuid,
+      'id': instance.id,
       'image': instance.image,
       'lat': instance.lat,
       'lng': instance.lng,

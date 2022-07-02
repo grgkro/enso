@@ -1,3 +1,5 @@
+import 'dart:developer';
+
 import 'package:ensobox/widgets/box_details_screen.dart';
 import 'package:flutter/material.dart';
 
@@ -11,67 +13,28 @@ class BoxList extends StatefulWidget {
 }
 
 class _BoxListState extends State<BoxList> {
-  final List<locations.Box> _boxes = [
-    locations.Box(
-        address: "address",
-        uuid: "uuid",
-        image: "image",
-        lat: 9.9,
-        lng: 1.0,
-        name: "name",
-        owner_phone: "owner_phone",
-        state: "state"),
-    locations.Box(
-        address: "address2",
-        uuid: "uuid2",
-        image: "image",
-        lat: 9.9,
-        lng: 2.0,
-        name: "name2",
-        owner_phone: "owner_phone",
-        state: "state"),
-    locations.Box(
-        address: "address",
-        uuid: "uuid",
-        image: "image",
-        lat: 9.9,
-        lng: 1.0,
-        name: "name",
-        owner_phone: "owner_phone",
-        state: "state"),
-    locations.Box(
-        address: "address2",
-        uuid: "uuid2",
-        image: "image",
-        lat: 9.9,
-        lng: 2.0,
-        name: "name2",
-        owner_phone: "owner_phone",
-        state: "state"),
-    locations.Box(
-        address: "address",
-        uuid: "uuid",
-        image: "image",
-        lat: 9.9,
-        lng: 1.0,
-        name: "name",
-        owner_phone: "owner_phone",
-        state: "state"),
-    locations.Box(
-        address: "address2",
-        uuid: "uuid2",
-        image: "image",
-        lat: 9.9,
-        lng: 2.0,
-        name: "name2",
-        owner_phone: "owner_phone",
-        state: "state")
-  ];
+  final List<locations.Box> _boxes = [];
 
-  void selectCategory(BuildContext ctx) {
+  Future<void> _getBoxesFromAPI() async {
+    var ensoBoxes = await locations.getBoxLocations();
+    setState(() {
+      for (final box in ensoBoxes.boxes) {
+        _boxes.add(box);
+
+        log("Hello" + box.id);
+      }
+    });
+  }
+
+  void selectCategory(BuildContext ctx, locations.Box selectedBox) {
     Navigator.of(ctx).push(MaterialPageRoute(builder: (_) {
-      return BoxDetailsScreen();
+      return BoxDetailsScreen(_boxes, selectedBox);
     }));
+  }
+
+  @override
+  void initState() {
+    _getBoxesFromAPI();
   }
 
   @override
@@ -80,45 +43,63 @@ class _BoxListState extends State<BoxList> {
       shrinkWrap: true,
       scrollDirection: Axis.vertical,
       children: _boxes
-          .map((box) => Card(
-                  child: Row(children: <Widget>[
-                InkWell(
-                  onTap: () => selectCategory(context),
-                  splashColor: Theme.of(context).primaryColor,
-                  borderRadius: BorderRadius.circular(15),
-                  child: Container(
-                    margin: EdgeInsets.symmetric(vertical: 10, horizontal: 15),
-                    decoration: BoxDecoration(
-                      border: Border.all(color: Colors.black, width: 1),
-                    ),
-                    padding: EdgeInsets.all(10),
-                    child: Text(
-                      box.image,
-                      style: TextStyle(
-                        fontWeight: FontWeight.bold,
-                        fontSize: 20,
-                        color: Colors.purple,
+          .map(
+            (box) => Card(
+              child: InkWell(
+                onTap: () => selectCategory(context, box),
+                splashColor: Theme.of(context).primaryColor,
+                borderRadius: BorderRadius.circular(15),
+                child: Container(
+                  margin: EdgeInsets.symmetric(vertical: 10, horizontal: 15),
+                  decoration: BoxDecoration(
+                    border: Border.all(color: Colors.black, width: 1),
+                  ),
+                  padding: EdgeInsets.all(10),
+                  child: Row(
+                    children: <Widget>[
+                      Image.network(
+                        box.image,
+                        width: 100,
                       ),
-                    ),
+                      SizedBox(
+                        width: 10,
+                      ),
+                      Column(
+                        children: [
+                          Text(
+                            box.name,
+                            style: TextStyle(
+                              fontWeight: FontWeight.bold,
+                              fontSize: 15,
+                            ),
+                          ),
+                          Text(
+                            box.address,
+                            style: TextStyle(
+                              color: Colors.grey,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
                   ),
                 ),
-                Column(children: [
-                  Text(
-                    box.name,
-                    style: TextStyle(
-                      fontWeight: FontWeight.bold,
-                      fontSize: 15,
-                    ),
-                  ),
-                  Text(
-                    box.address,
-                    style: TextStyle(
-                      color: Colors.grey,
-                    ),
-                  ),
-                ]),
-              ])))
+              ),
+            ),
+          )
           .toList(),
     );
   }
 }
+
+// Column(children: [
+
+// Text(
+// box.address,
+// style: TextStyle(
+// color: Colors.grey,
+// ),
+// ),
+// ]
+// ,
+// ],

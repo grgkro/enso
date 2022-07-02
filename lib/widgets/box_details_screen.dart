@@ -6,11 +6,16 @@ import 'package:flutter/material.dart';
 import 'package:flutter_reactive_ble/flutter_reactive_ble.dart';
 import 'package:location_permissions/location_permissions.dart';
 
+import '../models/locations.dart' as locations;
+
 class BoxDetailsScreen extends StatefulWidget {
-  const BoxDetailsScreen({Key? key}) : super(key: key);
+  final List<locations.Box> boxes;
+  final locations.Box selectedBox;
+
+  BoxDetailsScreen(this.boxes, this.selectedBox);
 
   @override
-  State<BoxDetailsScreen> createState() => _BoxDetailsScreenState();
+  State<StatefulWidget> createState() => _BoxDetailsScreenState();
 }
 
 class _BoxDetailsScreenState extends State<BoxDetailsScreen> {
@@ -87,6 +92,8 @@ class _BoxDetailsScreenState extends State<BoxDetailsScreen> {
     });
     PermissionStatus permission;
     log('started scanning');
+    log("the boxes: " + widget.boxes.length.toString());
+    log("the selected box: " + widget.selectedBox.id);
     if (Platform.isAndroid) {
       log('Platform.isAndroid: $Platform.isAndroid');
       permission = await LocationPermissions().requestPermissions();

@@ -42,7 +42,9 @@ class LatLng {
 class Box {
   Box({
     required this.address,
-    required this.uuid,
+    required this.service_uuid,
+    required this.characteristic_uuid,
+    required this.id,
     required this.image,
     required this.lat,
     required this.lng,
@@ -55,7 +57,9 @@ class Box {
   Map<String, dynamic> toJson() => _$BoxToJson(this);
 
   final String address;
-  final String uuid;
+  final String service_uuid;
+  final String characteristic_uuid;
+  final String id;
   final String image;
   final double lat;
   final double lng;
