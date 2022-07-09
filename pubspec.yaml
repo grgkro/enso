@@ -72,11 +72,6 @@ flutter:
     - assets/boxes.json
     - assets/sample_payment_configuration.json
 
-  plugin:
-    platforms:
-      ios:
-        pluginClass: AppDelegate
-
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/assets-and-images/#resolution-aware
 
