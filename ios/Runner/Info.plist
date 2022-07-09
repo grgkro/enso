@@ -49,5 +49,18 @@
     <string>The app uses bluetooth to find, connect and transfer data between different devices</string>
     <key>NSBluetoothPeripheralUsageDescription</key>
     <string>The app uses bluetooth to find, connect and transfer data between different devices</string>
+    <key>CFBundleURLTypes</key>
+    <array>
+        <dict>
+            <key>CFBundleTypeRole</key>
+            <string>Editor</string>
+            <key>CFBundleURLName</key>
+            <string>com.example.ensobox.payments</string>
+            <key>CFBundleURLSchemes</key>
+            <array>
+                <string>com.example.ensobox.payments</string>
+            </array>
+        </dict>
+    </array>
 </dict>
 </plist>
