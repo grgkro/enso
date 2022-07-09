@@ -1,6 +1,7 @@
 import 'dart:developer';
 
 import 'package:ensobox/widgets/box_list.dart';
+import 'package:ensobox/widgets/pay.dart';
 import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 
@@ -14,7 +15,8 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      home: Home(),
+      home: Pay(),
+      // home: Home(),
     );
   }
 }

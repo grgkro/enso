@@ -13,9 +13,11 @@ class PaymentMethodData {
     this.tokenizationData,
   );
 
-  String description;
-  GPayInfo info;
-  GPayTokenizationData tokenizationData;
+  PaymentMethodData.empty();
+
+  late String description;
+  late GPayInfo info;
+  late GPayTokenizationData tokenizationData;
 
   factory PaymentMethodData.fromJson(Map<String, dynamic> json) =>
       _$PaymentMethodDataFromJson(json);

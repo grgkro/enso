@@ -18,11 +18,10 @@ class UserDetailsScreen extends StatelessWidget {
     log(resultMap.toString());
     var googlePayPaymentResult = GooglePayPaymentResult.fromJson(resultMap);
 
-    if (googlePayPaymentResult.paymentMethodData?.description != null) {
-      log(googlePayPaymentResult.paymentMethodData!.description.toString());
-      log(googlePayPaymentResult.paymentMethodData!.info.cardDetails
-          .toString());
-    }
+    // if (googlePayPaymentResult.paymentMethodData.description != null) {
+    //   log(googlePayPaymentResult.paymentMethodData.description.toString());
+    //   log(googlePayPaymentResult.paymentMethodData.info.cardDetails.toString());
+    // }
     return Text(paymentResult.toString());
   }
 }

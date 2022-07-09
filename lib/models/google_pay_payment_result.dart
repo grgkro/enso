@@ -5,6 +5,8 @@ part 'google_pay_payment_result.g.dart';
 
 @JsonSerializable(explicitToJson: true)
 class GooglePayPaymentResult {
+  GooglePayPaymentResult.empty();
+
   GooglePayPaymentResult(
     this.apiVersion,
     this.apiVersionMinor,
@@ -12,12 +14,12 @@ class GooglePayPaymentResult {
     this.type,
   );
 
-  int apiVersion;
-  double apiVersionMinor;
-  PaymentMethodData? paymentMethodData;
+  late int apiVersion;
+  late int apiVersionMinor;
+  late PaymentMethodData paymentMethodData;
 
   @JsonKey(defaultValue: "CARD")
-  String type;
+  late String type;
 
   factory GooglePayPaymentResult.fromJson(Map<String, dynamic> json) =>
       _$GooglePayPaymentResultFromJson(json);
