@@ -39,8 +39,9 @@ dependencies:
   flutter_reactive_ble: ^5.0.2  # best of the 3 bluetooth libs: https://leancode.co/blog/bluetooth-low-energy-in-flutter
   location_permissions: ^4.0.0 # needed for example https://www.ubiqueiot.com/posts/flutter-reactive-ble
   http: ^0.13.4
-  json_serializable: ^6.2.0
   pay: ^1.0.10
+  flutter_braintree: 2.3.1
+  json_annotation: 4.6.0
 
 dev_dependencies:
   flutter_test:
@@ -53,6 +54,7 @@ dev_dependencies:
   # rules and activating additional ones.
   flutter_lints: ^2.0.0
   build_runner: ^2.1.10
+  json_serializable: ^6.2.0
 
 # For information on the generic Dart part of this file, see the
 # following page: https://dart.dev/tools/pub/pubspec
@@ -68,6 +70,7 @@ flutter:
   # To add assets to your application, add an assets section, like this:
   assets:
     - assets/boxes.json
+    - assets/sample_payment_configuration.json
 
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/assets-and-images/#resolution-aware

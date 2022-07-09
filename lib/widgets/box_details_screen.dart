@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:developer';
 import 'dart:io' show Platform;
 
+import 'package:ensobox/widgets/pay.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_reactive_ble/flutter_reactive_ble.dart';
 import 'package:location_permissions/location_permissions.dart';
@@ -16,6 +17,12 @@ class BoxDetailsScreen extends StatefulWidget {
 
   @override
   State<StatefulWidget> createState() => _BoxDetailsScreenState();
+
+  // void selectCategory(BuildContext ctx, locations.Box selectedBox) {
+  //   Navigator.of(ctx).push(MaterialPageRoute(builder: (_) {
+  //     return BoxDetailsScreen(_boxes, selectedBox);
+  //   }));
+  // }
 }
 
 class _BoxDetailsScreenState extends State<BoxDetailsScreen> {
@@ -172,6 +179,12 @@ class _BoxDetailsScreenState extends State<BoxDetailsScreen> {
     }
   }
 
+  void goToPayment(BuildContext ctx) {
+    Navigator.of(ctx).push(MaterialPageRoute(builder: (_) {
+      return Pay();
+    }));
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -234,7 +247,7 @@ class _BoxDetailsScreenState extends State<BoxDetailsScreen> {
                   primary: Colors.grey, // background
                   onPrimary: Colors.white, // foreground
                 ),
-                onPressed: () {},
+                onPressed: () => goToPayment(context),
                 child: const Icon(Icons.celebration_rounded),
               ),
       ],
