@@ -24,9 +24,10 @@ class Pay extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    void showUserDetailsScreen(BuildContext ctx, dynamic paymentResult) {
+    void showUserDetailsScreen(
+        BuildContext ctx, GooglePayPaymentResult userGPayResult) {
       Navigator.of(ctx).push(MaterialPageRoute(builder: (_) {
-        return UserDetailsScreen(paymentResult);
+        return UserDetailsScreen(userGPayResult);
       }));
     }
 
@@ -86,7 +87,7 @@ class Pay extends StatelessWidget {
           apiVersion, apiVersionMinor, paymentMethodData, type);
       log(gPay.paymentMethodData.tokenizationData.token);
 
-      showUserDetailsScreen(context, paymentResult);
+      showUserDetailsScreen(context, gPay);
       // Send the resulting Google Pay token to your server or PSP
     }
 
