@@ -1,11 +1,15 @@
 import 'dart:developer';
 
+import 'package:ensobox/providers/boxes.dart';
+import 'package:ensobox/providers/users.dart';
 import 'package:ensobox/widgets/box_list.dart';
 import 'package:ensobox/widgets/pay.dart';
 import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'package:provider/provider.dart';
 
 import 'models/locations.dart' as locations;
+import 'models/user.dart';
 
 void main() {
   runApp(MyApp());
@@ -14,9 +18,28 @@ void main() {
 class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      home: Pay(),
-      // home: Home(),
+    return MultiProvider(
+      providers: [
+        ChangeNotifierProvider(
+          // all child widgets of MyApp widget can now listen for changes in Boxes
+          create: (ctx) => Boxes(),
+        ),
+        ChangeNotifierProvider(
+          create: (ctx) => User.empty(),
+        ),
+        ChangeNotifierProvider(
+          create: (ctx) => Users(),
+        ),
+      ],
+      child: MaterialApp(
+        title: 'Enso Fairleihbox',
+        theme: ThemeData(
+          primarySwatch: Colors.blue,
+          visualDensity: VisualDensity.adaptivePlatformDensity,
+        ),
+        home: Pay(),
+        // home: Home(),
+      ),
     );
   }
 }
@@ -54,7 +77,7 @@ class _MyAppState extends State<Home> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Verleihboxen in deiner Nähe:'),
+        title: const Text('Fairleihboxen in deiner Nähe:'),
         backgroundColor: Colors.green[700],
       ),
       body: Column(

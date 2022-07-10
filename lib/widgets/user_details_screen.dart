@@ -1,12 +1,17 @@
 import 'dart:developer';
 
 import 'package:ensobox/models/google_pay_payment_result.dart';
+import 'package:ensobox/widgets/pay.dart';
+import 'package:ensobox/widgets/user_add_email.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+
+import '../models/user.dart';
 
 class UserDetailsScreen extends StatelessWidget {
-  GooglePayPaymentResult userGPayResult;
+  GooglePayPaymentResult userGPayResult = Pay.gPay;
 
-  UserDetailsScreen(this.userGPayResult, {Key? key}) : super(key: key);
+  UserDetailsScreen({Key? key}) : super(key: key);
 
   bool isStringPresent(String? input) {
     return input?.isNotEmpty ?? false;
@@ -49,60 +54,62 @@ class UserDetailsScreen extends StatelessWidget {
     return resultTile;
   }
 
+  void showUserAddEmailScreen(BuildContext ctx) {
+    log("Pressed 4324");
+    Navigator.of(ctx).push(MaterialPageRoute(builder: (_) {
+      return UserAddEmail();
+    }));
+  }
+
   @override
   Widget build(BuildContext context) {
+    User currentUser = Provider.of<User>(context, listen: false);
     return new Scaffold(
-        appBar: new AppBar(
-          title: new Text("Bitte Daten prüfen"),
-          actions: <Widget>[
-            new IconButton(
-                icon: const Icon(Icons.save),
-                onPressed: () {
-                  log("Pressed");
-                })
-          ],
-        ),
-        body: new Column(
-          children: <Widget>[
-            new ListTile(
-              leading: const Icon(Icons.person),
-              title: Text(
-                  userGPayResult.paymentMethodData.info.billingAddress.name),
-              subtitle: Text(userGPayResult
-                  .paymentMethodData.info.billingAddress.phoneNumber),
-            ),
-            createAddressWidget(userGPayResult),
-            const Divider(
-              height: 1.0,
-            ),
-            new ListTile(
-              leading: const Icon(Icons.email),
-              title: new TextField(
-                decoration: new InputDecoration(
-                  hintText: "Email",
-                ),
+      appBar: new AppBar(
+        title: new Text("Bitte Daten prüfen"),
+      ),
+      body: new Column(
+        children: <Widget>[
+          new ListTile(
+            leading: const Icon(Icons.person),
+            title:
+                Text(userGPayResult.paymentMethodData.info.billingAddress.name),
+            subtitle: Text(userGPayResult
+                .paymentMethodData.info.billingAddress.phoneNumber),
+          ),
+          createAddressWidget(userGPayResult),
+          const Divider(
+            height: 1.0,
+          ),
+        ],
+      ),
+      bottomNavigationBar: BottomNavigationBar(
+        items: [
+          BottomNavigationBarItem(
+              icon: Icon(
+                Icons.arrow_back_ios_new,
+                color: Colors.blue,
               ),
-            ),
-          ],
-        ),
-        bottomNavigationBar: BottomNavigationBar(
-          items: [
-            BottomNavigationBarItem(
-                icon: Icon(
-                  Icons.arrow_back_ios_new,
-                  color: Colors.blue,
-                ),
-                label: "Zurück"),
-            BottomNavigationBarItem(
-                icon: Icon(
-                  Icons.done_all,
-                  color: Colors.blue,
-                ),
-                label: "Daten stimmen"),
-          ],
-          onTap: (int index) {
-            log("Pressed" + index.toString());
-          },
-        ));
+              label: "Zurück"),
+          BottomNavigationBarItem(
+              icon: Icon(
+                Icons.done_all,
+                color: Colors.blue,
+              ),
+              label: "Daten stimmen"),
+        ],
+        onTap: (int itemIndex) {
+          log("Pressed" + itemIndex.toString());
+          switch (itemIndex) {
+            case 0:
+              Navigator.pop(context);
+              break;
+            case 1:
+              log("Pressed 111" + itemIndex.toString());
+              showUserAddEmailScreen(context);
+          }
+        },
+      ),
+    );
   }
 }

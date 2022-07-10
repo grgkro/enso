@@ -7,9 +7,11 @@ import 'package:ensobox/models/g_pay_tokenization_data.dart';
 import 'package:ensobox/widgets/user_details_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:pay/pay.dart';
+import 'package:provider/provider.dart';
 
 import '../models/google_pay_payment_result.dart';
 import '../models/payment_method_data.dart';
+import '../models/user.dart';
 
 const _paymentItems = [
   PaymentItem(
@@ -20,14 +22,16 @@ const _paymentItems = [
 ];
 
 class Pay extends StatelessWidget {
+  static GooglePayPaymentResult gPay = new GooglePayPaymentResult.empty();
+
   const Pay({Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
-    void showUserDetailsScreen(
-        BuildContext ctx, GooglePayPaymentResult userGPayResult) {
+    User currentUser = Provider.of<User>(context, listen: false);
+    void showUserDetailsScreen(BuildContext ctx) {
       Navigator.of(ctx).push(MaterialPageRoute(builder: (_) {
-        return UserDetailsScreen(userGPayResult);
+        return UserDetailsScreen();
       }));
     }
 
@@ -77,17 +81,34 @@ class Pay extends StatelessWidget {
           phoneNumber,
           postalCode,
           sortingCode);
+
+      currentUser = updateCurrentUser(currentUser, billingAddress);
+
       GPayInfo gPayInfo =
           new GPayInfo(billingAddress, cardDetails, cardNetwork);
       GPayTokenizationData tokenizationData =
           new GPayTokenizationData(token, tokenType);
       PaymentMethodData paymentMethodData =
           new PaymentMethodData(description, gPayInfo, tokenizationData);
-      GooglePayPaymentResult gPay = new GooglePayPaymentResult(
+      gPay = new GooglePayPaymentResult(
           apiVersion, apiVersionMinor, paymentMethodData, type);
+
+      // currentUser = new User(
+      //     0,
+      //     billingAddress.address1,
+      //     billingAddress.address2,
+      //     billingAddress.address3,
+      //     "",
+      //     billingAddress.administrativeArea,
+      //     billingAddress.countryCode,
+      //     billingAddress.locality,
+      //     billingAddress.name,
+      //     billingAddress.phoneNumber,
+      //     billingAddress.postalCode);
+
       log(gPay.paymentMethodData.tokenizationData.token);
 
-      showUserDetailsScreen(context, gPay);
+      showUserDetailsScreen(context);
       // Send the resulting Google Pay token to your server or PSP
     }
 
@@ -118,5 +139,19 @@ class Pay extends StatelessWidget {
         ],
       ),
     );
+  }
+
+  User updateCurrentUser(User currentUser, BillingAddress billingAddress) {
+    currentUser.id = 0;
+    currentUser.address1 = billingAddress.address1;
+    currentUser.address2 = billingAddress.address2;
+    currentUser.address3 = billingAddress.address3;
+    currentUser.administrativeArea = billingAddress.administrativeArea;
+    currentUser.countryCode = billingAddress.countryCode;
+    currentUser.locality = billingAddress.locality;
+    currentUser.name = billingAddress.name;
+    currentUser.phoneNumber = billingAddress.phoneNumber;
+    currentUser.postalCode = billingAddress.postalCode;
+    return currentUser;
   }
 }

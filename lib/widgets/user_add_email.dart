@@ -1,0 +1,97 @@
+import 'package:ensobox/widgets/pay.dart';
+import 'package:flutter/cupertino.dart';
+import 'package:flutter/material.dart';
+
+class UserAddEmail extends StatefulWidget {
+  const UserAddEmail({Key? key}) : super(key: key);
+
+  @override
+  State<UserAddEmail> createState() => _UserAddEmailState();
+}
+
+class _UserAddEmailState extends State<UserAddEmail> {
+  final _formKey = GlobalKey<FormState>();
+
+  final FocusNode _emailFocusNode = FocusNode();
+
+  final TextEditingController _emailController = TextEditingController();
+
+  _submitForm() {
+    if (_formKey.currentState?.validate() != null) {
+      final user = {
+        'email': _emailController.text,
+      };
+      print(user.toString());
+
+      // If the form passes validation, display a Snackbar.
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+        content: const Text('snack'),
+        duration: const Duration(seconds: 1),
+        action: SnackBarAction(
+          label: 'ACTION',
+          onPressed: () {},
+        ),
+      ));
+      //_formKey.currentState.save();
+      //_formKey.currentState.reset();
+      //_nextFocus(_nameFocusNode);
+    }
+  }
+
+  String? _validateEmail(String? value) {
+    String pattern =
+        r"^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]"
+        r"{0,253}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]"
+        r"{0,253}[a-zA-Z0-9])?)*$";
+    RegExp regex = RegExp(pattern);
+    if (value == null || value.isEmpty || !regex.hasMatch(value))
+      return 'Enter a valid email address';
+    else
+      return null;
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return new Scaffold(
+      appBar: new AppBar(
+        title: new Text(
+            "Hallo ${Pay.gPay.paymentMethodData.info.billingAddress.name.split(" ")[0]}"),
+      ),
+      body: new Column(
+        children: <Widget>[
+          Container(
+            width: MediaQuery.of(context).size.width,
+            child: Padding(
+              padding: EdgeInsets.symmetric(
+                horizontal: 16,
+              ),
+              child: Form(
+                key: _formKey,
+                child: Column(
+                  // mainAxisAlignment: MainAxisAlignment.center,
+                  children: <Widget>[
+                    TextFormField(
+                      autofocus: true,
+                      focusNode: _emailFocusNode,
+                      controller: _emailController,
+                      keyboardType: TextInputType.emailAddress,
+                      textInputAction: TextInputAction.done,
+                      validator: (value) => _validateEmail(value),
+                      onFieldSubmitted: (String value) {
+                        _submitForm();
+                      },
+                      decoration: InputDecoration(
+                        hintText: 'max.muster@man.de',
+                        labelText: 'Als letztes noch deine Email:',
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
