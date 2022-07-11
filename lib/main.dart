@@ -2,64 +2,28 @@ import 'dart:developer';
 
 import 'package:ensobox/providers/boxes.dart';
 import 'package:ensobox/providers/users.dart';
+import 'package:ensobox/widgets/auth/register_service.dart';
 import 'package:ensobox/widgets/auth/success_screen.dart';
 import 'package:ensobox/widgets/box_list.dart';
-import 'package:ensobox/widgets/pay.dart';
-import 'package:firebase_auth/firebase_auth.dart';
-import 'package:firebase_core/firebase_core.dart';
+import 'package:ensobox/widgets/service_locator.dart';
 import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:provider/provider.dart';
 
-import 'firebase_options.dart';
 import 'models/enso_user.dart';
 import 'models/locations.dart' as locations;
 
-final FirebaseAuth _auth = FirebaseAuth.instance;
-
 void main() async {
-  WidgetsFlutterBinding.ensureInitialized();
-  await Firebase.initializeApp(
-    options: DefaultFirebaseOptions.currentPlatform,
-  );
-  FirebaseAuth.instance.authStateChanges().listen((User? user) {
-    if (user != null) {
-      print(user.uid);
-    }
-  });
+  setupServiceLocator(); // This will register any services you have with GetIt before the widget tree gets built.
+  RegisterService _registerService = getIt<RegisterService>();
+  await _registerService.initialize();
+  _registerService.registerByEmailAndHiddenPW("grgk.ro@gmail.com");
   runApp(MyApp());
 }
 
 class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    var acs = ActionCodeSettings(
-        // URL you want to redirect back to. The domain (www.example.com) for this
-        // URL must be whitelisted in the Firebase Console.
-        url: 'https://ensobox.page.link/',
-        // This must be true
-        handleCodeInApp: true,
-        iOSBundleId: 'com.example.ios',
-        androidPackageName: 'com.example.ensobox',
-        // installIfNotAvailable
-        androidInstallApp: true,
-        // minimumVersion
-        androidMinimumVersion: '12');
-    var emailAuth = 'gr.gkro@gmail.com';
-    FirebaseAuth.instance
-        .createUserWithEmailAndPassword(
-          email: emailAuth,
-          password: "HorseAsk",
-        )
-        .catchError(
-            (onError) => print('Error sending email verification $onError'))
-        .then((value) => print('Successfully sent email verification'));
-    ;
-    // FirebaseAuth.instance
-    //     .sendSignInLinkToEmail(email: emailAuth, actionCodeSettings: acs)
-    //     .catchError(
-    //         (onError) => print('Error sending email verification $onError'))
-    //     .then((value) => print('Successfully sent email verification'));
     return MultiProvider(
       providers: [
         ChangeNotifierProvider(
@@ -79,7 +43,7 @@ class MyApp extends StatelessWidget {
           primarySwatch: Colors.blue,
           visualDensity: VisualDensity.adaptivePlatformDensity,
         ),
-        home: Pay(),
+        home: Home(),
         routes: {SuccessScreen.routeName: (ctx) => SuccessScreen()},
         // home: Home(),
       ),
@@ -95,6 +59,7 @@ class Home extends StatefulWidget {
 }
 
 class _MyAppState extends State<Home> {
+  final _scaffoldKey = GlobalKey<ScaffoldState>();
   final Map<String, Marker> _markers = {};
 
   Future<void> _onMapCreated(GoogleMapController controller) async {
@@ -123,6 +88,8 @@ class _MyAppState extends State<Home> {
         title: const Text('Fairleihboxen in deiner Nähe:'),
         backgroundColor: Colors.green[700],
       ),
+      key: _scaffoldKey,
+      resizeToAvoidBottomInset: false,
       body: Column(
         children: <Widget>[
           SizedBox(

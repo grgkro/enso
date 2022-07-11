@@ -47,6 +47,8 @@ dependencies:
   firebase_auth: ^3.4.1
   firebase_dynamic_links: ^4.3.1
   sms_autofill: ^2.2.0 # automatically get the phone number for the user’s device without typing it in.
+  shared_preferences: ^2.0.15
+  get_it: ^7.2.0 # The most popular service locator package for Flutter
 
 dev_dependencies:
   flutter_test:
