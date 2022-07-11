@@ -1,10 +1,6 @@
 import 'package:flutter/cupertino.dart';
-import 'package:json_annotation/json_annotation.dart';
 
-part 'user.g.dart';
-
-@JsonSerializable()
-class User with ChangeNotifier {
+class EnsoUser with ChangeNotifier {
   late int _id;
   late String _address1;
   late String _address2;
@@ -17,9 +13,9 @@ class User with ChangeNotifier {
   late String _phoneNumber;
   late int _postalCode;
 
-  User.empty();
+  EnsoUser.empty();
 
-  User(
+  EnsoUser(
     this._id,
     this._address1,
     this._address2,
@@ -38,9 +34,6 @@ class User with ChangeNotifier {
   set id(int value) {
     _id = value;
   }
-
-  factory User.fromJson(Map<String, dynamic> json) => _$UserFromJson(json);
-  Map<String, dynamic> toJson() => _$UserToJson(this);
 
   String get address1 => _address1;
 

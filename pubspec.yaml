@@ -43,6 +43,10 @@ dependencies:
   pay: ^1.0.10
   flutter_braintree: 2.3.1
   json_annotation: 4.6.0
+  firebase_core: ^1.19.1
+  firebase_auth: ^3.4.1
+  firebase_dynamic_links: ^4.3.1
+  sms_autofill: ^2.2.0 # automatically get the phone number for the user’s device without typing it in.
 
 dev_dependencies:
   flutter_test:

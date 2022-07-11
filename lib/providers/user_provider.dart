@@ -1,11 +1,11 @@
 import 'package:flutter/widgets.dart';
 
-import '../models/user.dart';
+import '../models/enso_user.dart';
 
 class UserProvider with ChangeNotifier {
-  final User _user = new User.empty();
+  final EnsoUser _user = new EnsoUser.empty();
 
-  User get user {
+  EnsoUser get user {
     // if we directly returned _users, we'd pass the pointer. Then anywhere in the code we could edit the list.
     return _user;
   }

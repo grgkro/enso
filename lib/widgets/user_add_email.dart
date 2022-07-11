@@ -16,6 +16,25 @@ class _UserAddEmailState extends State<UserAddEmail> {
 
   final TextEditingController _emailController = TextEditingController();
 
+//   var acs = ActionCodeSettings(
+//       // URL you want to redirect back to. The domain (www.example.com) for this
+//       // URL must be whitelisted in the Firebase Console.
+//       url: 'enso-fairleih.firebaseapp.com/finishSignUp?cartId=1234',
+//       // This must be true
+//       handleCodeInApp: true,
+//       iOSBundleId: 'com.example.ios',
+//       androidPackageName: 'com.example.android',
+//       // installIfNotAvailable
+//       androidInstallApp: true,
+//       // minimumVersion
+//       androidMinimumVersion: '12');
+//   var emailAuth = 'someemail@domain.com';
+//   FirebaseAuth.instance.sendSignInLinkToEmail(
+//   email: emailAuth, actionCodeSettings: acs)
+//       .catchError((onError) => print('Error sending email verification $onError'))
+//       .then((value) => print('Successfully sent email verification'));
+// });
+
   _submitForm() {
     if (_formKey.currentState?.validate() != null) {
       final user = {

@@ -9,9 +9,9 @@ import 'package:flutter/material.dart';
 import 'package:pay/pay.dart';
 import 'package:provider/provider.dart';
 
+import '../models/enso_user.dart';
 import '../models/google_pay_payment_result.dart';
 import '../models/payment_method_data.dart';
-import '../models/user.dart';
 
 const _paymentItems = [
   PaymentItem(
@@ -28,7 +28,7 @@ class Pay extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    User currentUser = Provider.of<User>(context, listen: false);
+    EnsoUser currentUser = Provider.of<EnsoUser>(context, listen: false);
     void showUserDetailsScreen(BuildContext ctx) {
       Navigator.of(ctx).push(MaterialPageRoute(builder: (_) {
         return UserDetailsScreen();
@@ -141,7 +141,8 @@ class Pay extends StatelessWidget {
     );
   }
 
-  User updateCurrentUser(User currentUser, BillingAddress billingAddress) {
+  EnsoUser updateCurrentUser(
+      EnsoUser currentUser, BillingAddress billingAddress) {
     currentUser.id = 0;
     currentUser.address1 = billingAddress.address1;
     currentUser.address2 = billingAddress.address2;

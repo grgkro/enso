@@ -2,22 +2,64 @@ import 'dart:developer';
 
 import 'package:ensobox/providers/boxes.dart';
 import 'package:ensobox/providers/users.dart';
+import 'package:ensobox/widgets/auth/success_screen.dart';
 import 'package:ensobox/widgets/box_list.dart';
 import 'package:ensobox/widgets/pay.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:provider/provider.dart';
 
+import 'firebase_options.dart';
+import 'models/enso_user.dart';
 import 'models/locations.dart' as locations;
-import 'models/user.dart';
 
-void main() {
+final FirebaseAuth _auth = FirebaseAuth.instance;
+
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await Firebase.initializeApp(
+    options: DefaultFirebaseOptions.currentPlatform,
+  );
+  FirebaseAuth.instance.authStateChanges().listen((User? user) {
+    if (user != null) {
+      print(user.uid);
+    }
+  });
   runApp(MyApp());
 }
 
 class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
+    var acs = ActionCodeSettings(
+        // URL you want to redirect back to. The domain (www.example.com) for this
+        // URL must be whitelisted in the Firebase Console.
+        url: 'https://ensobox.page.link/',
+        // This must be true
+        handleCodeInApp: true,
+        iOSBundleId: 'com.example.ios',
+        androidPackageName: 'com.example.ensobox',
+        // installIfNotAvailable
+        androidInstallApp: true,
+        // minimumVersion
+        androidMinimumVersion: '12');
+    var emailAuth = 'gr.gkro@gmail.com';
+    FirebaseAuth.instance
+        .createUserWithEmailAndPassword(
+          email: emailAuth,
+          password: "HorseAsk",
+        )
+        .catchError(
+            (onError) => print('Error sending email verification $onError'))
+        .then((value) => print('Successfully sent email verification'));
+    ;
+    // FirebaseAuth.instance
+    //     .sendSignInLinkToEmail(email: emailAuth, actionCodeSettings: acs)
+    //     .catchError(
+    //         (onError) => print('Error sending email verification $onError'))
+    //     .then((value) => print('Successfully sent email verification'));
     return MultiProvider(
       providers: [
         ChangeNotifierProvider(
@@ -25,7 +67,7 @@ class MyApp extends StatelessWidget {
           create: (ctx) => Boxes(),
         ),
         ChangeNotifierProvider(
-          create: (ctx) => User.empty(),
+          create: (ctx) => EnsoUser.empty(),
         ),
         ChangeNotifierProvider(
           create: (ctx) => Users(),
@@ -38,6 +80,7 @@ class MyApp extends StatelessWidget {
           visualDensity: VisualDensity.adaptivePlatformDensity,
         ),
         home: Pay(),
+        routes: {SuccessScreen.routeName: (ctx) => SuccessScreen()},
         // home: Home(),
       ),
     );

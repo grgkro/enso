@@ -6,7 +6,7 @@ import 'package:ensobox/widgets/user_add_email.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
-import '../models/user.dart';
+import '../models/enso_user.dart';
 
 class UserDetailsScreen extends StatelessWidget {
   GooglePayPaymentResult userGPayResult = Pay.gPay;
@@ -63,7 +63,7 @@ class UserDetailsScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    User currentUser = Provider.of<User>(context, listen: false);
+    EnsoUser currentUser = Provider.of<EnsoUser>(context, listen: false);
     return new Scaffold(
       appBar: new AppBar(
         title: new Text("Bitte Daten prüfen"),
