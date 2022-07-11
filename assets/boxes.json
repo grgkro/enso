@@ -18,29 +18,7 @@
             "website": "elpalito.de",
             "item": "Bohrmaschine Bosch GBM 6 RE 350 W",
             "description": "Mit Bosch 25tlg. Metallbohrer-Set HSS-Co (Cobalt-Legierung) DIN 338 in ProBox",
-            "item_images": [
-                "https://enso-box.s3.eu-central-1.amazonaws.com/Bohrmaschine.PNG",
-                "https://enso-box.s3.eu-central-1.amazonaws.com/Metallbohrer.PNG"
-            ]
-        },
-        {
-            "address": "Theater Rampe\n70597 Stuttgart\nDeutschland",
-            "service_uuid": "04bf1f13-9204-4f47-a8ba-0ea6a76b3d5e",
-            "characteristic_uuid": "04bf1f13-9204-4f47-a8ba-0ea6a76b3d5e",
-            "id": "0C:4E:...",
-            "image": "https://enso-box.s3.eu-central-1.amazonaws.com/VorlageBox.PNG",
-            "lat": 48.76337353546124, 
-            "lng": 9.170519675890487,
-            "zoom": 12,
-            "name": "Theater Rampe",
-            "owner": "Georg Kromer",
-            "owner_phone": "015126448312",
-            "owner_email": "grg.kro@gmail.com",
-            "country": "Deutschland",
-            "state": "Baden-Württemberg",
-            "website": "elpalito.de",
-            "item": "Bohrmaschine Bosch GBM 6 RE 350 W",
-            "description": "Mit Bosch 25tlg. Metallbohrer-Set HSS-Co (Cobalt-Legierung) DIN 338 in ProBox",
+            "active": true,
             "item_images": [
                 "https://enso-box.s3.eu-central-1.amazonaws.com/Bohrmaschine.PNG",
                 "https://enso-box.s3.eu-central-1.amazonaws.com/Metallbohrer.PNG"
@@ -51,8 +29,8 @@
             "service_uuid": "04bf1f13-9204-4f47-a8ba-0ea6a76b3d5e",
             "characteristic_uuid": "04bf1f13-9204-4f47-a8ba-0ea6a76b3d5e",
             "id": "04bf1f13-9204-4f47-a8ba-0ea6a76b3d5e",
-            "image": "https://enso-box.s3.eu-central-1.amazonaws.com/VorlageBox.PNG",
-            "lat": 48.773149087167326,  
+            "image": "https://enso-box.s3.eu-central-1.amazonaws.com/Skatebox.PNG",
+            "lat": 48.773149087167326,
             "lng": 9.181830400663667,
             "zoom": 9,
             "name": "Skateparkbox",
@@ -62,12 +40,33 @@
             "country": "Deutschland",
             "state": "Baden-Württemberg",
             "website": "elpalito.de",
-            "item": "Bohrmaschine Bosch GBM 6 RE 350 W",
-            "description": "Mit Bosch 25tlg. Metallbohrer-Set HSS-Co (Cobalt-Legierung) DIN 338 in ProBox",
+            "item": "Profiskateboard Deluxe",
+            "description": "Meeeega gutes Skatebrett",
+            "active": false,
             "item_images": [
-                "https://enso-box.s3.eu-central-1.amazonaws.com/Bohrmaschine.PNG",
-                "https://enso-box.s3.eu-central-1.amazonaws.com/Metallbohrer.PNG"
+                "https://enso-box.s3.eu-central-1.amazonaws.com/Hobbies+-+Skateboard+(1).png"
             ]
+        },
+        {
+            "address": "Theater Rampe\n70597 Stuttgart\nDeutschland",
+            "service_uuid": "04bf1f13-9204-4f47-a8ba-0ea6a76b3d5e",
+            "characteristic_uuid": "04bf1f13-9204-4f47-a8ba-0ea6a76b3d5e",
+            "id": "0C:4E:...",
+            "image": "https://enso-box.s3.eu-central-1.amazonaws.com/tischtennisschlager-stiga-pulse-box-5-star-82787-g0.jpg",
+            "lat": 48.76337353546124, 
+            "lng": 9.170519675890487,
+            "zoom": 12,
+            "name": "Theater Rampe",
+            "owner": "Georg Kromer",
+            "owner_phone": "015126448312",
+            "owner_email": "grg.kro@gmail.com",
+            "country": "Deutschland",
+            "state": "Baden-Württemberg",
+            "website": "elpalito.de",
+            "item": "Tischtennisset komplett",
+            "description": "2 Schläger, 3 Bälle, 1 Netz, was braucht man mehr?",
+            "active": false,
+            "item_images": []
         }
     ]
 }
