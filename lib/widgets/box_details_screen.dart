@@ -2,12 +2,16 @@ import 'dart:async';
 import 'dart:developer';
 import 'dart:io' show Platform;
 
+import 'package:ensobox/widgets/ble/bluetooth_service.dart';
 import 'package:ensobox/widgets/pay.dart';
+import 'package:ensobox/widgets/service_locator.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_reactive_ble/flutter_reactive_ble.dart';
 import 'package:location_permissions/location_permissions.dart';
 
 import '../models/locations.dart' as locations;
+
+BluetoothService _bleService = getIt<BluetoothService>();
 
 class BoxDetailsScreen extends StatefulWidget {
   final List<locations.Box> boxes;
@@ -26,24 +30,9 @@ class BoxDetailsScreen extends StatefulWidget {
 }
 
 class _BoxDetailsScreenState extends State<BoxDetailsScreen> {
-  List<DiscoveredDevice> devicesList = <DiscoveredDevice>[];
-  // Some state management stuff
-  bool _foundDeviceWaitingToConnect = false;
-  bool _scanStarted = false;
-  bool _connected = false;
-// Bluetooth related variables
-  late DiscoveredDevice _discoveredDevice;
-  final flutterReactiveBle = FlutterReactiveBle();
-  late StreamSubscription<DiscoveredDevice> _scanStream;
-  late QualifiedCharacteristic _rxCharacteristic;
-// These are the UUIDs of your device
-  final Uuid serviceUuid = Uuid.parse("75C276C3-8F97-20BC-A143-B354244886D4");
-  final Uuid characteristicUuid =
-      Uuid.parse("6ACF4F08-CC9D-D495-6B41-AA7E60C4E8A6");
-
   ListView _buildListViewOfDevices() {
     List<Container> containers = <Container>[];
-    for (DiscoveredDevice device in devicesList) {
+    for (DiscoveredDevice device in _bleService.devicesList) {
       containers.add(
         Container(
           height: 50,
@@ -80,18 +69,18 @@ class _BoxDetailsScreenState extends State<BoxDetailsScreen> {
   }
 
   _addDeviceTolist(final DiscoveredDevice device) {
-    if (devicesList
+    if (_bleService.devicesList
                 .indexWhere((deviceInList) => device.id == deviceInList.id) ==
             -1 &&
         device.id == widget.selectedBox.id) {
       setState(() {
-        devicesList.add(device);
+        _bleService.devicesList.add(device);
         log(device.toString());
-        log('current devicesList: $devicesList');
+        log('current devicesList: ${_bleService.devicesList}');
         log('found it');
         setState(() {
-          _discoveredDevice = device;
-          _foundDeviceWaitingToConnect = true;
+          _bleService.discoveredDevice = device;
+          _bleService.foundDeviceWaitingToConnect = true;
         });
       });
     }
@@ -101,7 +90,7 @@ class _BoxDetailsScreenState extends State<BoxDetailsScreen> {
 // Platform permissions handling stuff
     bool permGranted = false;
     setState(() {
-      _scanStarted = true;
+      _bleService.scanStarted = true;
     });
     PermissionStatus permission;
     log('started scanning');
@@ -121,8 +110,8 @@ class _BoxDetailsScreenState extends State<BoxDetailsScreen> {
 // Main scanning logic happens here ⤵️
     if (permGranted) {
       log('_scanStream started: $permGranted');
-      _scanStream =
-          flutterReactiveBle.scanForDevices(withServices: []).listen((device) {
+      _bleService.scanStream = _bleService.flutterReactiveBle
+          .scanForDevices(withServices: []).listen((device) {
         // Change this string to what you defined in Zephyr
 
         // log('device: $device.name');
@@ -133,30 +122,30 @@ class _BoxDetailsScreenState extends State<BoxDetailsScreen> {
 
   void _connectToDevice() {
     // We're done scanning, we can cancel it
-    _scanStream.cancel();
-    log("Trying to connect to " + _discoveredDevice.id);
-    log("characteristicUuid " + characteristicUuid.toString());
+    _bleService.scanStream.cancel();
+    log("Trying to connect to " + _bleService.discoveredDevice.id);
+    log("characteristicUuid " + _bleService.characteristicUuid.toString());
     // Let's listen to our connection so we can make updates on a state change
-    Stream<ConnectionStateUpdate> _currentConnectionStream = flutterReactiveBle
-        .connectToAdvertisingDevice(
-            id: _discoveredDevice.id,
+    Stream<ConnectionStateUpdate> _currentConnectionStream =
+        _bleService.flutterReactiveBle.connectToAdvertisingDevice(
+            id: _bleService.discoveredDevice.id,
             prescanDuration: const Duration(seconds: 1),
             withServices: [
           Uuid.parse("4fafc201-1fb5-459e-8fcc-c5c9c331914b"),
-          characteristicUuid
+          _bleService.characteristicUuid
         ]);
     _currentConnectionStream.listen((event) {
       switch (event.connectionState) {
         // We're connected and good to go!
         case DeviceConnectionState.connected:
           {
-            _rxCharacteristic = QualifiedCharacteristic(
-                serviceId: serviceUuid,
-                characteristicId: characteristicUuid,
+            _bleService.rxCharacteristic = QualifiedCharacteristic(
+                serviceId: _bleService.serviceUuid,
+                characteristicId: _bleService.characteristicUuid,
                 deviceId: event.deviceId);
             setState(() {
-              _foundDeviceWaitingToConnect = false;
-              _connected = true;
+              _bleService.foundDeviceWaitingToConnect = false;
+              _bleService.connected = true;
             });
             break;
           }
@@ -171,11 +160,12 @@ class _BoxDetailsScreenState extends State<BoxDetailsScreen> {
   }
 
   void _partyTime() {
-    if (_connected) {
-      flutterReactiveBle
-          .writeCharacteristicWithResponse(_rxCharacteristic, value: [
-        0xff,
-      ]);
+    if (_bleService.connected) {
+      _bleService.flutterReactiveBle.writeCharacteristicWithResponse(
+          _bleService.rxCharacteristic,
+          value: [
+            0xff,
+          ]);
     }
   }
 
@@ -193,7 +183,7 @@ class _BoxDetailsScreenState extends State<BoxDetailsScreen> {
       persistentFooterButtons: [
         // We want to enable this button if the scan has NOT started
         // If the scan HAS started, it should be disabled.
-        _scanStarted
+        _bleService.scanStarted
             // True condition
             ? ElevatedButton(
                 style: ElevatedButton.styleFrom(
@@ -212,7 +202,7 @@ class _BoxDetailsScreenState extends State<BoxDetailsScreen> {
                 onPressed: _startScan,
                 child: const Icon(Icons.search),
               ),
-        _foundDeviceWaitingToConnect
+        _bleService.foundDeviceWaitingToConnect
             // True condition
             ? ElevatedButton(
                 style: ElevatedButton.styleFrom(
@@ -231,7 +221,7 @@ class _BoxDetailsScreenState extends State<BoxDetailsScreen> {
                 onPressed: () {},
                 child: const Icon(Icons.bluetooth),
               ),
-        _connected
+        _bleService.connected
             // True condition
             ? ElevatedButton(
                 style: ElevatedButton.styleFrom(
