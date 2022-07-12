@@ -70,7 +70,8 @@ class _MyAppState extends State<Home> {
         log(box.id);
         final marker = Marker(
           markerId: MarkerId(box.name),
-          position: LatLng(box.lat, box.lng),
+          position:
+              LatLng(box.lat ?? 48.7553846205735, box.lng ?? 9.172653858386855),
           infoWindow: InfoWindow(
             title: box.name,
             snippet: box.address,

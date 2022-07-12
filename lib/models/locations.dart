@@ -6,6 +6,8 @@ import 'package:json_annotation/json_annotation.dart';
 
 part 'locations.g.dart';
 
+// flutter pub run build_runner build --delete-conflicting-outputs
+
 @JsonSerializable()
 class LatLng {
   LatLng({
@@ -41,31 +43,45 @@ class LatLng {
 @JsonSerializable()
 class Box {
   Box({
-    required this.address,
+    required this.name,
+    required this.id,
     required this.service_uuid,
     required this.characteristic_uuid,
-    required this.id,
+    required this.address,
     required this.image,
-    required this.lat,
-    required this.lng,
-    required this.name,
-    required this.owner_phone,
-    required this.state,
+    this.lat,
+    this.lng,
+    this.owner_phone,
+    this.owner_email,
+    this.country,
+    this.state,
+    this.website,
+    this.item,
+    this.description,
+    this.active,
+    this.item_images,
   });
 
   factory Box.fromJson(Map<String, dynamic> json) => _$BoxFromJson(json);
   Map<String, dynamic> toJson() => _$BoxToJson(this);
 
-  final String address;
+  final String name;
+  final String id;
   final String service_uuid;
   final String characteristic_uuid;
-  final String id;
+  final String address;
   final String image;
-  final double lat;
-  final double lng;
-  final String name;
-  final String owner_phone;
-  final String state;
+  double? lat;
+  double? lng;
+  String? owner_phone;
+  String? owner_email;
+  String? country;
+  String? state;
+  String? website;
+  String? item;
+  String? description;
+  bool? active;
+  List<String>? item_images;
 }
 
 @JsonSerializable()

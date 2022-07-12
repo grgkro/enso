@@ -22,11 +22,11 @@ class BoxDetailsScreen extends StatefulWidget {
   @override
   State<StatefulWidget> createState() => _BoxDetailsScreenState();
 
-  // void selectCategory(BuildContext ctx, locations.Box selectedBox) {
-  //   Navigator.of(ctx).push(MaterialPageRoute(builder: (_) {
-  //     return BoxDetailsScreen(_boxes, selectedBox);
-  //   }));
-  // }
+// void selectCategory(BuildContext ctx, locations.Box selectedBox) {
+//   Navigator.of(ctx).push(MaterialPageRoute(builder: (_) {
+//     return BoxDetailsScreen(_boxes, selectedBox);
+//   }));
+// }
 }
 
 class _BoxDetailsScreenState extends State<BoxDetailsScreen> {
@@ -38,7 +38,9 @@ class _BoxDetailsScreenState extends State<BoxDetailsScreen> {
           height: 50,
           child: Row(
             children: <Widget>[
-              Expanded(
+              Container(
+                height: 50,
+                width: 100,
                 child: Column(
                   children: <Widget>[
                     Text(device.name == '' ? '(unknown device)' : device.name),
@@ -61,6 +63,7 @@ class _BoxDetailsScreenState extends State<BoxDetailsScreen> {
     }
 
     return ListView(
+      shrinkWrap: true,
       padding: const EdgeInsets.only(left: 4, bottom: 8, right: 4, top: 50),
       children: <Widget>[
         ...containers,
@@ -177,70 +180,104 @@ class _BoxDetailsScreenState extends State<BoxDetailsScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: Colors.white,
-      body: _buildListViewOfDevices(),
-      persistentFooterButtons: [
-        // We want to enable this button if the scan has NOT started
-        // If the scan HAS started, it should be disabled.
-        _bleService.scanStarted
-            // True condition
-            ? ElevatedButton(
-                style: ElevatedButton.styleFrom(
-                  primary: Colors.grey, // background
-                  onPrimary: Colors.white, // foreground
+    // String itemUrl = widget.selectedBox.item_images?[0] ??
+    //     'https://enso-box.s3.eu-central-1.amazonaws.com/Allura+-+Park.png';
+    List<String> itemImages = widget.selectedBox.item_images ?? [];
+    if (itemImages.length == 0) {
+      itemImages = [
+        'https://enso-box.s3.eu-central-1.amazonaws.com/Allura+-+Park.png'
+      ];
+    }
+
+    if (_bleService.scanStarted) {
+      _startScan();
+    }
+    return WillPopScope(
+      onWillPop: () async {
+        _bleService.devicesList = [];
+        // Returning true allows the pop to happen, returning false prevents it.
+        return true;
+      },
+      child: Scaffold(
+        backgroundColor: Colors.white,
+        appBar: AppBar(
+          title: Text('${widget.selectedBox.name}'),
+          backgroundColor: Colors.green[700],
+        ),
+        resizeToAvoidBottomInset: false,
+        body: Column(
+          children: [
+            Container(
+              height: MediaQuery.of(context).size.height * .35,
+              width: MediaQuery.of(context).size.width * 0.9,
+              padding: const EdgeInsets.only(bottom: 30),
+              child: Image.network(itemImages[0]),
+            ),
+            _buildListViewOfDevices(),
+          ],
+        ),
+        persistentFooterButtons: [
+          // We want to enable this button if the scan has NOT started
+          // If the scan HAS started, it should be disabled.
+          _bleService.scanStarted
+              // True condition
+              ? ElevatedButton(
+                  style: ElevatedButton.styleFrom(
+                    primary: Colors.grey, // background
+                    onPrimary: Colors.white, // foreground
+                  ),
+                  onPressed: () {},
+                  child: const Icon(Icons.search),
+                )
+              // False condition
+              : ElevatedButton(
+                  style: ElevatedButton.styleFrom(
+                    primary: Colors.blue, // background
+                    onPrimary: Colors.white, // foreground
+                  ),
+                  onPressed: _startScan,
+                  child: const Icon(Icons.search),
                 ),
-                onPressed: () {},
-                child: const Icon(Icons.search),
-              )
-            // False condition
-            : ElevatedButton(
-                style: ElevatedButton.styleFrom(
-                  primary: Colors.blue, // background
-                  onPrimary: Colors.white, // foreground
+          _bleService.foundDeviceWaitingToConnect
+              // True condition
+              ? ElevatedButton(
+                  style: ElevatedButton.styleFrom(
+                    primary: Colors.blue, // background
+                    onPrimary: Colors.white, // foreground
+                  ),
+                  onPressed: _connectToDevice,
+                  child: const Icon(Icons.bluetooth),
+                )
+              // False condition
+              : ElevatedButton(
+                  style: ElevatedButton.styleFrom(
+                    primary: Colors.grey, // background
+                    onPrimary: Colors.white, // foreground
+                  ),
+                  onPressed: () {},
+                  child: const Icon(Icons.bluetooth),
                 ),
-                onPressed: _startScan,
-                child: const Icon(Icons.search),
-              ),
-        _bleService.foundDeviceWaitingToConnect
-            // True condition
-            ? ElevatedButton(
-                style: ElevatedButton.styleFrom(
-                  primary: Colors.blue, // background
-                  onPrimary: Colors.white, // foreground
+          _bleService.connected
+              // True condition
+              ? ElevatedButton(
+                  style: ElevatedButton.styleFrom(
+                    primary: Colors.blue, // background
+                    onPrimary: Colors.white, // foreground
+                  ),
+                  onPressed: _partyTime,
+                  child: const Icon(Icons.celebration_rounded),
+                )
+              // False condition
+              : ElevatedButton(
+                  style: ElevatedButton.styleFrom(
+                    primary: Colors.grey, // background
+                    onPrimary: Colors.white, // foreground
+                  ),
+                  onPressed: () => goToPayment(context),
+                  child: const Icon(Icons.celebration_rounded),
                 ),
-                onPressed: _connectToDevice,
-                child: const Icon(Icons.bluetooth),
-              )
-            // False condition
-            : ElevatedButton(
-                style: ElevatedButton.styleFrom(
-                  primary: Colors.grey, // background
-                  onPrimary: Colors.white, // foreground
-                ),
-                onPressed: () {},
-                child: const Icon(Icons.bluetooth),
-              ),
-        _bleService.connected
-            // True condition
-            ? ElevatedButton(
-                style: ElevatedButton.styleFrom(
-                  primary: Colors.blue, // background
-                  onPrimary: Colors.white, // foreground
-                ),
-                onPressed: _partyTime,
-                child: const Icon(Icons.celebration_rounded),
-              )
-            // False condition
-            : ElevatedButton(
-                style: ElevatedButton.styleFrom(
-                  primary: Colors.grey, // background
-                  onPrimary: Colors.white, // foreground
-                ),
-                onPressed: () => goToPayment(context),
-                child: const Icon(Icons.celebration_rounded),
-              ),
-      ],
+        ],
+      ),
     );
   }
 }
