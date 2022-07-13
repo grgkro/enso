@@ -245,7 +245,8 @@ class _BoxDetailsScreenState extends State<BoxDetailsScreen> {
   }
 
   ListTile _createStatusTile() {
-    if (_bleService.isCurrentlySelectedDeviceActive) {
+    if (_bleService.isCurrentlySelectedDeviceActive &&
+        _bleService.discoveredDevice.id == widget.selectedBox.id) {
       return new ListTile(
         leading: const Icon(Icons.bluetooth_connected),
         title: Text('Bluetooth Verbindung hergestellt'),
