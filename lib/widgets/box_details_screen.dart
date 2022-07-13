@@ -1,4 +1,3 @@
-import 'dart:async';
 import 'dart:developer';
 import 'dart:io' show Platform;
 
@@ -30,63 +29,26 @@ class BoxDetailsScreen extends StatefulWidget {
 }
 
 class _BoxDetailsScreenState extends State<BoxDetailsScreen> {
-  ListView _buildListViewOfDevices() {
-    List<Container> containers = <Container>[];
-    for (DiscoveredDevice device in _bleService.devicesList) {
-      containers.add(
-        Container(
-          height: 50,
-          child: Row(
-            children: <Widget>[
-              Container(
-                height: 50,
-                width: 100,
-                child: Column(
-                  children: <Widget>[
-                    Text(device.name == '' ? '(unknown device)' : device.name),
-                    Text(device.id.toString()),
-                  ],
-                ),
-              ),
-              FlatButton(
-                color: Colors.blue,
-                child: Text(
-                  'Verbinden',
-                  style: TextStyle(color: Colors.white),
-                ),
-                onPressed: () {},
-              ),
-            ],
-          ),
-        ),
-      );
-    }
-
-    return ListView(
-      shrinkWrap: true,
-      padding: const EdgeInsets.only(left: 4, bottom: 8, right: 4, top: 50),
-      children: <Widget>[
-        ...containers,
-      ],
-    );
-  }
-
   _addDeviceTolist(final DiscoveredDevice device) {
-    if (_bleService.devicesList
-                .indexWhere((deviceInList) => device.id == deviceInList.id) ==
-            -1 &&
-        device.id == widget.selectedBox.id) {
+    if (device.id == widget.selectedBox.id) {
       setState(() {
-        _bleService.devicesList.add(device);
         log(device.toString());
-        log('current devicesList: ${_bleService.devicesList}');
         log('found it');
         setState(() {
           _bleService.discoveredDevice = device;
-          _bleService.foundDeviceWaitingToConnect = true;
+          _bleService.isCurrentlySelectedDeviceActive = true;
           log('set _bleService.foundDeviceWaitingToConnect = true;');
         });
       });
+    }
+  }
+
+  bool _isCurrentDeviceDiscovered() {
+    if (_bleService.discoveredDevice.id == widget.selectedBox.id) {
+      log("yep it's the selected device");
+      return true;
+    } else {
+      return false;
     }
   }
 
@@ -100,7 +62,8 @@ class _BoxDetailsScreenState extends State<BoxDetailsScreen> {
   }
 
   void _startScan() async {
-// Platform permissions handling stuff
+    // Platform permissions handling stuff
+    // _bleService.discoveredDevice;
     bool permGranted = false;
     setState(() {
       _bleService.scanStarted = true;
@@ -136,55 +99,6 @@ class _BoxDetailsScreenState extends State<BoxDetailsScreen> {
     }
   }
 
-  void _connectToDevice() {
-    // We're done scanning, we can cancel it
-    _bleService.scanStream.cancel();
-    log("Trying to connect to " + _bleService.discoveredDevice.id);
-    log("characteristicUuid " + _bleService.characteristicUuid.toString());
-    // Let's listen to our connection so we can make updates on a state change
-    Stream<ConnectionStateUpdate> _currentConnectionStream =
-        _bleService.flutterReactiveBle.connectToAdvertisingDevice(
-            id: _bleService.discoveredDevice.id,
-            prescanDuration: const Duration(seconds: 1),
-            withServices: [
-          Uuid.parse("4fafc201-1fb5-459e-8fcc-c5c9c331914b"),
-          _bleService.characteristicUuid
-        ]);
-    _currentConnectionStream.listen((event) {
-      switch (event.connectionState) {
-        // We're connected and good to go!
-        case DeviceConnectionState.connected:
-          {
-            _bleService.rxCharacteristic = QualifiedCharacteristic(
-                serviceId: _bleService.serviceUuid,
-                characteristicId: _bleService.characteristicUuid,
-                deviceId: event.deviceId);
-            setState(() {
-              _bleService.foundDeviceWaitingToConnect = false;
-              _bleService.connected = true;
-            });
-            break;
-          }
-        // Can add various state state updates on disconnect
-        case DeviceConnectionState.disconnected:
-          {
-            break;
-          }
-        default:
-      }
-    });
-  }
-
-  void _partyTime() {
-    if (_bleService.connected) {
-      _bleService.flutterReactiveBle.writeCharacteristicWithResponse(
-          _bleService.rxCharacteristic,
-          value: [
-            0xff,
-          ]);
-    }
-  }
-
   void goToPayment(BuildContext ctx) {
     Navigator.of(ctx).push(MaterialPageRoute(builder: (_) {
       return Pay();
@@ -207,7 +121,6 @@ class _BoxDetailsScreenState extends State<BoxDetailsScreen> {
     }
     return WillPopScope(
       onWillPop: () async {
-        _bleService.devicesList = [];
         _stopScan();
         // Returning true allows the pop to happen, returning false prevents it.
         return true;
@@ -261,7 +174,7 @@ class _BoxDetailsScreenState extends State<BoxDetailsScreen> {
                 break;
               case 1:
                 log("Pressed 111" + itemIndex.toString());
-                _connectToDevice();
+                _bleService.connectToDevice();
                 goToPayment(context);
             }
           },
@@ -332,7 +245,7 @@ class _BoxDetailsScreenState extends State<BoxDetailsScreen> {
   }
 
   ListTile _createStatusTile() {
-    if (_bleService.foundDeviceWaitingToConnect) {
+    if (_bleService.isCurrentlySelectedDeviceActive) {
       return new ListTile(
         leading: const Icon(Icons.bluetooth_connected),
         title: Text('Bluetooth Verbindung hergestellt'),

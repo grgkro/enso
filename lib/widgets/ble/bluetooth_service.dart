@@ -5,9 +5,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_reactive_ble/flutter_reactive_ble.dart';
 
 class BluetoothService {
-  List<DiscoveredDevice> devicesList = <DiscoveredDevice>[];
   // Some state management stuff
-  bool _foundDeviceWaitingToConnect = false;
+  bool _isCurrentlySelectedDeviceActive = false;
   bool _scanStarted = false;
   bool _connected = false;
 // Bluetooth related variables
@@ -20,10 +19,49 @@ class BluetoothService {
   final Uuid characteristicUuid =
       Uuid.parse("6ACF4F08-CC9D-D495-6B41-AA7E60C4E8A6");
 
-  bool get foundDeviceWaitingToConnect => _foundDeviceWaitingToConnect;
+  void connectToDevice() {
+    // We're done scanning, we can cancel it
+    scanStream.cancel();
+    log("Trying to connect to " + discoveredDevice.id);
+    log("characteristicUuid " + characteristicUuid.toString());
+    // Let's listen to our connection so we can make updates on a state change
+    Stream<ConnectionStateUpdate> _currentConnectionStream = flutterReactiveBle
+        .connectToAdvertisingDevice(
+            id: discoveredDevice.id,
+            prescanDuration: const Duration(seconds: 1),
+            withServices: [
+          Uuid.parse("4fafc201-1fb5-459e-8fcc-c5c9c331914b"),
+          characteristicUuid
+        ]);
+    _currentConnectionStream.listen((event) {
+      switch (event.connectionState) {
+        // We're connected and good to go!
+        case DeviceConnectionState.connected:
+          {
+            rxCharacteristic = QualifiedCharacteristic(
+                serviceId: serviceUuid,
+                characteristicId: characteristicUuid,
+                deviceId: event.deviceId);
+            // setState(() {
+            isCurrentlySelectedDeviceActive = false;
+            connected = true;
+            // });
+            break;
+          }
+        // Can add various state state updates on disconnect
+        case DeviceConnectionState.disconnected:
+          {
+            break;
+          }
+        default:
+      }
+    });
+  }
 
-  set foundDeviceWaitingToConnect(bool value) {
-    _foundDeviceWaitingToConnect = value;
+  bool get isCurrentlySelectedDeviceActive => _isCurrentlySelectedDeviceActive;
+
+  set isCurrentlySelectedDeviceActive(bool value) {
+    _isCurrentlySelectedDeviceActive = value;
   }
 
   bool get scanStarted => _scanStarted;
@@ -54,6 +92,15 @@ class BluetoothService {
 
   set connected(bool value) {
     _connected = value;
+  }
+
+  void _partyTime() {
+    if (connected) {
+      flutterReactiveBle
+          .writeCharacteristicWithResponse(rxCharacteristic, value: [
+        0xff,
+      ]);
+    }
   }
 
   void handleError(Object e, BuildContext context) {
