@@ -1,7 +1,6 @@
 import 'dart:convert';
 
 import 'package:flutter/services.dart' show rootBundle;
-import 'package:http/http.dart' as http;
 import 'package:json_annotation/json_annotation.dart';
 
 part 'locations.g.dart';
@@ -57,7 +56,19 @@ class Box {
     this.state,
     this.website,
     this.item,
-    this.description,
+    this.description1,
+    this.description2,
+    this.description3,
+    this.price_hour_normal,
+    this.price_hour_overdraft,
+    this.price_minute,
+    this.price_minute_overdraft,
+    this.price_km,
+    this.overdraft_hour,
+    this.overdraft_minute,
+    this.replacement_cost,
+    this.available,
+    this.reason_unavailability,
     this.active,
     this.item_images,
   });
@@ -79,7 +90,20 @@ class Box {
   String? state;
   String? website;
   String? item;
-  String? description;
+  String? description1;
+  String? description2;
+  String? description3;
+  double? price_hour_normal;
+  double? price_hour_overdraft;
+  double? price_minute;
+  double? price_minute_overdraft;
+  double? price_km;
+  int? overdraft_hour;
+  int? overdraft_minute;
+  double? replacement_cost;
+  bool? available;
+  int?
+      reason_unavailability; // 0 = rented out, 1 = item broken, 2 = item stolen, 3 = box broken
   bool? active;
   List<String>? item_images;
 }
@@ -100,18 +124,19 @@ class BoxLocations {
 }
 
 Future<BoxLocations> getBoxLocations() async {
-  const boxLocationsUrl =
-      'https://enso-box.s3.eu-central-1.amazonaws.com/boxes.json';
-
-  // Retrieve the locations of Google offices
-  try {
-    final response = await http.get(Uri.parse(boxLocationsUrl));
-    if (response.statusCode == 200) {
-      return BoxLocations.fromJson(json.decode(response.body));
-    }
-  } catch (e) {
-    print(e);
-  }
+  // to load from AWS uncomment this!
+  // const boxLocationsUrl =
+  //     'https://enso-box.s3.eu-central-1.amazonaws.com/boxes.json';
+  //
+  // // Retrieve the locations of Google offices
+  // try {
+  //   final response = await http.get(Uri.parse(boxLocationsUrl));
+  //   if (response.statusCode == 200) {
+  //     return BoxLocations.fromJson(json.decode(response.body));
+  //   }
+  // } catch (e) {
+  //   print(e);
+  // }
 
   // Fallback for when the above HTTP request fails.
   return BoxLocations.fromJson(

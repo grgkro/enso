@@ -29,17 +29,17 @@ class BoxDetailsScreen extends StatefulWidget {
 }
 
 class _BoxDetailsScreenState extends State<BoxDetailsScreen> {
-  _addDeviceTolist(final DiscoveredDevice device) {
+  _checkAgainstSelectedBox(final DiscoveredDevice device) {
     if (device.id == widget.selectedBox.id) {
+      log(device.toString());
+      log('found it');
       setState(() {
-        log(device.toString());
-        log('found it');
-        setState(() {
-          _bleService.discoveredDevice = device;
-          _bleService.isCurrentlySelectedDeviceActive = true;
-          log('set _bleService.foundDeviceWaitingToConnect = true;');
-        });
+        _bleService.discoveredDevice = device;
+        _bleService.isCurrentlySelectedDeviceActive = true;
+        // _stopScan();
+        log('set _bleService.foundDeviceWaitingToConnect = true;');
       });
+      _bleService.connectToDevice();
     }
   }
 
@@ -65,9 +65,8 @@ class _BoxDetailsScreenState extends State<BoxDetailsScreen> {
     // Platform permissions handling stuff
     // _bleService.discoveredDevice;
     bool permGranted = false;
-    setState(() {
-      _bleService.scanStarted = true;
-    });
+    _bleService.scanStarted = true;
+
     PermissionStatus permission;
     log('started scanning');
     log("the boxes: " + widget.boxes.length.toString());
@@ -91,7 +90,7 @@ class _BoxDetailsScreenState extends State<BoxDetailsScreen> {
         // Change this string to what you defined in Zephyr
 
         // log('device: $device.name');
-        _addDeviceTolist(device);
+        _checkAgainstSelectedBox(device);
       }, onError: (Object e) {
         log('Device scan fails with error: $e');
         _bleService.handleError(e, context);
@@ -107,18 +106,10 @@ class _BoxDetailsScreenState extends State<BoxDetailsScreen> {
 
   @override
   Widget build(BuildContext context) {
-    // String itemUrl = widget.selectedBox.item_images?[0] ??
-    //     'https://enso-box.s3.eu-central-1.amazonaws.com/Allura+-+Park.png';
-    // log();
-    // List<String> itemImages = widget.selectedBox.item_images ?? [];
-    // if (itemImages.length == 0) {
-    //   itemImages = [
-    //     'https://enso-box.s3.eu-central-1.amazonaws.com/Allura+-+Park.png'
-    //   ];
-    // }
     if (!_bleService.scanStarted) {
       _startScan();
     }
+
     return WillPopScope(
       onWillPop: () async {
         _stopScan();
@@ -132,22 +123,25 @@ class _BoxDetailsScreenState extends State<BoxDetailsScreen> {
           backgroundColor: Colors.green[700],
         ),
         resizeToAvoidBottomInset: false,
-        body: Column(
-          children: [
-            Container(
-              height: MediaQuery.of(context).size.height * .35,
-              width: MediaQuery.of(context).size.width * 0.9,
-              padding: const EdgeInsets.only(bottom: 30),
-              child: Image.network(widget.selectedBox.item_images != null &&
-                      widget.selectedBox.item_images!.isNotEmpty
-                  ? widget.selectedBox.item_images!.first
-                  : 'https://enso-box.s3.eu-central-1.amazonaws.com/Allura+-+Park.png'), //https://stackoverflow.com/questions/72951044/access-first-element-of-a-nullable-liststring-in-dart/72951153?noredirect=1#comment128852739_72951153
-            ),
-            _createStatusTile(),
-            const Divider(
-              height: 1.0,
-            ),
-          ],
+        body: SingleChildScrollView(
+          child: Column(
+            children: [
+              Container(
+                height: MediaQuery.of(context).size.height * .35,
+                width: MediaQuery.of(context).size.width * 0.9,
+                padding: const EdgeInsets.only(bottom: 30),
+                child: Image.network(widget.selectedBox.item_images != null &&
+                        widget.selectedBox.item_images!.isNotEmpty
+                    ? widget.selectedBox.item_images!.first
+                    : 'https://enso-box.s3.eu-central-1.amazonaws.com/Allura+-+Park.png'), //https://stackoverflow.com/questions/72951044/access-first-element-of-a-nullable-liststring-in-dart/72951153?noredirect=1#comment128852739_72951153
+              ),
+              _createStatusTile(),
+              const Divider(
+                height: 1.0,
+              ),
+              _createExplanationText(),
+            ],
+          ),
         ),
 
         // _buildListViewOfDevices(),
@@ -175,7 +169,7 @@ class _BoxDetailsScreenState extends State<BoxDetailsScreen> {
               case 1:
                 log("Pressed 111" + itemIndex.toString());
                 _bleService.connectToDevice();
-                goToPayment(context);
+              // goToPayment(context);
             }
           },
         ),
@@ -249,8 +243,13 @@ class _BoxDetailsScreenState extends State<BoxDetailsScreen> {
         _bleService.discoveredDevice.id == widget.selectedBox.id) {
       return new ListTile(
         leading: const Icon(Icons.bluetooth_connected),
-        title: Text('Bluetooth Verbindung hergestellt'),
+        title: Text(
+            textAlign: TextAlign.left,
+            style: const TextStyle(fontSize: 20),
+            'Bluetooth Verbindung hergestellt'),
         subtitle: Text(
+            textAlign: TextAlign.left,
+            style: const TextStyle(fontSize: 16),
             'Dein Handy konnte eine Bluetooth Verbindung zur ${widget.selectedBox.name} herstellen.'),
       );
     } else {
@@ -261,5 +260,40 @@ class _BoxDetailsScreenState extends State<BoxDetailsScreen> {
             'Dein Handy konnte keine Bluetooth Verbindung zur ${widget.selectedBox.name} herstellen. Hast du dein Bluetooth aktiviert?'),
       );
     }
+  }
+
+  _createExplanationText() {
+    return Column(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        Padding(
+          padding: const EdgeInsets.only(bottom: 10.0),
+          child: Card(
+            elevation: 0,
+            child: Padding(
+              padding: const EdgeInsets.all(20.0),
+              child: Column(
+                children: [
+                  Padding(
+                    padding: const EdgeInsets.only(bottom: 30.0),
+                    child: Text(
+                        textAlign: TextAlign.left,
+                        style: const TextStyle(fontSize: 20),
+                        '${widget.selectedBox.description1}'),
+                  ),
+                  Padding(
+                    padding: const EdgeInsets.only(bottom: 30.0),
+                    child: Text(
+                        textAlign: TextAlign.left,
+                        style: const TextStyle(fontSize: 20),
+                        '${widget.selectedBox.description2}'),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        )
+      ],
+    );
   }
 }
