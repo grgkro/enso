@@ -169,7 +169,7 @@ class _BoxDetailsScreenState extends State<BoxDetailsScreen> {
               case 1:
                 log("Pressed 111" + itemIndex.toString());
                 _bleService.connectToDevice();
-              // goToPayment(context);
+                goToPayment(context);
             }
           },
         ),

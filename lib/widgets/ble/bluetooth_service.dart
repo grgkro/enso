@@ -23,8 +23,6 @@ class BluetoothService {
       Uuid.parse("6ACF4F08-CC9D-D495-6B41-AA7E60C4E8A6");
   final Uuid characteristicUuidEnso =
       Uuid.parse("beb5483e-36e1-4688-b7f5-ea07361b26a8");
-  final Uuid characteristicUuidEnso2 =
-      Uuid.parse("ecf2767c-812e-44e9-8c93-cf3042a7c7db");
 
   void connectToDevice() {
     // We're done scanning, we can cancel it
@@ -47,6 +45,18 @@ class BluetoothService {
           log('Read characterisitc from ESP: ${characteristic.characteristicId}: value = $response');
           log('DECODED: ${AsciiDecoder().convert(response, 0)}');
           log('DECODED: ${String.fromCharCodes(response)}');
+          log('ENCODED: ${AsciiEncoder().convert("response", 0)}');
+
+          try {
+            flutterReactiveBle
+                .writeCharacteristicWithResponse(characteristic,
+                    value: AsciiEncoder().convert("response", 0))
+                .then((value) => log(
+                    'Write successful: ${characteristic.characteristicId}'));
+            log('Wrote characterisitc to ESP: ${characteristic.characteristicId}: value = $response');
+          } catch (e) {
+            log("Wrote characterisitc, got exception: $e");
+          }
 
           // return result;
         } on Exception catch (e, s) {
@@ -57,78 +67,10 @@ class BluetoothService {
           print(s);
           // rethrow;
         }
-
-        try {
-          final characteristic = QualifiedCharacteristic(
-              serviceId: serviceUuid,
-              characteristicId: characteristicUuidEnso2,
-              deviceId: _discoveredDevice.id);
-          final response =
-              await flutterReactiveBle.readCharacteristic(characteristic);
-
-          log('Read characterisitc from ESP: ${characteristic.characteristicId}: value = $response');
-
-          // return result;
-        } on Exception catch (e, s) {
-          log(
-            'Error occured when reading ${characteristicUuidEnso2} : $e',
-          );
-          // ignore: avoid_print
-          print(s);
-          // rethrow;
-        }
       },
       onError: (Object e) => print(
           'Connecting to device ${discoveredDevice.name} resulted in error $e'),
     );
-    // flutterReactiveBle
-    //     .connectToAdvertisingDevice(
-    //   id: discoveredDevice.id,
-    //   withServices: [serviceUuid],
-    //   prescanDuration: const Duration(seconds: 5),
-    //   // servicesWithCharacteristicsToDiscover: {serviceId: [char1, char2]},
-    //   // connectionTimeout: const Duration(seconds: 2),
-    // )
-    //     .listen((connectionState) {
-    //   log("CONNECTED");
-    //   // Handle connection state updates
-    // }, onError: (dynamic error) {
-    //   log("ERROR: ${error.toString()}");
-    //   // Handle a possible error
-    // });
-    // // Let's listen to our connection so we can make updates on a state change
-    // Stream<ConnectionStateUpdate> _currentConnectionStream = flutterReactiveBle
-    //     .connectToAdvertisingDevice(
-    //         id: _discoveredDevice.id,
-    //         prescanDuration: const Duration(seconds: 1),
-    //         withServices: [
-    //       Uuid.parse("4fafc201-1fb5-459e-8fcc-c5c9c331914b"),
-    //       characteristicUuid
-    //     ]);
-    // _currentConnectionStream.listen((event) {
-    //   switch (event.connectionState) {
-    //     // We're connected and good to go!
-    //     case DeviceConnectionState.connected:
-    //       {
-    //         _rxCharacteristic = QualifiedCharacteristic(
-    //             serviceId: serviceUuid,
-    //             characteristicId: characteristicUuid,
-    //             deviceId: event.deviceId);
-    //         // _foundDeviceWaitingToConnect = false;
-    //         _connected = true;
-    //         break;
-    //       }
-    //     // Can add various state state updates on disconnect
-    //     case DeviceConnectionState.disconnected:
-    //       {
-    //         break;
-    //       }
-    //     default:
-    //   }
-    //   // , onError: (dynamic error) {
-    //   //   // Handle a possible error
-    //   // });
-    // });
   }
 
   bool get isCurrentlySelectedDeviceActive => _isCurrentlySelectedDeviceActive;
