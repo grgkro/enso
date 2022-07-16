@@ -53,9 +53,9 @@ class BluetoothService {
                     value: AsciiEncoder().convert("response", 0))
                 .then((value) => log(
                     'Write successful: ${characteristic.characteristicId}'));
-            log('Wrote characterisitc to ESP: ${characteristic.characteristicId}: value = $response');
+            log('Wrote characteristic to ESP: ${characteristic.characteristicId}: value = $response');
           } catch (e) {
-            log("Wrote characterisitc, got exception: $e");
+            log("Wrote characteristic, got exception: $e");
           }
 
           // return result;

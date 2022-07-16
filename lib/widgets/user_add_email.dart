@@ -1,6 +1,11 @@
 import 'package:ensobox/widgets/pay.dart';
+import 'package:ensobox/widgets/service_locator.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+
+import 'id_scanner/user_details_service.dart';
+
+UserDetailsService _userDetailsService = getIt<UserDetailsService>();
 
 class UserAddEmail extends StatefulWidget {
   const UserAddEmail({Key? key}) : super(key: key);
@@ -73,8 +78,9 @@ class _UserAddEmailState extends State<UserAddEmail> {
   Widget build(BuildContext context) {
     return new Scaffold(
       appBar: new AppBar(
-        title: new Text(
-            "Hallo ${Pay.gPay.paymentMethodData.info.billingAddress.name.split(" ")[0]}"),
+        title: new Text(Pay.gPay != null
+            ? "Hallo ${Pay.gPay.paymentMethodData.info.billingAddress.name.split(" ")[0]}"
+            : "Hallo ${_userDetailsService.givenNames.split(" ")[0]}"),
       ),
       body: new Column(
         children: <Widget>[
