@@ -3,7 +3,7 @@ import 'package:ensobox/widgets/service_locator.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
-import 'id_scanner/user_details_service.dart';
+import 'services/user_details_service.dart';
 
 UserDetailsService _userDetailsService = getIt<UserDetailsService>();
 

@@ -1,14 +1,15 @@
 import 'dart:developer';
 
-import 'package:ensobox/widgets/id_scanner/user_details_service.dart';
+import 'package:ensobox/widgets/id_scanner/mrz_scanner.dart';
 import 'package:ensobox/widgets/user_add_email.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 
-import '../service_locator.dart';
-
-UserDetailsService _userDetailsService = getIt<UserDetailsService>();
+import '../../models/enso_user.dart';
 
 class UserIdDetailsScreen extends StatelessWidget {
+  static const routeName = '/user-id-details';
+
   UserIdDetailsScreen({Key? key}) : super(key: key);
 
   bool isStringPresent(String? input) {
@@ -61,6 +62,7 @@ class UserIdDetailsScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    EnsoUser currentUser = Provider.of<EnsoUser>(context, listen: false);
     // _userDetailsService.documentType = result.documentType;
     // _userDetailsService.countryCode = result.countryCode;
     // _userDetailsService.surnames = result.surnames;
@@ -78,6 +80,24 @@ class UserIdDetailsScreen extends StatelessWidget {
     // _userDetailsService.personalNumber = result.personalNumber;
     // _userDetailsService.personalNumber2 = result.personalNumber2!;
 
+    bool isStringPresent(String? input) {
+      return input?.isNotEmpty ?? false;
+    }
+
+    ListTile getBirthdayTile() {
+      if (currentUser.birthDate != null) {
+        return new ListTile(
+          leading: const Icon(Icons.celebration),
+          title: Text('Geburtstag: ${currentUser.birthDate!.toString()}'),
+        );
+      } else {
+        return new ListTile(
+          leading: const Icon(Icons.celebration),
+          title: Text('Geburtstag: ""}'),
+        );
+      }
+    }
+
     return new Scaffold(
       appBar: new AppBar(
         title: new Text("Bitte Daten prüfen"),
@@ -86,25 +106,27 @@ class UserIdDetailsScreen extends StatelessWidget {
         children: <Widget>[
           new ListTile(
             leading: const Icon(Icons.person),
-            title: Text(_userDetailsService.surnames),
-            subtitle: Text(_userDetailsService.givenNames),
+            title: Text(isStringPresent(currentUser.surnames)
+                ? currentUser.surnames!
+                : ""),
+            subtitle: Text(isStringPresent(currentUser.givenNames)
+                ? currentUser.givenNames!
+                : ""),
           ),
+          getBirthdayTile(),
           new ListTile(
-            leading: const Icon(Icons.celebration),
-            title:
-                Text('Geburtstag: ${_userDetailsService.birthDate.toString()}'),
+            leading: const Icon(Icons.info),
+            title: Text(
+                'Land: ${isStringPresent(currentUser.countryCodeMrz) ? currentUser.countryCodeMrz! : ""}'),
+            subtitle: Text(
+                'Ländercode: ${isStringPresent(currentUser.nationalityCountryCode) ? currentUser.nationalityCountryCode! : ""}'),
           ),
           new ListTile(
             leading: const Icon(Icons.info),
-            title: Text('Land: ${_userDetailsService.countryCode}'),
+            title: Text(
+                'Dokument: ${isStringPresent(currentUser.documentType) ? currentUser.documentType! : ""}'),
             subtitle: Text(
-                'Ländercode: ${_userDetailsService.nationalityCountryCode}'),
-          ),
-          new ListTile(
-            leading: const Icon(Icons.info),
-            title: Text('Dokument: ${_userDetailsService.documentType}'),
-            subtitle: Text(
-                'Dokumentennummer: ${_userDetailsService.documentNumber}\nAusweiß Nummer: ${_userDetailsService.personalNumber}'),
+                'Dokumentennummer: ${isStringPresent(currentUser.documentNumber) ? currentUser.documentNumber! : ""}\nAusweiß Nummer: ${isStringPresent(currentUser.personalNumber) ? currentUser.personalNumber! : ""}'),
           ),
           // createAddressWidget(userGPayResult),
           const Divider(
@@ -119,7 +141,7 @@ class UserIdDetailsScreen extends StatelessWidget {
                 Icons.arrow_back_ios_new,
                 color: Colors.blue,
               ),
-              label: "Zurück"),
+              label: "Kamera"),
           BottomNavigationBarItem(
               icon: Icon(
                 Icons.done_all,
@@ -131,7 +153,8 @@ class UserIdDetailsScreen extends StatelessWidget {
           log("Pressed" + itemIndex.toString());
           switch (itemIndex) {
             case 0:
-              Navigator.pop(context);
+              // Navigator.pop(context);
+              showMrzScanner(context);
               break;
             case 1:
               log("Pressed 111" + itemIndex.toString());
@@ -140,5 +163,13 @@ class UserIdDetailsScreen extends StatelessWidget {
         },
       ),
     );
+  }
+
+  void showMrzScanner(BuildContext ctx) {
+    log("going to showUserIdDetailsScreen");
+    Navigator.pushReplacementNamed(ctx, MrzScanner.routeName);
+    // Navigator.of(ctx).push(MaterialPageRoute(builder: (_) {
+    //   return MrzScanner();
+    // }));
   }
 }

@@ -1,13 +1,11 @@
 import 'dart:developer';
 
-import 'package:ensobox/widgets/id_scanner/user_details_service.dart';
 import 'package:ensobox/widgets/id_scanner/user_id_details_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_mrz_scanner/flutter_mrz_scanner.dart';
+import 'package:provider/provider.dart';
 
-import '../service_locator.dart';
-
-UserDetailsService _userDetailsService = getIt<UserDetailsService>();
+import '../../models/enso_user.dart';
 
 class CameraPage extends StatefulWidget {
   @override
@@ -17,16 +15,31 @@ class CameraPage extends StatefulWidget {
 class _CameraPageState extends State<CameraPage> {
   bool isParsed = false;
   MRZController? controller;
+  EnsoUser? currentUser;
 
   @override
   Widget build(BuildContext context) {
+    EnsoUser user = Provider.of<EnsoUser>(context, listen: false);
+    currentUser = user;
+
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Camera'),
+        title: const Text('Rückseite Personalausweis scannen'),
       ),
-      body: MRZScanner(
-        withOverlay: false,
-        onControllerCreated: onControllerCreated,
+      body: Stack(
+        children: <Widget>[
+          MRZScanner(
+            withOverlay: true,
+            onControllerCreated: onControllerCreated,
+          ), //Container
+          ElevatedButton(
+            onPressed: () {
+              log("Respond to button press");
+              showUserIdDetailsScreen(context);
+            },
+            child: Text('Daten per Hand eingeben'),
+          )
+        ],
       ),
     );
   }
@@ -38,10 +51,12 @@ class _CameraPageState extends State<CameraPage> {
   }
 
   void showUserIdDetailsScreen(BuildContext ctx) {
+    controller?.stopPreview();
     log("going to showUserIdDetailsScreen");
-    Navigator.of(ctx).push(MaterialPageRoute(builder: (_) {
-      return UserIdDetailsScreen();
-    }));
+    Navigator.pushReplacementNamed(ctx, UserIdDetailsScreen.routeName);
+    // Navigator.of(ctx).push(MaterialPageRoute(builder: (_) {
+    //   return UserIdDetailsScreen();
+    // }));
   }
 
   void onControllerCreated(MRZController controller) {
@@ -53,18 +68,20 @@ class _CameraPageState extends State<CameraPage> {
       }
       isParsed = true;
       log("MRZ got successfully parsed--------------");
-      _userDetailsService.documentType = result.documentType;
-      _userDetailsService.countryCode = result.countryCode;
-      _userDetailsService.surnames = result.surnames;
-      _userDetailsService.givenNames = result.givenNames;
-      _userDetailsService.documentNumber = result.documentNumber;
-      _userDetailsService.nationalityCountryCode =
-          result.nationalityCountryCode;
-      _userDetailsService.birthDate = result.birthDate;
-      _userDetailsService.sex = result.sex.toString();
-      _userDetailsService.expiryDate = result.expiryDate;
-      _userDetailsService.personalNumber = result.personalNumber;
-      _userDetailsService.personalNumber2 = result.personalNumber2!;
+      if (currentUser != null) {
+        currentUser!.documentType = result.documentType;
+        currentUser!.countryCode = result.countryCode;
+        currentUser!.surnames = result.surnames;
+        currentUser!.givenNames = result.givenNames;
+        currentUser!.documentNumber = result.documentNumber;
+        currentUser!.nationalityCountryCode = result.nationalityCountryCode;
+        currentUser!.birthDate = result.birthDate;
+        currentUser!.sex = result.sex.toString();
+        currentUser!.expiryDate = result.expiryDate;
+        currentUser!.personalNumber = result.personalNumber;
+        currentUser!.personalNumber2 = result.personalNumber2!;
+        log("currentUser got successfully updated--------------");
+      }
 
       showUserIdDetailsScreen(context);
       // await showDialog<void>(

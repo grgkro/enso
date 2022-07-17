@@ -4,6 +4,8 @@ import 'package:flutter/widgets.dart';
 import 'package:permission_handler/permission_handler.dart';
 
 class MrzScanner extends StatelessWidget {
+  static const routeName = '/mrz-scanner';
+
   const MrzScanner({Key? key}) : super(key: key);
 
   @override

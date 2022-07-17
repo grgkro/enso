@@ -1,97 +1,80 @@
 import 'package:flutter/cupertino.dart';
 
+class EnsoUserBuilder {
+  int? id;
+  String? address1;
+  String? address2;
+  String? address3;
+  String? email;
+  String? administrativeArea;
+  String? countryCode;
+  String? locality;
+  String? name;
+  String? phoneNumber;
+  int? postalCode;
+
+  // these variables are provided by the MRZ Scanner result
+  String? givenNames;
+  String? surnames;
+  String? countryCodeMrz;
+  String? nationalityCountryCode;
+  String? documentType;
+  String? documentNumber;
+  DateTime? birthDate;
+  String? sex;
+  DateTime? expiryDate;
+  String? personalNumber;
+  String? personalNumber2;
+}
+
 class EnsoUser with ChangeNotifier {
-  late int _id;
-  late String _address1;
-  late String _address2;
-  late String _address3;
-  late String _email;
-  late String _administrativeArea;
-  late String _countryCode;
-  late String _locality;
-  late String _name;
-  late String _phoneNumber;
-  late int _postalCode;
+  int? id;
+  String? address1;
+  String? address2;
+  String? address3;
+  String? email;
+  String? administrativeArea;
+  String? countryCode;
+  String? locality;
+  String? name;
+  String? phoneNumber;
+  int? postalCode;
 
-  EnsoUser.empty();
+  // these variables are provided by the MRZ Scanner result
+  String? givenNames;
+  String? surnames;
+  String? countryCodeMrz;
+  String? nationalityCountryCode;
+  String? documentType;
+  String? documentNumber;
+  DateTime? birthDate;
+  String? sex;
+  DateTime? expiryDate;
+  String? personalNumber;
+  String? personalNumber2;
 
-  EnsoUser(
-    this._id,
-    this._address1,
-    this._address2,
-    this._address3,
-    this._email,
-    this._administrativeArea,
-    this._countryCode,
-    this._locality,
-    this._name,
-    this._phoneNumber,
-    this._postalCode,
-  );
+  EnsoUser(EnsoUserBuilder builder) {
+    id = builder.id;
+    address1 = builder.address1;
+    address2 = builder.address2;
+    address3 = builder.address3;
+    email = builder.email;
+    administrativeArea = builder.administrativeArea;
+    countryCode = builder.countryCode;
+    locality = builder.locality;
+    name = builder.name;
+    phoneNumber = builder.phoneNumber;
 
-  int get id => _id;
-
-  set id(int value) {
-    _id = value;
-  }
-
-  String get address1 => _address1;
-
-  set address1(String value) {
-    _address1 = value;
-  }
-
-  String get address2 => _address2;
-
-  set address2(String value) {
-    _address2 = value;
-  }
-
-  String get address3 => _address3;
-
-  set address3(String value) {
-    _address3 = value;
-  }
-
-  String get email => _email;
-
-  set email(String value) {
-    _email = value;
-  }
-
-  String get administrativeArea => _administrativeArea;
-
-  set administrativeArea(String value) {
-    _administrativeArea = value;
-  }
-
-  String get countryCode => _countryCode;
-
-  set countryCode(String value) {
-    _countryCode = value;
-  }
-
-  String get locality => _locality;
-
-  set locality(String value) {
-    _locality = value;
-  }
-
-  String get name => _name;
-
-  set name(String value) {
-    _name = value;
-  }
-
-  String get phoneNumber => _phoneNumber;
-
-  set phoneNumber(String value) {
-    _phoneNumber = value;
-  }
-
-  int get postalCode => _postalCode;
-
-  set postalCode(int value) {
-    _postalCode = value;
+    givenNames = builder.givenNames;
+    surnames = builder.surnames;
+    countryCodeMrz = builder.countryCodeMrz;
+    nationalityCountryCode = builder.nationalityCountryCode;
+    documentType = builder.documentType;
+    documentNumber = builder.documentNumber;
+    birthDate = builder.birthDate;
+    sex = builder.sex;
+    expiryDate = builder.expiryDate;
+    personalNumber = builder.personalNumber;
+    personalNumber2 = builder.personalNumber2;
   }
 }

@@ -6,6 +6,7 @@ import 'package:ensobox/widgets/auth/register_service.dart';
 import 'package:ensobox/widgets/auth/success_screen.dart';
 import 'package:ensobox/widgets/box_list.dart';
 import 'package:ensobox/widgets/id_scanner/mrz_scanner.dart';
+import 'package:ensobox/widgets/id_scanner/user_id_details_screen.dart';
 import 'package:ensobox/widgets/service_locator.dart';
 import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
@@ -32,7 +33,7 @@ class MyApp extends StatelessWidget {
           create: (ctx) => Boxes(),
         ),
         ChangeNotifierProvider(
-          create: (ctx) => EnsoUser.empty(),
+          create: (ctx) => EnsoUser(EnsoUserBuilder()),
         ),
         ChangeNotifierProvider(
           create: (ctx) => Users(),
@@ -44,9 +45,14 @@ class MyApp extends StatelessWidget {
           primarySwatch: Colors.blue,
           visualDensity: VisualDensity.adaptivePlatformDensity,
         ),
-        // home: Home(),
-        home: MrzScanner(),
-        routes: {SuccessScreen.routeName: (ctx) => SuccessScreen()},
+        home: Home(),
+        // home: MrzScanner(),
+        // initialRoute: '/', // When using initialRoute, don’t define a home property.
+        routes: {
+          SuccessScreen.routeName: (ctx) => SuccessScreen(),
+          MrzScanner.routeName: (ctx) => MrzScanner(),
+          UserIdDetailsScreen.routeName: (ctx) => UserIdDetailsScreen()
+        },
         // home: Home(),
       ),
     );
