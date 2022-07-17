@@ -70,7 +70,7 @@ class _CameraPageState extends State<CameraPage> {
       log("MRZ got successfully parsed--------------");
       if (currentUser != null) {
         currentUser!.documentType = result.documentType;
-        currentUser!.countryCode = result.countryCode;
+        currentUser!.countryCodeMrz = result.countryCode;
         currentUser!.surnames = result.surnames;
         currentUser!.givenNames = result.givenNames;
         currentUser!.documentNumber = result.documentNumber;

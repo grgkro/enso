@@ -3,6 +3,7 @@ import 'dart:developer';
 import 'package:ensobox/widgets/id_scanner/mrz_scanner.dart';
 import 'package:ensobox/widgets/user_add_email.dart';
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 
 import '../../models/enso_user.dart';
@@ -63,39 +64,9 @@ class UserIdDetailsScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     EnsoUser currentUser = Provider.of<EnsoUser>(context, listen: false);
-    // _userDetailsService.documentType = result.documentType;
-    // _userDetailsService.countryCode = result.countryCode;
-    // _userDetailsService.surnames = result.surnames;
-    // _userDetailsService.givenNames = result.givenNames;
-    // _userDetailsService.documentNumber = result.documentNumber;
-    // _userDetailsService.nationalityCountryCode =
-    //     result.nationalityCountryCode;
-    // _userDetailsService.birthDate = new ListTile(
-    //             leading: const Icon(Icons.person),
-    //             title: Text(_userDetailsService.surnames),
-    //             subtitle: Text(_userDetailsService.givenNames),
-    //           ),;
-    // _userDetailsService.sex = result.sex as Sex;
-    // _userDetailsService.expiryDate = result.expiryDate;
-    // _userDetailsService.personalNumber = result.personalNumber;
-    // _userDetailsService.personalNumber2 = result.personalNumber2!;
 
     bool isStringPresent(String? input) {
       return input?.isNotEmpty ?? false;
-    }
-
-    ListTile getBirthdayTile() {
-      if (currentUser.birthDate != null) {
-        return new ListTile(
-          leading: const Icon(Icons.celebration),
-          title: Text('Geburtstag: ${currentUser.birthDate!.toString()}'),
-        );
-      } else {
-        return new ListTile(
-          leading: const Icon(Icons.celebration),
-          title: Text('Geburtstag: ""}'),
-        );
-      }
     }
 
     return new Scaffold(
@@ -103,36 +74,9 @@ class UserIdDetailsScreen extends StatelessWidget {
         title: new Text("Bitte Daten prüfen"),
       ),
       body: new Column(
-        children: <Widget>[
-          new ListTile(
-            leading: const Icon(Icons.person),
-            title: Text(isStringPresent(currentUser.surnames)
-                ? currentUser.surnames!
-                : ""),
-            subtitle: Text(isStringPresent(currentUser.givenNames)
-                ? currentUser.givenNames!
-                : ""),
-          ),
-          getBirthdayTile(),
-          new ListTile(
-            leading: const Icon(Icons.info),
-            title: Text(
-                'Land: ${isStringPresent(currentUser.countryCodeMrz) ? currentUser.countryCodeMrz! : ""}'),
-            subtitle: Text(
-                'Ländercode: ${isStringPresent(currentUser.nationalityCountryCode) ? currentUser.nationalityCountryCode! : ""}'),
-          ),
-          new ListTile(
-            leading: const Icon(Icons.info),
-            title: Text(
-                'Dokument: ${isStringPresent(currentUser.documentType) ? currentUser.documentType! : ""}'),
-            subtitle: Text(
-                'Dokumentennummer: ${isStringPresent(currentUser.documentNumber) ? currentUser.documentNumber! : ""}\nAusweiß Nummer: ${isStringPresent(currentUser.personalNumber) ? currentUser.personalNumber! : ""}'),
-          ),
-          // createAddressWidget(userGPayResult),
-          const Divider(
-            height: 1.0,
-          ),
-        ],
+        children: generateListTiles(currentUser),
+
+        // createAddressWidget(userGPayResult),
       ),
       bottomNavigationBar: BottomNavigationBar(
         items: [
@@ -171,5 +115,128 @@ class UserIdDetailsScreen extends StatelessWidget {
     // Navigator.of(ctx).push(MaterialPageRoute(builder: (_) {
     //   return MrzScanner();
     // }));
+  }
+
+  List<Widget> generateListTiles(EnsoUser currentUser) {
+    List<Widget> result = [];
+
+    ListTile? nameTile = createNameTile(currentUser);
+    if (nameTile != null) {
+      result.add(nameTile);
+    }
+
+    ListTile? birthdayTile = createBirthdayTile(currentUser);
+    if (birthdayTile != null) {
+      result.add(birthdayTile);
+    }
+
+    ListTile? addressTile = createAddressTile(currentUser);
+    if (addressTile != null) {
+      result.add(addressTile);
+    }
+
+    ListTile? countryTile = createCountryTile(currentUser);
+    if (countryTile != null) {
+      result.add(countryTile);
+    }
+
+    // ...
+
+    result.add(const Divider(
+      height: 1.0,
+    ));
+
+    return result;
+  }
+
+  ListTile? createNameTile(EnsoUser currentUser) {
+    ListTile? nameTile;
+
+    if (isStringPresent(currentUser.surnames) &&
+        isStringPresent(currentUser.givenNames)) {
+      nameTile = ListTile(
+        leading: const Icon(Icons.person),
+        title: Text(
+            isStringPresent(currentUser.surnames) ? currentUser.surnames! : ""),
+        subtitle: Text(isStringPresent(currentUser.givenNames)
+            ? currentUser.givenNames!
+            : ""),
+      );
+    } else if (currentUser.billingAddress != null &&
+        isStringPresent(currentUser.billingAddress!.name) &&
+        isStringPresent(currentUser.billingAddress!.phoneNumber)) {
+      nameTile = ListTile(
+        leading: const Icon(Icons.person),
+        title: Text(currentUser.billingAddress!.name),
+        subtitle: Text(currentUser.billingAddress!.phoneNumber),
+      );
+    } else {
+      nameTile = null;
+    }
+    return nameTile;
+  }
+
+  ListTile? createBirthdayTile(EnsoUser currentUser) {
+    ListTile? birthdayTile;
+
+    if (currentUser.birthDate != null &&
+        isStringPresent(currentUser.birthDate.toString())) {
+      var outputFormat = DateFormat('dd-MM-yyyy');
+      var formattedBirthday = outputFormat.format(currentUser.birthDate!);
+      birthdayTile = ListTile(
+        leading: const Icon(Icons.celebration),
+        title: Text('Geburtstag: ${formattedBirthday.toString()}'),
+      );
+    } else {
+      birthdayTile = null;
+    }
+    return birthdayTile;
+  }
+
+  ListTile? createCountryTile(EnsoUser currentUser) {
+    ListTile? birthdayTile;
+
+    if (isStringPresent(currentUser.countryCodeMrz) ||
+        isStringPresent(currentUser.nationalityCountryCode)) {
+      birthdayTile = ListTile(
+          leading: const Icon(Icons.info),
+          title: Text(
+              'Ländercode: ${currentUser.countryCodeMrz ?? currentUser.nationalityCountryCode}'));
+    } else if (currentUser.billingAddress != null &&
+        isStringPresent(currentUser.billingAddress!.countryCode)) {
+      birthdayTile = ListTile(
+          leading: const Icon(Icons.info),
+          title:
+              Text('Ländercode: ${currentUser.billingAddress!.countryCode}'));
+    } else {
+      birthdayTile = null;
+    }
+    return birthdayTile;
+  }
+
+  ListTile? createAddressTile(EnsoUser currentUser) {
+    ListTile? addressTile;
+    if (currentUser.billingAddress != null &&
+        isStringPresent(currentUser.billingAddress!.address1) &&
+        !isStringPresent(currentUser.billingAddress!.address2)) {
+      addressTile = ListTile(
+        leading: const Icon(Icons.label),
+        title: Text(currentUser.billingAddress!.address1),
+        subtitle: Text(
+            '${currentUser.billingAddress!.postalCode} ${currentUser.billingAddress!.locality}'),
+      );
+    } else if (currentUser.billingAddress != null &&
+        isStringPresent(currentUser.billingAddress!.address1) &&
+        isStringPresent(currentUser.billingAddress!.address2)) {
+      addressTile = ListTile(
+          leading: const Icon(Icons.label),
+          title: Text(
+              '${currentUser.billingAddress!.address1}, ${currentUser.billingAddress!.address2}'),
+          subtitle: Text(
+              '${currentUser.billingAddress!.postalCode} ${currentUser.billingAddress!.locality}'));
+    } else {
+      addressTile = null;
+    }
+    return addressTile;
   }
 }

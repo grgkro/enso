@@ -1,11 +1,9 @@
 import 'package:ensobox/widgets/pay.dart';
-import 'package:ensobox/widgets/service_locator.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 
-import 'services/user_details_service.dart';
-
-UserDetailsService _userDetailsService = getIt<UserDetailsService>();
+import '../models/enso_user.dart';
 
 class UserAddEmail extends StatefulWidget {
   const UserAddEmail({Key? key}) : super(key: key);
@@ -76,13 +74,18 @@ class _UserAddEmailState extends State<UserAddEmail> {
 
   @override
   Widget build(BuildContext context) {
-    return new Scaffold(
-      appBar: new AppBar(
-        title: new Text(Pay.gPay != null
+    EnsoUser currentUser = Provider.of<EnsoUser>(context, listen: false);
+    return Scaffold(
+      appBar: AppBar(
+        title: Text(Pay.gPay != null &&
+                Pay.gPay.paymentMethodData != null &&
+                Pay.gPay.paymentMethodData.info != null &&
+                Pay.gPay.paymentMethodData.info.billingAddress != null &&
+                Pay.gPay.paymentMethodData.info.billingAddress.name != null
             ? "Hallo ${Pay.gPay.paymentMethodData.info.billingAddress.name.split(" ")[0]}"
-            : "Hallo ${_userDetailsService.givenNames.split(" ")[0]}"),
+            : "Hallo ${currentUser.givenNames != null ? currentUser.givenNames!.split(" ")[0] : ''}"),
       ),
-      body: new Column(
+      body: Column(
         children: <Widget>[
           Container(
             width: MediaQuery.of(context).size.width,

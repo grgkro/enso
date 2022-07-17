@@ -4,7 +4,7 @@ import 'dart:io';
 import 'package:ensobox/models/billing_address.dart';
 import 'package:ensobox/models/g_pay_info.dart';
 import 'package:ensobox/models/g_pay_tokenization_data.dart';
-import 'package:ensobox/widgets/user_details_screen.dart';
+import 'package:ensobox/widgets/id_scanner/mrz_scanner.dart';
 import 'package:flutter/material.dart';
 import 'package:pay/pay.dart';
 import 'package:provider/provider.dart';
@@ -12,6 +12,7 @@ import 'package:provider/provider.dart';
 import '../models/enso_user.dart';
 import '../models/google_pay_payment_result.dart';
 import '../models/payment_method_data.dart';
+import 'id_scanner/user_id_details_screen.dart';
 
 const _paymentItems = [
   PaymentItem(
@@ -29,9 +30,16 @@ class Pay extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     EnsoUser currentUser = Provider.of<EnsoUser>(context, listen: false);
+
     void showUserDetailsScreen(BuildContext ctx) {
       Navigator.of(ctx).push(MaterialPageRoute(builder: (_) {
-        return UserDetailsScreen();
+        return UserIdDetailsScreen();
+      }));
+    }
+
+    void showMrzScannerScreen(BuildContext ctx) {
+      Navigator.of(ctx).push(MaterialPageRoute(builder: (_) {
+        return const MrzScanner();
       }));
     }
 
@@ -82,7 +90,7 @@ class Pay extends StatelessWidget {
           postalCode,
           sortingCode);
 
-      currentUser = updateCurrentUser(currentUser, billingAddress);
+      currentUser.billingAddress = billingAddress;
 
       GPayInfo gPayInfo =
           new GPayInfo(billingAddress, cardDetails, cardNetwork);
@@ -92,19 +100,6 @@ class Pay extends StatelessWidget {
           new PaymentMethodData(description, gPayInfo, tokenizationData);
       gPay = new GooglePayPaymentResult(
           apiVersion, apiVersionMinor, paymentMethodData, type);
-
-      // currentUser = new User(
-      //     0,
-      //     billingAddress.address1,
-      //     billingAddress.address2,
-      //     billingAddress.address3,
-      //     "",
-      //     billingAddress.administrativeArea,
-      //     billingAddress.countryCode,
-      //     billingAddress.locality,
-      //     billingAddress.name,
-      //     billingAddress.phoneNumber,
-      //     billingAddress.postalCode);
 
       log(gPay.paymentMethodData.tokenizationData.token);
 
@@ -135,24 +130,16 @@ class Pay extends StatelessWidget {
                   onPressed: () {
                     log('Apple Pay selected');
                   },
-                )
+                ),
+          ElevatedButton(
+            onPressed: () {
+              log("Respond to button perso press");
+              showMrzScannerScreen(context);
+            },
+            child: Text('Perso oder Pass scannen'),
+          )
         ],
       ),
     );
-  }
-
-  EnsoUser updateCurrentUser(
-      EnsoUser currentUser, BillingAddress billingAddress) {
-    currentUser.id = 0;
-    currentUser.address1 = billingAddress.address1;
-    currentUser.address2 = billingAddress.address2;
-    currentUser.address3 = billingAddress.address3;
-    currentUser.administrativeArea = billingAddress.administrativeArea;
-    currentUser.countryCode = billingAddress.countryCode;
-    currentUser.locality = billingAddress.locality;
-    currentUser.name = billingAddress.name;
-    currentUser.phoneNumber = billingAddress.phoneNumber;
-    currentUser.postalCode = billingAddress.postalCode;
-    return currentUser;
   }
 }

@@ -3,7 +3,7 @@ import 'dart:developer';
 import 'package:flutter/material.dart';
 
 import '../models/locations.dart' as locations;
-import 'id_scanner/mrz_scanner.dart';
+import 'box_details_screen.dart';
 
 class BoxList extends StatefulWidget {
   const BoxList({Key? key}) : super(key: key);
@@ -28,8 +28,7 @@ class _BoxListState extends State<BoxList> {
 
   void selectCategory(BuildContext ctx, locations.Box selectedBox) {
     Navigator.of(ctx).push(MaterialPageRoute(builder: (_) {
-      return const MrzScanner();
-      // return BoxDetailsScreen(_boxes, selectedBox);
+      return BoxDetailsScreen(_boxes, selectedBox);
     }));
   }
 
