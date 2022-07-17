@@ -1,6 +1,7 @@
 import 'dart:developer';
 import 'dart:io';
 
+import 'package:camera/camera.dart';
 import 'package:ensobox/models/billing_address.dart';
 import 'package:ensobox/models/g_pay_info.dart';
 import 'package:ensobox/models/g_pay_tokenization_data.dart';
@@ -12,6 +13,7 @@ import 'package:provider/provider.dart';
 import '../models/enso_user.dart';
 import '../models/google_pay_payment_result.dart';
 import '../models/payment_method_data.dart';
+import 'camera/takePictureScreen.dart';
 import 'id_scanner/user_id_details_screen.dart';
 
 const _paymentItems = [
@@ -22,10 +24,15 @@ const _paymentItems = [
   )
 ];
 
-class Pay extends StatelessWidget {
-  static GooglePayPaymentResult gPay = new GooglePayPaymentResult.empty();
-
+class Pay extends StatefulWidget {
   const Pay({Key? key}) : super(key: key);
+
+  @override
+  State<Pay> createState() => _PayState();
+}
+
+class _PayState extends State<Pay> {
+  static GooglePayPaymentResult gPay = new GooglePayPaymentResult.empty();
 
   @override
   Widget build(BuildContext context) {
@@ -41,6 +48,20 @@ class Pay extends StatelessWidget {
       Navigator.of(ctx).push(MaterialPageRoute(builder: (_) {
         return const MrzScanner();
       }));
+    }
+
+    void _showCamera() async {
+      final cameras = await availableCameras();
+      final camera = cameras.first;
+
+      final result = await Navigator.push(
+          context,
+          MaterialPageRoute(
+              builder: (context) => TakePictureScreen(camera: camera)));
+
+      // setState(() {
+      //   _path = result;
+      // });
     }
 
     // In your Stateless Widget class or State
@@ -137,6 +158,13 @@ class Pay extends StatelessWidget {
               showMrzScannerScreen(context);
             },
             child: Text('Perso oder Pass scannen'),
+          ),
+          ElevatedButton(
+            onPressed: () {
+              log("Respond to button perso foto press");
+              _showCamera();
+            },
+            child: Text('Perso oder Pass fotografieren'),
           )
         ],
       ),

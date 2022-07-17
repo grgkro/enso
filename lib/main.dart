@@ -16,6 +16,10 @@ import 'models/enso_user.dart';
 import 'models/locations.dart' as locations;
 
 void main() async {
+  // Ensure that plugin services are initialized so that `availableCameras()`
+  // can be called before `runApp()`
+  WidgetsFlutterBinding.ensureInitialized();
+
   setupServiceLocator(); // This will register any services you have with GetIt before the widget tree gets built.
   RegisterService _registerService = getIt<RegisterService>();
   await _registerService.initialize();
@@ -45,6 +49,10 @@ class MyApp extends StatelessWidget {
           primarySwatch: Colors.blue,
           visualDensity: VisualDensity.adaptivePlatformDensity,
         ),
+        // home: TakePictureScreen(
+        //   // Pass the appropriate camera to the TakePictureScreen widget.
+        //   camera: firstCamera,
+        // ),
         home: Home(),
         // home: MrzScanner(),
         // initialRoute: '/', // When using initialRoute, don’t define a home property.

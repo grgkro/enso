@@ -51,6 +51,9 @@ dependencies:
   get_it: ^7.2.0 # The most popular service locator package for Flutter
   flutter_mrz_scanner: ^2.0.0
   permission_handler: ^8.2.5
+  camera: ^0.10.0
+  path_provider: ^2.0.11
+  path: 1.8.1
 
 dev_dependencies:
   flutter_test:

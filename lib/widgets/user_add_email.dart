@@ -1,4 +1,3 @@
-import 'package:ensobox/widgets/pay.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -77,13 +76,14 @@ class _UserAddEmailState extends State<UserAddEmail> {
     EnsoUser currentUser = Provider.of<EnsoUser>(context, listen: false);
     return Scaffold(
       appBar: AppBar(
-        title: Text(Pay.gPay != null &&
-                Pay.gPay.paymentMethodData != null &&
-                Pay.gPay.paymentMethodData.info != null &&
-                Pay.gPay.paymentMethodData.info.billingAddress != null &&
-                Pay.gPay.paymentMethodData.info.billingAddress.name != null
-            ? "Hallo ${Pay.gPay.paymentMethodData.info.billingAddress.name.split(" ")[0]}"
-            : "Hallo ${currentUser.givenNames != null ? currentUser.givenNames!.split(" ")[0] : ''}"),
+        title: Text('Hello There'),
+        // title: Text(Pay.gPay != null &&
+        //         Pay.gPay.paymentMethodData != null &&
+        //         Pay.gPay.paymentMethodData.info != null &&
+        //         Pay.gPay.paymentMethodData.info.billingAddress != null &&
+        //         Pay.gPay.paymentMethodData.info.billingAddress.name != null
+        //     ? "Hallo ${Pay.gPay.paymentMethodData.info.billingAddress.name.split(" ")[0]}"
+        //     : "Hallo ${currentUser.givenNames != null ? currentUser.givenNames!.split(" ")[0] : ''}"),
       ),
       body: Column(
         children: <Widget>[
