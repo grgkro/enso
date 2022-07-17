@@ -12,10 +12,10 @@ class BluetoothService {
   bool _connected = false;
 
 // Bluetooth related variables
-  late DiscoveredDevice _discoveredDevice;
+  DiscoveredDevice? discoveredDevice;
   final flutterReactiveBle = FlutterReactiveBle();
-  late StreamSubscription<DiscoveredDevice> _scanStream;
-  late QualifiedCharacteristic _rxCharacteristic;
+  StreamSubscription<DiscoveredDevice>? scanStream;
+  QualifiedCharacteristic? rxCharacteristic;
 
 // These are the UUIDs of your device
   final Uuid serviceUuid = Uuid.parse("75C276C3-8F97-20BC-A143-B354244886D4");
@@ -25,52 +25,59 @@ class BluetoothService {
       Uuid.parse("beb5483e-36e1-4688-b7f5-ea07361b26a8");
 
   void connectToDevice() {
-    // We're done scanning, we can cancel it
-    scanStream.cancel();
-    log("Trying to connect to ${discoveredDevice.id}");
-    log("characteristicUuid $characteristicUuid");
-    flutterReactiveBle.connectToDevice(id: discoveredDevice.id).listen(
-      (update) async {
-        // _deviceConnectionController.add(update);
-        print(
-            'ConnectionState for device ${discoveredDevice.name} : ${update.connectionState}');
-        try {
-          final characteristic = QualifiedCharacteristic(
-              serviceId: serviceUuid,
-              characteristicId: characteristicUuidEnso,
-              deviceId: _discoveredDevice.id);
-          final response =
-              await flutterReactiveBle.readCharacteristic(characteristic);
-
-          log('Read characterisitc from ESP: ${characteristic.characteristicId}: value = $response');
-          log('DECODED: ${AsciiDecoder().convert(response, 0)}');
-          log('DECODED: ${String.fromCharCodes(response)}');
-          log('ENCODED: ${AsciiEncoder().convert("response", 0)}');
-
+    if (discoveredDevice != null) {
+      // We're done scanning, we can cancel it
+      if (scanStream != null) {
+        scanStream?.cancel();
+      }
+      log("Trying to connect to ${discoveredDevice!.id}");
+      log("characteristicUuid $characteristicUuid");
+      flutterReactiveBle.connectToDevice(id: discoveredDevice!.id).listen(
+        (update) async {
+          // _deviceConnectionController.add(update);
+          print(
+              'ConnectionState for device ${discoveredDevice!.name} : ${update.connectionState}');
           try {
-            flutterReactiveBle
-                .writeCharacteristicWithResponse(characteristic,
-                    value: AsciiEncoder().convert("response", 0))
-                .then((value) => log(
-                    'Write successful: ${characteristic.characteristicId}'));
-            log('Wrote characteristic to ESP: ${characteristic.characteristicId}: value = $response');
-          } catch (e) {
-            log("Wrote characteristic, got exception: $e");
-          }
+            final characteristic = QualifiedCharacteristic(
+                serviceId: serviceUuid,
+                characteristicId: characteristicUuidEnso,
+                deviceId: discoveredDevice!.id);
+            final response =
+                await flutterReactiveBle.readCharacteristic(characteristic);
 
-          // return result;
-        } on Exception catch (e, s) {
-          log(
-            'Error occured when reading ${characteristicUuidEnso} : $e',
-          );
-          // ignore: avoid_print
-          print(s);
-          // rethrow;
-        }
-      },
-      onError: (Object e) => print(
-          'Connecting to device ${discoveredDevice.name} resulted in error $e'),
-    );
+            log('Read characterisitc from ESP: ${characteristic.characteristicId}: value = $response');
+            log('DECODED: ${AsciiDecoder().convert(response, 0)}');
+            log('DECODED: ${String.fromCharCodes(response)}');
+            log('ENCODED: ${AsciiEncoder().convert("response", 0)}');
+
+            try {
+              flutterReactiveBle
+                  .writeCharacteristicWithResponse(characteristic,
+                      value: AsciiEncoder().convert("response", 0))
+                  .then((value) => log(
+                      'Write successful: ${characteristic.characteristicId}'));
+              log('Wrote characteristic to ESP: ${characteristic.characteristicId}: value = $response');
+            } catch (e) {
+              log("Wrote characteristic, got exception: $e");
+            }
+
+            // return result;
+          } on Exception catch (e, s) {
+            log(
+              'Error occured when reading ${characteristicUuidEnso} : $e',
+            );
+            // ignore: avoid_print
+            print(s);
+            // rethrow;
+          }
+        },
+        onError: (Object e) => print(
+            'Connecting to device ${discoveredDevice!.name} resulted in error $e'),
+      );
+    } else {
+      log("Warn: No device has been discovered before calling connectToDevice",
+          level: 1);
+    }
   }
 
   bool get isCurrentlySelectedDeviceActive => _isCurrentlySelectedDeviceActive;
@@ -85,24 +92,6 @@ class BluetoothService {
     _scanStarted = value;
   }
 
-  QualifiedCharacteristic get rxCharacteristic => _rxCharacteristic;
-
-  set rxCharacteristic(QualifiedCharacteristic value) {
-    _rxCharacteristic = value;
-  }
-
-  StreamSubscription<DiscoveredDevice> get scanStream => _scanStream;
-
-  set scanStream(StreamSubscription<DiscoveredDevice> value) {
-    _scanStream = value;
-  }
-
-  DiscoveredDevice get discoveredDevice => _discoveredDevice;
-
-  set discoveredDevice(DiscoveredDevice value) {
-    _discoveredDevice = value;
-  }
-
   bool get connected => _connected;
 
   set connected(bool value) {
@@ -111,10 +100,12 @@ class BluetoothService {
 
   void _partyTime() {
     if (connected) {
-      flutterReactiveBle
-          .writeCharacteristicWithResponse(rxCharacteristic, value: [
-        0xff,
-      ]);
+      if (rxCharacteristic != null) {
+        flutterReactiveBle
+            .writeCharacteristicWithResponse(rxCharacteristic!, value: [
+          0xff,
+        ]);
+      }
     }
   }
 

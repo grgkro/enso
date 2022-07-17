@@ -33,28 +33,35 @@ class _BoxDetailsScreenState extends State<BoxDetailsScreen> {
     if (device.id == widget.selectedBox.id) {
       log(device.toString());
       log('found it');
-      setState(() {
-        _bleService.discoveredDevice = device;
-        _bleService.isCurrentlySelectedDeviceActive = true;
-        // _stopScan();
-        log('set _bleService.foundDeviceWaitingToConnect = true;');
-      });
+      if (mounted) {
+        setState(() {
+          _bleService.discoveredDevice = device;
+          _bleService.isCurrentlySelectedDeviceActive = true;
+          // _stopScan();
+          log('set _bleService.foundDeviceWaitingToConnect = true;');
+        });
+      }
       _bleService.connectToDevice();
     }
   }
 
   bool _isCurrentDeviceDiscovered() {
-    if (_bleService.discoveredDevice.id == widget.selectedBox.id) {
-      log("yep it's the selected device");
-      return true;
-    } else {
-      return false;
+    if (_bleService.discoveredDevice != null) {
+      if (_bleService.discoveredDevice!.id == widget.selectedBox.id) {
+        log("yep it's the selected device");
+        return true;
+      } else {
+        return false;
+      }
     }
+    return false;
   }
 
   void _stopScan() async {
     // We're done scanning, we can cancel it
-    _bleService.scanStream.cancel();
+    if (_bleService.scanStream != null) {
+      _bleService.scanStream!.cancel();
+    }
     setState(() {
       _bleService.scanStarted = false;
     });
@@ -168,8 +175,12 @@ class _BoxDetailsScreenState extends State<BoxDetailsScreen> {
                 break;
               case 1:
                 log("Pressed 111" + itemIndex.toString());
-                _bleService.connectToDevice();
-                goToPayment(context);
+                if (_isCurrentDeviceDiscovered()) {
+                  _bleService.connectToDevice();
+                  goToPayment(context);
+                } else {
+                  log("currently selected box is not connected");
+                }
             }
           },
         ),
@@ -240,7 +251,8 @@ class _BoxDetailsScreenState extends State<BoxDetailsScreen> {
 
   ListTile _createStatusTile() {
     if (_bleService.isCurrentlySelectedDeviceActive &&
-        _bleService.discoveredDevice.id == widget.selectedBox.id) {
+        _bleService.discoveredDevice != null &&
+        _bleService.discoveredDevice!.id == widget.selectedBox.id) {
       return new ListTile(
         leading: const Icon(Icons.bluetooth_connected),
         title: Text(
