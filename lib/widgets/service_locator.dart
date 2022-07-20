@@ -1,11 +1,16 @@
 import 'package:ensobox/widgets/ble/bluetooth_service.dart';
+import 'package:ensobox/widgets/services/global_variables_service.dart';
 import 'package:get_it/get_it.dart';
 
-import 'auth/register_service.dart';
+import 'firebase_repository/auth_repo.dart';
+import 'firebase_repository/storage_repo.dart';
 
 final getIt = GetIt.instance;
 
 setupServiceLocator() {
-  getIt.registerLazySingleton<RegisterService>(() => RegisterService());
+  getIt.registerLazySingleton<StorageRepo>(() => StorageRepo());
+  getIt.registerLazySingleton<AuthRepo>(() => AuthRepo());
   getIt.registerLazySingleton<BluetoothService>(() => BluetoothService());
+  getIt.registerLazySingleton<GlobalVariablesService>(
+      () => GlobalVariablesService());
 }

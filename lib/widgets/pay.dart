@@ -5,6 +5,8 @@ import 'package:camera/camera.dart';
 import 'package:ensobox/models/billing_address.dart';
 import 'package:ensobox/models/g_pay_info.dart';
 import 'package:ensobox/models/g_pay_tokenization_data.dart';
+import 'package:ensobox/models/photo_side.dart';
+import 'package:ensobox/models/photo_type.dart';
 import 'package:ensobox/widgets/id_scanner/mrz_scanner.dart';
 import 'package:flutter/material.dart';
 import 'package:pay/pay.dart';
@@ -13,7 +15,7 @@ import 'package:provider/provider.dart';
 import '../models/enso_user.dart';
 import '../models/google_pay_payment_result.dart';
 import '../models/payment_method_data.dart';
-import 'camera/takePictureScreen.dart';
+import 'camera/take_picture_screen.dart';
 import 'id_scanner/user_id_details_screen.dart';
 
 const _paymentItems = [
@@ -55,9 +57,14 @@ class _PayState extends State<Pay> {
       final camera = cameras.first;
 
       final result = await Navigator.push(
-          context,
-          MaterialPageRoute(
-              builder: (context) => TakePictureScreen(camera: camera)));
+        context,
+        MaterialPageRoute(
+          builder: (context) => TakePictureScreen(
+              camera: camera,
+              photoType: PhotoType.id,
+              photoSide: PhotoSide.front),
+        ),
+      );
 
       // setState(() {
       //   _path = result;

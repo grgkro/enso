@@ -1,0 +1,1 @@
+enum PhotoType { id, passport }

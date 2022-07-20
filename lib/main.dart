@@ -2,9 +2,9 @@ import 'dart:developer';
 
 import 'package:ensobox/providers/boxes.dart';
 import 'package:ensobox/providers/users.dart';
-import 'package:ensobox/widgets/auth/register_service.dart';
 import 'package:ensobox/widgets/auth/success_screen.dart';
 import 'package:ensobox/widgets/box_list.dart';
+import 'package:ensobox/widgets/firebase_repository/auth_repo.dart';
 import 'package:ensobox/widgets/id_scanner/mrz_scanner.dart';
 import 'package:ensobox/widgets/id_scanner/user_id_details_screen.dart';
 import 'package:ensobox/widgets/service_locator.dart';
@@ -21,9 +21,9 @@ void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
   setupServiceLocator(); // This will register any services you have with GetIt before the widget tree gets built.
-  RegisterService _registerService = getIt<RegisterService>();
+  AuthRepo _registerService = getIt<AuthRepo>();
   await _registerService.initialize();
-  _registerService.registerByEmailAndHiddenPW("grgk.ro@gmail.com");
+  _registerService.registerByEmailAndHiddenPW("grgkr.o@gmail.com");
   runApp(MyApp());
 }
 

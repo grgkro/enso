@@ -175,12 +175,12 @@ class _BoxDetailsScreenState extends State<BoxDetailsScreen> {
                 break;
               case 1:
                 log("Pressed 111" + itemIndex.toString());
-                if (_isCurrentDeviceDiscovered()) {
-                  _bleService.connectToDevice();
-                  goToPayment(context);
-                } else {
-                  log("currently selected box is not connected");
-                }
+                // if (_isCurrentDeviceDiscovered()) {
+                //   _bleService.connectToDevice();
+                goToPayment(context);
+              // } else {
+              //   log("currently selected box is not connected");
+              // }
             }
           },
         ),

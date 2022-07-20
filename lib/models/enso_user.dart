@@ -3,6 +3,7 @@ import 'package:flutter/cupertino.dart';
 
 class EnsoUserBuilder {
   int? id;
+
   // from Google Pay result
   BillingAddress? billingAddress;
   String? email;
@@ -19,6 +20,8 @@ class EnsoUserBuilder {
   DateTime? expiryDate;
   String? personalNumber;
   String? personalNumber2;
+  String? frontIdPhoto;
+  String? backIdPhoto;
 }
 
 class EnsoUser with ChangeNotifier {
@@ -37,6 +40,8 @@ class EnsoUser with ChangeNotifier {
   DateTime? expiryDate;
   String? personalNumber;
   String? personalNumber2;
+  String? frontIdPhoto;
+  String? backIdPhoto;
 
   EnsoUser(EnsoUserBuilder builder) {
     id = builder.id;
@@ -54,5 +59,9 @@ class EnsoUser with ChangeNotifier {
     expiryDate = builder.expiryDate;
     personalNumber = builder.personalNumber;
     personalNumber2 = builder.personalNumber2;
+    frontIdPhoto = builder.frontIdPhoto;
+    backIdPhoto = builder.backIdPhoto;
   }
+
+  void uploadPhoto() {}
 }

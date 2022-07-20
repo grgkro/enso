@@ -7,6 +7,11 @@ import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 
 import '../../models/enso_user.dart';
+import '../service_locator.dart';
+import '../services/global_variables_service.dart';
+
+GlobalVariablesService _globalVariablesService =
+    getIt<GlobalVariablesService>();
 
 class UserIdDetailsScreen extends StatelessWidget {
   static const routeName = '/user-id-details';
@@ -98,7 +103,12 @@ class UserIdDetailsScreen extends StatelessWidget {
           switch (itemIndex) {
             case 0:
               // Navigator.pop(context);
-              showMrzScanner(context);
+              if (_globalVariablesService.isComingFromTakePictureScreen) {
+                Navigator.pop(context);
+              } else {
+                showMrzScanner(context);
+              }
+
               break;
             case 1:
               log("Pressed 111" + itemIndex.toString());

@@ -1,0 +1,1 @@
+enum PhotoSide { front, back }
