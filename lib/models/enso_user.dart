@@ -2,7 +2,7 @@ import 'package:ensobox/models/billing_address.dart';
 import 'package:flutter/cupertino.dart';
 
 class EnsoUserBuilder {
-  int? id;
+  String? id;
 
   // from Google Pay result
   BillingAddress? billingAddress;
@@ -22,10 +22,17 @@ class EnsoUserBuilder {
   String? personalNumber2;
   String? frontIdPhoto;
   String? backIdPhoto;
+
+  // additional (email and phone verified maybe not needed)
+  bool idUploaded = false;
+  bool idApproved = false;
+  String? phone;
+  bool emailVerified = false;
+  bool phoneVerified = false;
 }
 
 class EnsoUser with ChangeNotifier {
-  int? id;
+  String? id;
   BillingAddress? billingAddress;
   String? email;
 
@@ -42,6 +49,12 @@ class EnsoUser with ChangeNotifier {
   String? personalNumber2;
   String? frontIdPhoto;
   String? backIdPhoto;
+
+  bool idUploaded = false;
+  bool idApproved = false;
+  String? phone;
+  bool emailVerified = false;
+  bool phoneVerified = false;
 
   EnsoUser(EnsoUserBuilder builder) {
     id = builder.id;
@@ -61,6 +74,12 @@ class EnsoUser with ChangeNotifier {
     personalNumber2 = builder.personalNumber2;
     frontIdPhoto = builder.frontIdPhoto;
     backIdPhoto = builder.backIdPhoto;
+
+    idUploaded = builder.idUploaded;
+    idApproved = builder.idApproved;
+    phone = builder.phone;
+    emailVerified = builder.emailVerified;
+    phoneVerified = builder.emailVerified;
   }
 
   void uploadPhoto() {}

@@ -1,10 +1,11 @@
 import 'dart:developer';
 
-import 'package:ensobox/widgets/auth/verification_overview_screen.dart';
+import 'package:ensobox/widgets/auth/email_auth_form.dart';
 import 'package:ensobox/widgets/services/global_service.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../constants/constants.dart' as Constants;
 import '../firebase_repository/auth_repo.dart';
@@ -22,6 +23,7 @@ class OtpForm extends StatefulWidget {
 class _OtpFormState extends State<OtpForm> {
   final FirebaseAuth _auth = FirebaseAuth.instance;
   GlobalKey<FormState> _formKey = GlobalKey<FormState>();
+  //TODO: removed fixed code
   TextEditingController otpController = TextEditingController(text: '123456');
   TextEditingController otpCode = TextEditingController();
 
@@ -39,7 +41,7 @@ class _OtpFormState extends State<OtpForm> {
     Size size = MediaQuery.of(context).size;
     return Scaffold(
         appBar: AppBar(
-          title: Text("Bitte Passcode eingeben"),
+          title: const Text("Bitte Passcode eingeben"),
           systemOverlayStyle: SystemUiOverlayStyle(statusBarColor: Colors.blue),
         ),
         // backgroundColor: Constants.kPrimaryColor,
@@ -92,6 +94,11 @@ class _OtpFormState extends State<OtpForm> {
                         child: OutlinedButton(
                           onPressed: () async {
                             log("got ${otpController.text}");
+
+                            final prefs = await SharedPreferences.getInstance();
+                            prefs.setString(
+                                Constants.smsCodeKey, otpController.text);
+
                             // Create a PhoneAuthCredential with the code
                             PhoneAuthCredential credential =
                                 PhoneAuthProvider.credential(
@@ -101,19 +108,57 @@ class _OtpFormState extends State<OtpForm> {
 
 // Sign the user in (or link) with the credential
 // use .onError to handle wrong code, but needs to return Future
+                            // TODO: try / catch
                             await _auth
                                 .signInWithCredential(credential)
-                                .then((value) {
+                                .then((value) async {
+                              _globalService.isPhoneVerified = true;
+
+                              final prefs =
+                                  await SharedPreferences.getInstance();
+                              // try {
+                              prefs.setBool(Constants.hasVerifiedPhone, true);
                               _globalService.showScreen(
-                                  context, VerificationOverviewScreen());
+                                  context, EmailAuthForm());
+                              // if the user already signed in with phone & smsCode, we don't want to create a new user but link the email to the existing one
+                              // String? email =
+                              //     prefs.getString(Constants.emailKey);
+                              // String? emailPassword =
+                              //     prefs.getString(Constants.emailPasswordKey);
+                              //
+                              // if (email != null && emailPassword != null) {
+                              //   //TODO: replace email & pw with email & Link
+                              //   AuthCredential emailCredential =
+                              //       EmailAuthProvider.credential(
+                              //           email: email,
+                              //           password: emailPassword);
+                              //
+                              //   await _auth.currentUser
+                              //       ?.linkWithCredential(emailCredential)
+                              //       .then((value) {
+                              //     log('linked email to existing account: ${value.user.toString()}');
+                              //     _globalService.isEmailVerified = true;
+                              //     _globalService.isPhoneVerified = true;
+                              //     _globalService.showScreen(context,
+                              //         const VerificationOverviewScreen());
+                              //   }).onError((error, stackTrace) {
+                              //     // TODO: ErrorScreen
+                              //     log("Error" + error.toString());
+                              //     _globalService.showScreen(context,
+                              //         const VerificationOverviewScreen());
+                              //   });
+                              // } else {
+                              //   log("Could not link email to phone as the email or emailPW from shared Preferences was null. Going to just sign in with phone");
+                              // }
+                              // } catch (e) {
+                              //   log('Error while signing in with phone and link email: ${e.toString()}');
+                              // }
                             }).onError((error, stackTrace) {
                               log(error.toString());
                               return null;
                             });
-
-                            // registerService.registerByEmailAndHiddenPW("grg.kro@gmail.com");
                           },
-                          child: Text(Constants.checkOtp),
+                          child: const Text(Constants.checkOtp),
                           //   style: ButtonStyle(
                           //       // foregroundColor: MaterialStateProperty.all<Color>(
                           //       //     Constants.kPrimaryColor),
@@ -123,7 +168,7 @@ class _OtpFormState extends State<OtpForm> {
                           //           BorderSide.none)),
                         ),
                       )
-                    : CircularProgressIndicator(),
+                    : const CircularProgressIndicator(),
               ],
             ),
           ),

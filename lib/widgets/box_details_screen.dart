@@ -1,10 +1,14 @@
 import 'dart:developer';
 import 'dart:io' show Platform;
 
+import 'package:ensobox/models/enso_user.dart';
 import 'package:ensobox/widgets/auth/verification_overview_screen.dart';
 import 'package:ensobox/widgets/ble/bluetooth_service.dart';
+import 'package:ensobox/widgets/firestore_repository/database_repo.dart';
 import 'package:ensobox/widgets/pay.dart';
 import 'package:ensobox/widgets/service_locator.dart';
+import 'package:ensobox/widgets/services/global_service.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_reactive_ble/flutter_reactive_ble.dart';
 import 'package:location_permissions/location_permissions.dart';
@@ -12,6 +16,8 @@ import 'package:location_permissions/location_permissions.dart';
 import '../models/locations.dart' as locations;
 
 BluetoothService _bleService = getIt<BluetoothService>();
+GlobalService _globalService = getIt<GlobalService>();
+DatabaseRepo _databaseRepo = getIt<DatabaseRepo>();
 
 class BoxDetailsScreen extends StatefulWidget {
   final List<locations.Box> boxes;
@@ -69,7 +75,7 @@ class _BoxDetailsScreenState extends State<BoxDetailsScreen> {
     log('stopped scanning');
   }
 
-  void _startScan() async {
+  void _startScan(BuildContext context) async {
     // Platform permissions handling stuff
     // _bleService.discoveredDevice;
     bool permGranted = false;
@@ -112,16 +118,33 @@ class _BoxDetailsScreenState extends State<BoxDetailsScreen> {
     }));
   }
 
-  void goToVerificationOverviewScreen(BuildContext ctx) {
-    Navigator.of(ctx).push(MaterialPageRoute(builder: (_) {
-      return const VerificationOverviewScreen();
-    }));
-  }
-
   @override
   Widget build(BuildContext context) {
     if (!_bleService.scanStarted) {
-      _startScan();
+      _startScan(context);
+    }
+    User? currentUser = _globalService.currentUser;
+    EnsoUser currentEnsoUser = EnsoUser(EnsoUserBuilder());
+    // TODO: Remove next line
+    currentEnsoUser = _databaseRepo.getUser("testUid");
+    if (currentUser != null) {
+      currentEnsoUser = _databaseRepo.getUser(currentUser.uid);
+    }
+
+    bool userIsMissingNecessaryVerification() {
+      if (currentUser == null) {
+        // user was not registered before
+        return true;
+      } else {
+        // TODO: Check if currentUser.emailVerified can be used in the if statement
+        if (currentEnsoUser.emailVerified &&
+            currentEnsoUser.phoneVerified &&
+            currentEnsoUser.idUploaded) {
+          return false;
+        } else {
+          return true;
+        }
+      }
     }
 
     return WillPopScope(
@@ -184,7 +207,16 @@ class _BoxDetailsScreenState extends State<BoxDetailsScreen> {
                 log("Pressed 111" + itemIndex.toString());
                 // if (_isCurrentDeviceDiscovered()) {
                 //   _bleService.connectToDevice();
-                goToVerificationOverviewScreen(context);
+                if (userIsMissingNecessaryVerification()) {
+                  _globalService.showScreen(
+                      context, const VerificationOverviewScreen());
+                } else if (currentEnsoUser.idApproved) {
+                  log("let's go to the renting screen!");
+                  // _globalService.showScreen(context, RentingScreen);
+                } else {
+                  log("let's go to the wait-for-approval screen!");
+                  // _globalService.showScreen(context, WaitForApprovalScreen);
+                }
               // } else {
               //   log("currently selected box is not connected");
               // }

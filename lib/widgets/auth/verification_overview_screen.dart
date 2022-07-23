@@ -50,24 +50,31 @@ class _VerificationOverviewScreenState
         children: [
           Text(
               "Bevor du die Bohrmaschine ausleihen kannst, benötigen wir folgende Infos von dir:"),
+          !_globalService.isPhoneVerified
+              ? ElevatedButton(
+                  onPressed:
+                      // TODO: was wenn app geschlossen wird und neu angefangen wird? isEmailVerified muss auch in user oder sharedPref gespeichert werden
+                      () => showAddPhoneScreen(context),
+                  child: Text('Handynummer & Email hinzufügen'),
+                )
+              : _globalService.isPhoneVerified &&
+                      !_globalService.isEmailVerified
+                  ? ElevatedButton(
+                      onPressed: () =>
+                          _globalService.showScreen(context, EmailAuthForm()),
+                      child: const Text('Email hinzufügen'),
+                    )
+                  : ElevatedButton(
+                      onPressed: () => showAddPhoneScreen(context),
+                      child: const Text('Handynummer oder Email ändern'),
+                    ),
           ElevatedButton(
-            onPressed:
-                isPhoneAdded() ? () => showAddPhoneScreen(context) : null,
-            child: Text('Handynummer hinzufügen'),
-          ),
-          ElevatedButton(
-            onPressed: isPhoneAdded() && !isEmailAdded()
-                ? () => _globalService.showScreen(context, EmailAuthForm())
-                : null,
-            child: Text('Email hinzufügen'),
-          ),
-          ElevatedButton(
-            onPressed: isPhoneAdded() && isEmailAdded() && !isIdFrontAdded()
+            onPressed: !isIdFrontAdded()
                 ? startAddingIdFront
-                : isPhoneAdded() && isEmailAdded() && isIdFrontAdded()
+                : !isIdFrontAdded()
                     ? startAddingIdBack
                     : null,
-            child: Text('Perso oder Pass fotografieren'),
+            child: const Text('Perso oder Pass fotografieren'),
           )
         ],
       ),

@@ -4,6 +4,7 @@ import 'package:get_it/get_it.dart';
 
 import 'firebase_repository/auth_repo.dart';
 import 'firebase_repository/storage_repo.dart';
+import 'firestore_repository/database_repo.dart';
 
 final getIt = GetIt.instance;
 
@@ -12,4 +13,5 @@ setupServiceLocator() {
   getIt.registerLazySingleton<AuthRepo>(() => AuthRepo());
   getIt.registerLazySingleton<BluetoothService>(() => BluetoothService());
   getIt.registerLazySingleton<GlobalService>(() => GlobalService());
+  getIt.registerLazySingleton<DatabaseRepo>(() => DatabaseRepo());
 }

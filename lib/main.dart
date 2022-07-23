@@ -21,8 +21,14 @@ void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
   setupServiceLocator(); // This will register any services you have with GetIt before the widget tree gets built.
-  AuthRepo _registerService = getIt<AuthRepo>();
-  await _registerService.initialize();
+  AuthRepo registerService = getIt<AuthRepo>();
+  await registerService.initialize();
+
+  try {
+    await registerService.signInUserIfPossible();
+  } catch (e) {
+    log("Could not sign in User at start of the app: ${e.toString()}");
+  }
 
   runApp(MyApp());
 }
