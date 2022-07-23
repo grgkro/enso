@@ -23,7 +23,7 @@ void main() async {
   setupServiceLocator(); // This will register any services you have with GetIt before the widget tree gets built.
   AuthRepo _registerService = getIt<AuthRepo>();
   await _registerService.initialize();
-  _registerService.registerByEmailAndHiddenPW("grgkr.o@gmail.com");
+
   runApp(MyApp());
 }
 

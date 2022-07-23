@@ -1,6 +1,7 @@
 import 'dart:developer';
 import 'dart:io' show Platform;
 
+import 'package:ensobox/widgets/auth/verification_overview_screen.dart';
 import 'package:ensobox/widgets/ble/bluetooth_service.dart';
 import 'package:ensobox/widgets/pay.dart';
 import 'package:ensobox/widgets/service_locator.dart';
@@ -111,6 +112,12 @@ class _BoxDetailsScreenState extends State<BoxDetailsScreen> {
     }));
   }
 
+  void goToVerificationOverviewScreen(BuildContext ctx) {
+    Navigator.of(ctx).push(MaterialPageRoute(builder: (_) {
+      return const VerificationOverviewScreen();
+    }));
+  }
+
   @override
   Widget build(BuildContext context) {
     if (!_bleService.scanStarted) {
@@ -177,7 +184,7 @@ class _BoxDetailsScreenState extends State<BoxDetailsScreen> {
                 log("Pressed 111" + itemIndex.toString());
                 // if (_isCurrentDeviceDiscovered()) {
                 //   _bleService.connectToDevice();
-                goToPayment(context);
+                goToVerificationOverviewScreen(context);
               // } else {
               //   log("currently selected box is not connected");
               // }

@@ -1,5 +1,7 @@
 import 'dart:developer';
 
+import 'package:ensobox/widgets/auth/verification_overview_screen.dart';
+import 'package:ensobox/widgets/services/global_service.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -8,18 +10,19 @@ import '../../constants/constants.dart' as Constants;
 import '../firebase_repository/auth_repo.dart';
 import '../service_locator.dart';
 
-class PhoneAuthForm extends StatefulWidget {
-  PhoneAuthForm({Key? key}) : super(key: key);
+GlobalService _globalService = getIt<GlobalService>();
+
+class OtpForm extends StatefulWidget {
+  OtpForm({Key? key}) : super(key: key);
 
   @override
-  _PhoneAuthFormState createState() => _PhoneAuthFormState();
+  _OtpFormState createState() => _OtpFormState();
 }
 
-class _PhoneAuthFormState extends State<PhoneAuthForm> {
+class _OtpFormState extends State<OtpForm> {
   final FirebaseAuth _auth = FirebaseAuth.instance;
   GlobalKey<FormState> _formKey = GlobalKey<FormState>();
-  TextEditingController phoneNumber =
-      TextEditingController(text: "+4915126448312");
+  TextEditingController otpController = TextEditingController(text: '123456');
   TextEditingController otpCode = TextEditingController();
 
   OutlineInputBorder border = OutlineInputBorder(
@@ -36,7 +39,7 @@ class _PhoneAuthFormState extends State<PhoneAuthForm> {
     Size size = MediaQuery.of(context).size;
     return Scaffold(
         appBar: AppBar(
-          title: Text("Bitte Handynummer eingeben"),
+          title: Text("Bitte Passcode eingeben"),
           systemOverlayStyle: SystemUiOverlayStyle(statusBarColor: Colors.blue),
         ),
         // backgroundColor: Constants.kPrimaryColor,
@@ -50,9 +53,9 @@ class _PhoneAuthFormState extends State<PhoneAuthForm> {
                   width: size.width * 0.8,
                   child: TextFormField(
                       keyboardType: TextInputType.phone,
-                      controller: phoneNumber,
+                      controller: otpController,
                       decoration: InputDecoration(
-                        labelText: "Handynummer",
+                        labelText: "Passcode",
                         contentPadding: EdgeInsets.symmetric(
                             vertical: 15.0, horizontal: 10.0),
                         border: border,
@@ -88,13 +91,29 @@ class _PhoneAuthFormState extends State<PhoneAuthForm> {
                         width: size.width * 0.8,
                         child: OutlinedButton(
                           onPressed: () async {
-                            log("got ${phoneNumber.text}");
-                            await registerService.verifyPhoneNumber(
-                                phoneNumber.text, context);
+                            log("got ${otpController.text}");
+                            // Create a PhoneAuthCredential with the code
+                            PhoneAuthCredential credential =
+                                PhoneAuthProvider.credential(
+                                    verificationId:
+                                        _globalService.phoneAuthVerificationId,
+                                    smsCode: otpController.text);
+
+// Sign the user in (or link) with the credential
+// use .onError to handle wrong code, but needs to return Future
+                            await _auth
+                                .signInWithCredential(credential)
+                                .then((value) {
+                              _globalService.showScreen(
+                                  context, VerificationOverviewScreen());
+                            }).onError((error, stackTrace) {
+                              log(error.toString());
+                              return null;
+                            });
 
                             // registerService.registerByEmailAndHiddenPW("grg.kro@gmail.com");
                           },
-                          child: Text(Constants.textSignIn),
+                          child: Text(Constants.checkOtp),
                           //   style: ButtonStyle(
                           //       // foregroundColor: MaterialStateProperty.all<Color>(
                           //       //     Constants.kPrimaryColor),

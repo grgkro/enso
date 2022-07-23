@@ -1,25 +1,30 @@
 import 'dart:developer';
 
+import 'package:ensobox/widgets/auth/verification_overview_screen.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../constants/constants.dart' as Constants;
 import '../firebase_repository/auth_repo.dart';
 import '../service_locator.dart';
+import '../services/global_service.dart';
 
-class PhoneAuthForm extends StatefulWidget {
-  PhoneAuthForm({Key? key}) : super(key: key);
+GlobalService _globalService = getIt<GlobalService>();
+
+class EmailAuthForm extends StatefulWidget {
+  EmailAuthForm({Key? key}) : super(key: key);
 
   @override
-  _PhoneAuthFormState createState() => _PhoneAuthFormState();
+  _EmailAuthFormState createState() => _EmailAuthFormState();
 }
 
-class _PhoneAuthFormState extends State<PhoneAuthForm> {
+class _EmailAuthFormState extends State<EmailAuthForm> {
   final FirebaseAuth _auth = FirebaseAuth.instance;
   GlobalKey<FormState> _formKey = GlobalKey<FormState>();
-  TextEditingController phoneNumber =
-      TextEditingController(text: "+4915126448312");
+  TextEditingController emailController =
+      TextEditingController(text: "g.rgkro@gmail.com");
   TextEditingController otpCode = TextEditingController();
 
   OutlineInputBorder border = OutlineInputBorder(
@@ -36,7 +41,7 @@ class _PhoneAuthFormState extends State<PhoneAuthForm> {
     Size size = MediaQuery.of(context).size;
     return Scaffold(
         appBar: AppBar(
-          title: Text("Bitte Handynummer eingeben"),
+          title: Text("Bitte Email eingeben"),
           systemOverlayStyle: SystemUiOverlayStyle(statusBarColor: Colors.blue),
         ),
         // backgroundColor: Constants.kPrimaryColor,
@@ -50,9 +55,9 @@ class _PhoneAuthFormState extends State<PhoneAuthForm> {
                   width: size.width * 0.8,
                   child: TextFormField(
                       keyboardType: TextInputType.phone,
-                      controller: phoneNumber,
+                      controller: emailController,
                       decoration: InputDecoration(
-                        labelText: "Handynummer",
+                        labelText: "Email",
                         contentPadding: EdgeInsets.symmetric(
                             vertical: 15.0, horizontal: 10.0),
                         border: border,
@@ -88,13 +93,35 @@ class _PhoneAuthFormState extends State<PhoneAuthForm> {
                         width: size.width * 0.8,
                         child: OutlinedButton(
                           onPressed: () async {
-                            log("got ${phoneNumber.text}");
-                            await registerService.verifyPhoneNumber(
-                                phoneNumber.text, context);
+                            log("got ${emailController.text}");
+                            String password = generateRandPassword();
+                            final prefs = await SharedPreferences.getInstance();
+                            prefs.setString('randEmailPassword', password);
+                            AuthCredential emailCredential =
+                                EmailAuthProvider.credential(
+                                    email: emailController.text,
+                                    password: password);
+                            PhoneAuthCredential phoneCredential =
+                                PhoneAuthProvider.credential(
+                                    verificationId:
+                                        _globalService.phoneAuthVerificationId,
+                                    smsCode: '123456');
+                            await _auth.signInWithCredential(phoneCredential);
+                            // _globalService.showScreen(
+                            //     context, VerificationOverviewScreen());
+
+                            _auth.currentUser
+                                ?.linkWithCredential(emailCredential)
+                                .then((value) {
+                              log('linked email to existing account');
+                              _globalService.isEmailVerified = true;
+                              _globalService.showScreen(
+                                  context, VerificationOverviewScreen());
+                            });
 
                             // registerService.registerByEmailAndHiddenPW("grg.kro@gmail.com");
                           },
-                          child: Text(Constants.textSignIn),
+                          child: Text(Constants.textSignInEmail),
                           //   style: ButtonStyle(
                           //       // foregroundColor: MaterialStateProperty.all<Color>(
                           //       //     Constants.kPrimaryColor),
@@ -109,5 +136,10 @@ class _PhoneAuthFormState extends State<PhoneAuthForm> {
             ),
           ),
         ));
+  }
+
+  String generateRandPassword() {
+    log("TODO: generate real rand pw instead of HorseAsk");
+    return "HorseAsk";
   }
 }

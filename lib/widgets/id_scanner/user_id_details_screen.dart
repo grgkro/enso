@@ -8,10 +8,9 @@ import 'package:provider/provider.dart';
 
 import '../../models/enso_user.dart';
 import '../service_locator.dart';
-import '../services/global_variables_service.dart';
+import '../services/global_service.dart';
 
-GlobalVariablesService _globalVariablesService =
-    getIt<GlobalVariablesService>();
+GlobalService _globalVariablesService = getIt<GlobalService>();
 
 class UserIdDetailsScreen extends StatelessWidget {
   static const routeName = '/user-id-details';

@@ -9,15 +9,14 @@ import 'package:ensobox/models/photo_side.dart';
 import 'package:ensobox/models/photo_type.dart';
 import 'package:ensobox/widgets/firebase_repository/storage_repo.dart';
 import 'package:ensobox/widgets/id_scanner/user_id_details_screen.dart';
-import 'package:ensobox/widgets/services/global_variables_service.dart';
+import 'package:ensobox/widgets/services/global_service.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import '../service_locator.dart';
 
-GlobalVariablesService _globalVariablesService =
-    getIt<GlobalVariablesService>();
+GlobalService _globalVariablesService = getIt<GlobalService>();
 
 class DisplayPictureScreen extends StatelessWidget {
   final String imagePath;
