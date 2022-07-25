@@ -7,6 +7,7 @@ import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 
 import '../../models/enso_user.dart';
+import '../globals/enso_divider.dart';
 import '../service_locator.dart';
 import '../services/global_service.dart';
 
@@ -151,9 +152,9 @@ class UserIdDetailsScreen extends StatelessWidget {
 
     // ...
 
-    result.add(const Divider(
-      height: 1.0,
-    ));
+    result.add(
+      const EnsoDivider(),
+    );
 
     return result;
   }

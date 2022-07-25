@@ -14,6 +14,7 @@ import 'package:flutter_reactive_ble/flutter_reactive_ble.dart';
 import 'package:location_permissions/location_permissions.dart';
 
 import '../models/locations.dart' as locations;
+import 'globals/enso_divider.dart';
 
 BluetoothService _bleService = getIt<BluetoothService>();
 GlobalService _globalService = getIt<GlobalService>();
@@ -173,9 +174,7 @@ class _BoxDetailsScreenState extends State<BoxDetailsScreen> {
                     : 'https://enso-box.s3.eu-central-1.amazonaws.com/Allura+-+Park.png'), //https://stackoverflow.com/questions/72951044/access-first-element-of-a-nullable-liststring-in-dart/72951153?noredirect=1#comment128852739_72951153
               ),
               _createStatusTile(),
-              const Divider(
-                height: 1.0,
-              ),
+              const EnsoDivider(),
               _createExplanationText(),
             ],
           ),

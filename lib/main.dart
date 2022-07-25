@@ -5,6 +5,7 @@ import 'package:ensobox/providers/users.dart';
 import 'package:ensobox/widgets/auth/success_screen.dart';
 import 'package:ensobox/widgets/box_list.dart';
 import 'package:ensobox/widgets/firebase_repository/auth_repo.dart';
+import 'package:ensobox/widgets/globals/enso_divider.dart';
 import 'package:ensobox/widgets/id_scanner/mrz_scanner.dart';
 import 'package:ensobox/widgets/id_scanner/user_id_details_screen.dart';
 import 'package:ensobox/widgets/service_locator.dart';
@@ -119,7 +120,7 @@ class _MyAppState extends State<Home> {
           SizedBox(
             width:
                 MediaQuery.of(context).size.width, // or use fixed size like 200
-            height: MediaQuery.of(context).size.height / 2,
+            height: MediaQuery.of(context).size.height / 2.3,
             child: GoogleMap(
               onMapCreated: _onMapCreated,
               initialCameraPosition: const CameraPosition(
@@ -129,18 +130,9 @@ class _MyAppState extends State<Home> {
               markers: _markers.values.toSet(),
             ),
           ),
-          const Divider(
-            height: 1.0,
-          ),
-          Text('Tippe auf den Gegenstand, den du gerne ausleihen möchtest:',
-              textAlign: TextAlign.center,
-              style: TextStyle(
-                  color: Colors.grey[800],
-                  fontWeight: FontWeight.w600,
-                  fontSize: 16)),
-          const Divider(
-            height: 1.0,
-          ),
+          const EnsoDivider(),
+          getMainText(),
+          const EnsoDivider(),
           Expanded(
             child: Container(
               width: MediaQuery.of(context)
@@ -153,5 +145,14 @@ class _MyAppState extends State<Home> {
         ],
       ),
     );
+  }
+
+  Text getMainText() {
+    return Text('Tippe auf den Gegenstand, den du gerne ausleihen möchtest:',
+        textAlign: TextAlign.center,
+        style: TextStyle(
+            color: Colors.grey[800],
+            fontWeight: FontWeight.w600,
+            fontSize: 16));
   }
 }
