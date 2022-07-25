@@ -38,6 +38,17 @@ class BoxDetailsScreen extends StatefulWidget {
 }
 
 class _BoxDetailsScreenState extends State<BoxDetailsScreen> {
+  String getBackgroundImageUrl() {
+    String url = "";
+    if (widget.selectedBox.item_images != null &&
+        widget.selectedBox.item_images!.isNotEmpty) {
+      url = widget.selectedBox.item_images!.first;
+    } else {
+      url = 'https://enso-box.s3.eu-central-1.amazonaws.com/Allura+-+Park.png';
+    }
+    return url;
+  }
+
   _checkAgainstSelectedBox(final DiscoveredDevice device) {
     if (device.id == widget.selectedBox.id) {
       log(device.toString());
@@ -170,11 +181,7 @@ class _BoxDetailsScreenState extends State<BoxDetailsScreen> {
                 width: MediaQuery.of(context).size.width * 0.9,
                 padding: const EdgeInsets.only(bottom: 30),
                 child: ImageUtil.ensoCachedImage(
-                    widget.selectedBox.item_images != null &&
-                            widget.selectedBox.item_images!.isNotEmpty
-                        ? 'https://enso-box.s3.eu-central-1.amazonaws.com/Allura+-+Park.png1'
-                        : 'https://enso-box.s3.eu-central-1.amazonaws.com/Allura+-+Park.png',
-                    'assets/img/placeholder_item.png'),
+                    getBackgroundImageUrl(), 'assets/img/placeholder_item.png'),
               ),
               _createStatusTile(),
               const EnsoDivider(),
