@@ -66,6 +66,10 @@ class _VerificationOverviewScreenState
                     )
                   : ElevatedButton(
                       onPressed: () => showAddPhoneScreen(context),
+                      style: ElevatedButton.styleFrom(
+                        primary: Colors.green, // background (button) color
+                        onPrimary: Colors.white, // foreground (text) color
+                      ),
                       child: const Text('Handynummer oder Email ändern'),
                     ),
           ElevatedButton(

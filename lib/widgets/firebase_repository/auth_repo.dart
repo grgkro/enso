@@ -2,7 +2,6 @@ import 'dart:async';
 import 'dart:developer';
 
 import 'package:ensobox/widgets/auth/email_auth_form.dart';
-import 'package:ensobox/widgets/auth/verification_overview_screen.dart';
 import 'package:firebase_app_check/firebase_app_check.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
@@ -75,8 +74,9 @@ class AuthRepo {
         });
   }
 
-  void registerByEmailAndHiddenPW(
-      BuildContext context, String email, String password) async {
+  // void registerByEmailAndHiddenPW(
+  //     BuildContext context, String email, String password) async {
+  void registerByEmailAndHiddenPW(String email) async {
     // TODO use asc for email & link method
     var acs = ActionCodeSettings(
         // URL you want to redirect back to. The domain (www.example.com) for this
@@ -90,18 +90,21 @@ class AuthRepo {
         androidInstallApp: true,
         // minimumVersion
         androidMinimumVersion: '12');
+    // await _auth
+    //     .createUserWithEmailAndPassword(
+    //       email: email,
+    //       password: password,
+    //     )
     await _auth
-        .createUserWithEmailAndPassword(
-          email: email,
-          password: password,
-        )
+        .sendSignInLinkToEmail(email: email, actionCodeSettings: acs)
+        .whenComplete(() => null)
         .catchError(
             (onError) => print('Error sending email verification $onError'))
         .then((value) {
       log('Successfully sent email & hidden pw verification');
       //TODO: replace email & pw with email & Link
       _globalService.isEmailVerified = true;
-      _globalService.showScreen(context, const VerificationOverviewScreen());
+      // _globalService.showScreen(context, const VerificationOverviewScreen());
     });
   }
 
@@ -138,21 +141,27 @@ class AuthRepo {
     if (email != null && emailPassword != null) {
       credential =
           EmailAuthProvider.credential(email: email, password: emailPassword);
+      log("found the user's credentials in shared pref (email & pw)");
     } else {
       String? smsCode = prefs.getString(Constants.smsCodeKey);
       String? identificationId = prefs.getString(Constants.identificationId);
       if (smsCode != null && identificationId != null) {
         credential = PhoneAuthProvider.credential(
             smsCode: smsCode, verificationId: identificationId);
+        log("found the user's credentials in shared pref (phone & smsCode)");
       }
     }
 
     if (credential != null) {
       final UserCredential userCredential =
           await _auth.signInWithCredential(credential);
+      log("User is now signed in: ${userCredential.user?.email ?? ''}");
       if (userCredential.user != null) {
         _globalService.currentUser = userCredential.user;
         log("User was registered before and is now signed in: ${userCredential.user?.email ?? ''}");
+        _globalService.isPhoneVerified =
+            prefs.getBool(Constants.hasVerifiedPhone) ?? false;
+        _globalService.isEmailVerified = userCredential.user!.emailVerified;
         return true;
       } else {
         log("Warn: User seems to have been registered before, but could not get signed in because userCredentials.user was null.");

@@ -60,6 +60,38 @@ class _BoxListState extends State<BoxList> {
                       Image.network(
                         box.image,
                         width: 100,
+                        height: 100,
+                        fit: BoxFit.contain,
+                        frameBuilder: (_, image, loadingBuilder, __) {
+                          if (loadingBuilder == null) {
+                            return const SizedBox(
+                              height: 100,
+                              child: Center(child: CircularProgressIndicator()),
+                            );
+                          }
+                          return image;
+                        },
+                        loadingBuilder: (BuildContext context, Widget image,
+                            ImageChunkEvent? loadingProgress) {
+                          if (loadingProgress == null) return image;
+                          return SizedBox(
+                            height: 100,
+                            child: Center(
+                              child: CircularProgressIndicator(
+                                value: loadingProgress.expectedTotalBytes !=
+                                        null
+                                    ? loadingProgress.cumulativeBytesLoaded /
+                                        loadingProgress.expectedTotalBytes!
+                                    : null,
+                              ),
+                            ),
+                          );
+                        },
+                        // errorBuilder: (_, __, ___) => Image.asset(
+                        //   AppImages.withoutPicture,
+                        //   height: 300,
+                        //   fit: BoxFit.fitHeight,
+                        // ),
                       ),
                       SizedBox(
                         width: 10,
