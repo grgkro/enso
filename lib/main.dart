@@ -109,7 +109,7 @@ class _MyAppState extends State<Home> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Fairleihboxen in deiner Nähe:'),
+        title: const Text('Was möchtest du ausleihen?:'),
         backgroundColor: Colors.green[700],
       ),
       key: _scaffoldKey,
@@ -128,6 +128,18 @@ class _MyAppState extends State<Home> {
               ),
               markers: _markers.values.toSet(),
             ),
+          ),
+          const Divider(
+            height: 1.0,
+          ),
+          Text('Tippe auf den Gegenstand, den du gerne ausleihen möchtest:',
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                  color: Colors.grey[800],
+                  fontWeight: FontWeight.w600,
+                  fontSize: 16)),
+          const Divider(
+            height: 1.0,
           ),
           Expanded(
             child: Container(

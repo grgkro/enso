@@ -99,7 +99,7 @@ class AuthRepo {
         .sendSignInLinkToEmail(email: email, actionCodeSettings: acs)
         .whenComplete(() => null)
         .catchError(
-            (onError) => print('Error sending email verification $onError'))
+            (onError) => log('Error sending email verification $onError'))
         .then((value) {
       log('Successfully sent email & hidden pw verification');
       //TODO: replace email & pw with email & Link
