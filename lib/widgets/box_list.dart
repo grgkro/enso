@@ -1,5 +1,6 @@
 import 'dart:developer';
 
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 
 import '../models/locations.dart' as locations;
@@ -50,11 +51,12 @@ class _BoxListState extends State<BoxList> {
                 splashColor: Theme.of(context).primaryColor,
                 borderRadius: BorderRadius.circular(15),
                 child: Container(
-                  margin: EdgeInsets.symmetric(vertical: 10, horizontal: 15),
+                  margin:
+                      const EdgeInsets.symmetric(vertical: 10, horizontal: 15),
                   decoration: BoxDecoration(
                     border: Border.all(color: Colors.black, width: 1),
                   ),
-                  padding: EdgeInsets.all(10),
+                  padding: const EdgeInsets.all(10),
                   child: Row(
                     children: <Widget>[
                       Image.network(
@@ -120,6 +122,16 @@ class _BoxListState extends State<BoxList> {
             ),
           )
           .toList(),
+    );
+  }
+
+  CachedNetworkImage buildBigCoverImage(String imageUrl) {
+    return CachedNetworkImage(
+      imageUrl: imageUrl,
+      width: 100,
+      height: 100,
+      placeholder: (context, url) => CircularProgressIndicator(),
+      errorWidget: (context, url, error) => const Icon(Icons.error),
     );
   }
 }

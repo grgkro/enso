@@ -57,6 +57,7 @@ dependencies:
   path_provider: ^2.0.11
   path: 1.8.1
   firebase_app_check: ^0.0.6+17
+  cached_network_image: ^3.2.1
 
 dev_dependencies:
   flutter_test:
@@ -86,6 +87,8 @@ flutter:
   assets:
     - assets/boxes.json
     - assets/sample_payment_configuration.json
+    - assets/img/placeholder_box.PNG
+    - assets/img/placeholder_item.png
 
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/assets-and-images/#resolution-aware

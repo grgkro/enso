@@ -15,6 +15,7 @@ import 'package:location_permissions/location_permissions.dart';
 
 import '../models/locations.dart' as locations;
 import 'globals/enso_divider.dart';
+import 'globals/image_util.dart';
 
 BluetoothService _bleService = getIt<BluetoothService>();
 GlobalService _globalService = getIt<GlobalService>();
@@ -168,10 +169,12 @@ class _BoxDetailsScreenState extends State<BoxDetailsScreen> {
                 height: MediaQuery.of(context).size.height * .35,
                 width: MediaQuery.of(context).size.width * 0.9,
                 padding: const EdgeInsets.only(bottom: 30),
-                child: Image.network(widget.selectedBox.item_images != null &&
-                        widget.selectedBox.item_images!.isNotEmpty
-                    ? widget.selectedBox.item_images!.first
-                    : 'https://enso-box.s3.eu-central-1.amazonaws.com/Allura+-+Park.png'), //https://stackoverflow.com/questions/72951044/access-first-element-of-a-nullable-liststring-in-dart/72951153?noredirect=1#comment128852739_72951153
+                child: ImageUtil.ensoCachedImage(
+                    widget.selectedBox.item_images != null &&
+                            widget.selectedBox.item_images!.isNotEmpty
+                        ? 'https://enso-box.s3.eu-central-1.amazonaws.com/Allura+-+Park.png1'
+                        : 'https://enso-box.s3.eu-central-1.amazonaws.com/Allura+-+Park.png',
+                    'assets/img/placeholder_item.png'),
               ),
               _createStatusTile(),
               const EnsoDivider(),
