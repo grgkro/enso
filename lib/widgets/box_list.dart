@@ -6,8 +6,8 @@ import 'package:ensobox/models/item.dart';
 import 'package:flutter/material.dart';
 
 import '../models/locations.dart' as locations;
-import 'box_details_screen.dart';
 import 'globals/image_util.dart';
+import 'item_details_screen.dart';
 
 class BoxList extends StatefulWidget {
   const BoxList({Key? key}) : super(key: key);
@@ -45,9 +45,10 @@ class _BoxListState extends State<BoxList> {
     });
   }
 
-  void selectCategory(BuildContext ctx, locations.Box selectedBox) {
+  void selectCategory(
+      BuildContext ctx, locations.Box selectedBox, Item selectedItem) {
     Navigator.of(ctx).push(MaterialPageRoute(builder: (_) {
-      return BoxDetailsScreen(_boxes, selectedBox);
+      return ItemDetailsScreen(_boxes, selectedBox, selectedItem);
     }));
   }
 
@@ -63,7 +64,8 @@ class _BoxListState extends State<BoxList> {
       itemBuilder: (context, index) {
         return Card(
           child: InkWell(
-            onTap: () => selectCategory(context, _boxes[itemsBoxMap[index]]),
+            onTap: () => selectCategory(
+                context, _boxes[itemsBoxMap[index]], _items[index]),
             splashColor: Theme.of(context).primaryColor,
             borderRadius: BorderRadius.circular(15),
             child: Container(
@@ -82,61 +84,42 @@ class _BoxListState extends State<BoxList> {
                         _items[index].item_images!.first,
                         'assets/img/placeholder_item.png'),
                   ),
-
-                  // Image.network(
-                  //   ,
-                  //   width: 100,
-                  //   height: 100,
-                  //   fit: BoxFit.contain,
-                  //   frameBuilder: (_, image, loadingBuilder, __) {
-                  //     if (loadingBuilder == null) {
-                  //       return const SizedBox(
-                  //         height: 100,
-                  //         child: Center(child: CircularProgressIndicator()),
-                  //       );
-                  //     }
-                  //     return image;
-                  //   },
-                  //   loadingBuilder: (BuildContext context, Widget image,
-                  //       ImageChunkEvent? loadingProgress) {
-                  //     if (loadingProgress == null) return image;
-                  //     return SizedBox(
-                  //       height: 100,
-                  //       child: Center(
-                  //         child: CircularProgressIndicator(
-                  //           value: loadingProgress.expectedTotalBytes != null
-                  //               ? loadingProgress.cumulativeBytesLoaded /
-                  //                   loadingProgress.expectedTotalBytes!
-                  //               : null,
-                  //         ),
-                  //       ),
-                  //     );
-                  //   },
-                  //   // errorBuilder: (_, __, ___) => Image.asset(
-                  //   //   AppImages.withoutPicture,
-                  //   //   height: 300,
-                  //   //   fit: BoxFit.fitHeight,
-                  //   // ),
-                  // ),
                   SizedBox(
                     width: 10,
                   ),
-                  Column(
-                    children: [
-                      Text(
-                        _items[index].name,
-                        style: TextStyle(
-                          fontWeight: FontWeight.bold,
-                          fontSize: 15,
+                  Flexible(
+                    child: Column(
+                      children: [
+                        Align(
+                          alignment: Alignment.centerLeft,
+                          child: Text(
+                            _items[index].name,
+                            style: TextStyle(
+                              fontWeight: FontWeight.bold,
+                              fontSize: 15,
+                            ),
+                          ),
                         ),
-                      ),
-                      Text(
-                        _boxes[itemsBoxMap[index]].address,
-                        style: TextStyle(
-                          color: Colors.grey,
+                        Align(
+                          alignment: Alignment.centerLeft,
+                          child: Text(
+                            _boxes[itemsBoxMap[index]].name,
+                            style: TextStyle(
+                              color: Colors.grey,
+                            ),
+                          ),
                         ),
-                      ),
-                    ],
+                        Align(
+                          alignment: Alignment.centerLeft,
+                          child: Text(
+                            _boxes[itemsBoxMap[index]].address,
+                            style: TextStyle(
+                              color: Colors.grey,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
                 ],
               ),

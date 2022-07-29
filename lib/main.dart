@@ -115,34 +115,37 @@ class _MyAppState extends State<Home> {
       ),
       key: _scaffoldKey,
       resizeToAvoidBottomInset: false,
-      body: Column(
-        children: <Widget>[
-          SizedBox(
-            width:
-                MediaQuery.of(context).size.width, // or use fixed size like 200
-            height: MediaQuery.of(context).size.height / 2.3,
-            child: GoogleMap(
-              onMapCreated: _onMapCreated,
-              initialCameraPosition: const CameraPosition(
-                target: LatLng(48.7553846205735, 9.172653858386855),
-                zoom: 14,
-              ),
-              markers: _markers.values.toSet(),
-            ),
-          ),
-          const EnsoDivider(),
-          getMainText(),
-          const EnsoDivider(),
-          Expanded(
-            child: Container(
+      body: SafeArea(
+        child: Column(
+          children: <Widget>[
+            SizedBox(
               width: MediaQuery.of(context)
                   .size
                   .width, // or use fixed size like 200
-              // height: MediaQuery.of(context).size.height / 2 - 100,
-              child: BoxList(),
+              height: MediaQuery.of(context).size.height / 2.3,
+              child: GoogleMap(
+                onMapCreated: _onMapCreated,
+                initialCameraPosition: const CameraPosition(
+                  target: LatLng(48.7553846205735, 9.172653858386855),
+                  zoom: 14,
+                ),
+                markers: _markers.values.toSet(),
+              ),
             ),
-          ),
-        ],
+            const EnsoDivider(),
+            getMainText(),
+            const EnsoDivider(),
+            Expanded(
+              child: Container(
+                width: MediaQuery.of(context)
+                    .size
+                    .width, // or use fixed size like 200
+                // height: MediaQuery.of(context).size.height / 2 - 100,
+                child: BoxList(),
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
