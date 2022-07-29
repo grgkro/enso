@@ -1,5 +1,6 @@
 import 'dart:developer';
 
+import 'package:camera/camera.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -14,6 +15,7 @@ class GlobalService {
   int? resendToken;
   User? currentUser;
   bool isSignedIn = false;
+  List<CameraDescription>? cameras;
 
   void showScreen(BuildContext ctx, Widget widget) {
     log("Going to next screen: ${widget.key}");

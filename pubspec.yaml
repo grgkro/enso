@@ -58,6 +58,7 @@ dependencies:
   path: 1.8.1
   firebase_app_check: ^0.0.6+17
   cached_network_image: ^3.2.1
+  app_settings: ^4.1.8
 
 dev_dependencies:
   flutter_test:

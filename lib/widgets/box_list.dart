@@ -80,6 +80,7 @@ class _BoxListState extends State<BoxList> {
                     height: MediaQuery.of(context).size.height * .1,
                     width: MediaQuery.of(context).size.width * 0.2,
                     // padding: const EdgeInsets.only(bottom: 30),
+                    // TODO: use a hero widget here https://api.flutter.dev/flutter/widgets/Hero-class.html
                     child: ImageUtil.ensoCachedImage(
                         _items[index].item_images!.first,
                         'assets/img/placeholder_item.png'),

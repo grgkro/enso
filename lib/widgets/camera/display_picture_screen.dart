@@ -7,6 +7,8 @@ import 'dart:io';
 import 'package:ensobox/models/enso_user.dart';
 import 'package:ensobox/models/photo_side.dart';
 import 'package:ensobox/models/photo_type.dart';
+import 'package:ensobox/widgets/camera/selfie_explanation_screen.dart';
+import 'package:ensobox/widgets/camera/take_picture_screen.dart';
 import 'package:ensobox/widgets/firebase_repository/storage_repo.dart';
 import 'package:ensobox/widgets/id_scanner/user_id_details_screen.dart';
 import 'package:ensobox/widgets/services/global_service.dart';
@@ -40,11 +42,45 @@ class DisplayPictureScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     EnsoUser currentUser = Provider.of<EnsoUser>(context, listen: false);
 
+    _showCamera() async {
+      if (_globalVariablesService.cameras != null &&
+          _globalVariablesService.cameras!.first != null) {
+        final camera = _globalVariablesService.cameras!.first;
+
+        await Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => TakePictureScreen(
+                camera: camera,
+                photoType: PhotoType.id,
+                photoSide: PhotoSide.back),
+          ),
+        );
+      }
+    }
+
     return Scaffold(
-      appBar: AppBar(title: const Text('Display the Picture')),
+      appBar: AppBar(
+          title: photoSide == PhotoSide.front
+              ? const Text('Vorderseite prüfen')
+              : const Text('Rückseite prüfen')),
       // The image is stored as a file on the device. Use the `Image.file`
       // constructor with the given path to display the image.
-      body: Image.file(io.File(imagePath)),
+      body: Column(
+        children: [
+          Text("Alles gut lesbar?"),
+          Expanded(
+            child: Container(
+              width: MediaQuery.of(context)
+                  .size
+                  .width, // or use fixed size like 200
+              // height: MediaQuery.of(context).size.height / 2 - 100,
+              child: Image.file(io.File(imagePath)),
+            ),
+          ),
+        ],
+      ),
+
       bottomNavigationBar: BottomNavigationBar(
         items: [
           BottomNavigationBarItem(
@@ -71,16 +107,23 @@ class DisplayPictureScreen extends StatelessWidget {
               if (photoType == PhotoType.id && photoSide == PhotoSide.front) {
                 // currentUser.frontIdPhoto = io.File(imagePath) as File?;
                 StorageRepo _storage = getIt<StorageRepo>();
+                _storage.storeFileOnPhone(File(imagePath));
                 _storage.uploadFile(
                     context,
                     "user/idphoto/${currentUser.id}/frontside",
                     File(imagePath),
                     photoType,
                     photoSide);
+                _globalVariablesService.isComingFromTakePictureScreen = true;
+                _showCamera();
+              } else if (photoType == PhotoType.id &&
+                  photoSide == PhotoSide.back) {
+                _globalVariablesService.isComingFromTakePictureScreen = false;
+                _globalVariablesService.showScreen(
+                    context, SelfieExplanationScreen());
               }
 
-              _globalVariablesService.isComingFromTakePictureScreen = true;
-              showUserIdDetailsScreen(context);
+            // showUserIdDetailsScreen(context);
           }
         },
       ),

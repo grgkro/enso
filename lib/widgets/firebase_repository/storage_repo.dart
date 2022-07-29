@@ -4,7 +4,9 @@ import 'dart:io';
 import 'package:ensobox/widgets/service_locator.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/cupertino.dart';
+import 'package:path_provider/path_provider.dart';
 import 'package:provider/provider.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../models/enso_user.dart';
 import '../../models/photo_side.dart';
@@ -18,6 +20,18 @@ class StorageRepo {
   );
 
   AuthRepo _authRepo = getIt<AuthRepo>();
+
+  storeFileOnPhone(File file) async {
+    Directory tempDir = await getTemporaryDirectory();
+    String tempPath = tempDir.path;
+
+    Directory appDocDir = await getApplicationDocumentsDirectory();
+    String appDocPath = appDocDir.path;
+// Step 4: Copy the file to a application document directory.
+    final File tempImage = await file.copy('$tempPath/image1.png');
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    prefs.setString('test_image', tempImage.path);
+  }
 
   uploadFile(BuildContext ctx, String refPath, File file, PhotoType photoType,
       PhotoSide photoSide) async {

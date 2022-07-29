@@ -25,6 +25,7 @@ class _VerificationOverviewScreenState
     extends State<VerificationOverviewScreen> {
   void _showCamera() async {
     final cameras = await availableCameras();
+    _globalService.cameras = cameras;
     final camera = cameras.first;
 
     await Navigator.push(

@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:developer';
 
+import 'package:app_settings/app_settings.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_reactive_ble/flutter_reactive_ble.dart';
 
@@ -120,7 +121,11 @@ class BluetoothService {
       duration: const Duration(seconds: 3),
       action: SnackBarAction(
         label: 'AKTIVIEREN',
-        onPressed: () {},
+        onPressed: () {
+          AppSettings.openWIFISettings();
+          AppSettings.openLocationSettings();
+          AppSettings.openBluetoothSettings();
+        },
       ),
     ));
 
