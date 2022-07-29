@@ -4,6 +4,7 @@ import 'package:ensobox/providers/boxes.dart';
 import 'package:ensobox/providers/users.dart';
 import 'package:ensobox/widgets/auth/success_screen.dart';
 import 'package:ensobox/widgets/box_list.dart';
+import 'package:ensobox/widgets/camera/selfie_explanation_screen.dart';
 import 'package:ensobox/widgets/firebase_repository/auth_repo.dart';
 import 'package:ensobox/widgets/globals/enso_divider.dart';
 import 'package:ensobox/widgets/id_scanner/mrz_scanner.dart';
@@ -61,8 +62,8 @@ class MyApp extends StatelessWidget {
         //   // Pass the appropriate camera to the TakePictureScreen widget.
         //   camera: firstCamera,
         // ),
-        home: Home(),
-        // home: MrzScanner(),
+        // home: Home(),
+        home: SelfieExplanationScreen(),
         // initialRoute: '/', // When using initialRoute, don’t define a home property.
         routes: {
           SuccessScreen.routeName: (ctx) => SuccessScreen(),

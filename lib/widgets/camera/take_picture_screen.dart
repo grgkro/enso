@@ -48,6 +48,20 @@ class _TakePictureScreenState extends State<TakePictureScreen> {
           }
         },
       ),
+      if (widget.photoType == PhotoType.id) ...[
+        Center(
+          child: Container(
+            height: 600,
+            decoration: BoxDecoration(
+                image: DecorationImage(
+                    image: const AssetImage('assets/img/perso.png'),
+                    colorFilter: ColorFilter.mode(
+                      Colors.white.withOpacity(0.4),
+                      BlendMode.modulate,
+                    ))),
+          ),
+        ),
+      ],
       Positioned.fill(
         child: Align(
           alignment: Alignment.bottomCenter,
@@ -73,6 +87,7 @@ class _TakePictureScreenState extends State<TakePictureScreen> {
 
                 // If the picture was taken, display it on a new screen.
                 _cameraController!.resumePreview();
+                // _cameraController!.dispose();
                 await Navigator.of(context).push(
                   MaterialPageRoute(
                     builder: (context) => DisplayPictureScreen(

@@ -56,6 +56,8 @@ class EnsoUser with ChangeNotifier {
   bool emailVerified = false;
   bool phoneVerified = false;
 
+  int selfieRandomNumber = 0;
+
   EnsoUser(EnsoUserBuilder builder) {
     id = builder.id;
     billingAddress = builder.billingAddress;

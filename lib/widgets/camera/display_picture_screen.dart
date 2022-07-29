@@ -4,6 +4,7 @@ import 'dart:developer';
 import 'dart:io' as io;
 import 'dart:io';
 
+import 'package:camera_platform_interface/src/types/camera_description.dart';
 import 'package:ensobox/models/enso_user.dart';
 import 'package:ensobox/models/photo_side.dart';
 import 'package:ensobox/models/photo_type.dart';
@@ -40,35 +41,54 @@ class DisplayPictureScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    EnsoUser currentUser = Provider.of<EnsoUser>(context, listen: false);
-
-    _showCamera() async {
-      if (_globalVariablesService.cameras != null &&
-          _globalVariablesService.cameras!.first != null) {
-        final camera = _globalVariablesService.cameras!.first;
-
-        await Navigator.push(
-          context,
-          MaterialPageRoute(
-            builder: (context) => TakePictureScreen(
-                camera: camera,
-                photoType: PhotoType.id,
-                photoSide: PhotoSide.back),
-          ),
-        );
+    final EnsoUser currentUser = Provider.of<EnsoUser>(context, listen: false);
+    CameraDescription? camera;
+    if (_globalVariablesService.cameras != null &&
+        _globalVariablesService.cameras!.isNotEmpty) {
+      if (photoType == PhotoType.selfie) {
+        camera = _globalVariablesService.cameras![1];
+      } else {
+        camera = _globalVariablesService.cameras![0];
       }
     }
 
+    Future<void> _showCamera() async {
+      if (camera == null) {
+        // TODO: no camera found
+        log('no camera found');
+        return;
+      }
+      await Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => TakePictureScreen(
+              camera: camera!,
+              photoType: PhotoType.id,
+              photoSide: PhotoSide.back),
+        ),
+      );
+    }
+
+    String appBarTitle = "";
+    String upperText = "Alles gut lesbar?";
+    if (photoType == PhotoType.id && photoSide == PhotoSide.front) {
+      appBarTitle = 'Vorderseite prüfen';
+    } else if (photoType == PhotoType.id && photoSide == PhotoSide.back) {
+      appBarTitle = 'Rückseite prüfen';
+    } else if (photoType == PhotoType.selfie) {
+      appBarTitle = 'Selfie mit ${currentUser.selfieRandomNumber.toString()}';
+      upperText =
+          'Bitte stell sicher, dass dein Gesicht und die Zahl ${currentUser.selfieRandomNumber.toString()} gut zu erkennen sind.';
+    }
     return Scaffold(
       appBar: AppBar(
-          title: photoSide == PhotoSide.front
-              ? const Text('Vorderseite prüfen')
-              : const Text('Rückseite prüfen')),
+        title: Text(appBarTitle),
+      ),
       // The image is stored as a file on the device. Use the `Image.file`
       // constructor with the given path to display the image.
       body: Column(
         children: [
-          Text("Alles gut lesbar?"),
+          Text(upperText),
           Expanded(
             child: Container(
               width: MediaQuery.of(context)
@@ -100,7 +120,7 @@ class DisplayPictureScreen extends StatelessWidget {
           log("Pressed" + itemIndex.toString());
           switch (itemIndex) {
             case 0:
-              Navigator.pop(context);
+              _showCamera();
               break;
             case 1:
               log("Pressed 111" + itemIndex.toString());
