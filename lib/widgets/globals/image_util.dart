@@ -18,4 +18,15 @@ class ImageUtil {
           return Image.asset('assets/img/placeholder_item.png');
         });
   }
+
+  // static String getItemImageUrl() {
+  //   String url = "";
+  //   if (widget.selectedBox.item_images != null &&
+  //       widget.selectedBox.item_images!.isNotEmpty) {
+  //     url = widget.selectedBox.item_images!.first;
+  //   } else {
+  //     url = 'https://enso-box.s3.eu-central-1.amazonaws.com/Allura+-+Park.png';
+  //   }
+  //   return url;
+  // }
 }

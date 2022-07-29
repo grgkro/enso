@@ -3,6 +3,8 @@ import 'dart:convert';
 import 'package:flutter/services.dart' show rootBundle;
 import 'package:json_annotation/json_annotation.dart';
 
+import 'item.dart';
+
 part 'locations.g.dart';
 
 // flutter pub run build_runner build --delete-conflicting-outputs
@@ -39,39 +41,28 @@ class LatLng {
 //   final double zoom;
 // }
 
-@JsonSerializable()
+@JsonSerializable(explicitToJson: true)
 class Box {
-  Box({
-    required this.name,
-    required this.id,
-    required this.service_uuid,
-    required this.characteristic_uuid,
-    required this.address,
-    required this.image,
-    this.lat,
-    this.lng,
-    this.owner_phone,
-    this.owner_email,
-    this.country,
-    this.state,
-    this.website,
-    this.item,
-    this.description1,
-    this.description2,
-    this.description3,
-    this.price_hour_normal,
-    this.price_hour_overdraft,
-    this.price_minute,
-    this.price_minute_overdraft,
-    this.price_km,
-    this.overdraft_hour,
-    this.overdraft_minute,
-    this.replacement_cost,
-    this.available,
-    this.reason_unavailability,
-    this.active,
-    this.item_images,
-  });
+  Box(
+      {required this.name,
+      required this.id,
+      required this.service_uuid,
+      required this.characteristic_uuid,
+      required this.address,
+      required this.image,
+      this.lat,
+      this.lng,
+      this.owner_phone,
+      this.owner_email,
+      this.country,
+      this.state,
+      this.website,
+      this.items,
+      this.description1,
+      this.description2,
+      this.available,
+      this.reason_unavailability,
+      this.active});
 
   factory Box.fromJson(Map<String, dynamic> json) => _$BoxFromJson(json);
   Map<String, dynamic> toJson() => _$BoxToJson(this);
@@ -89,23 +80,13 @@ class Box {
   String? country;
   String? state;
   String? website;
-  String? item;
+  List<Item>? items;
   String? description1;
   String? description2;
-  String? description3;
-  double? price_hour_normal;
-  double? price_hour_overdraft;
-  double? price_minute;
-  double? price_minute_overdraft;
-  double? price_km;
-  int? overdraft_hour;
-  int? overdraft_minute;
-  double? replacement_cost;
   bool? available;
   int?
       reason_unavailability; // 0 = rented out, 1 = item broken, 2 = item stolen, 3 = box broken
   bool? active;
-  List<String>? item_images;
 }
 
 @JsonSerializable()

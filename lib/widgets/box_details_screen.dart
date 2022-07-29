@@ -40,9 +40,11 @@ class BoxDetailsScreen extends StatefulWidget {
 class _BoxDetailsScreenState extends State<BoxDetailsScreen> {
   String getBackgroundImageUrl() {
     String url = "";
-    if (widget.selectedBox.item_images != null &&
-        widget.selectedBox.item_images!.isNotEmpty) {
-      url = widget.selectedBox.item_images!.first;
+    // if (widget.selectedBox.item_images != null &&
+    //     widget.selectedBox.item_images!.isNotEmpty) {
+    if (widget.selectedBox.items != null) {
+      // url = widget.selectedBox.items.first;
+      url = 'https://enso-box.s3.eu-central-1.amazonaws.com/Allura+-+Park.png';
     } else {
       url = 'https://enso-box.s3.eu-central-1.amazonaws.com/Allura+-+Park.png';
     }
@@ -183,6 +185,7 @@ class _BoxDetailsScreenState extends State<BoxDetailsScreen> {
                 child: ImageUtil.ensoCachedImage(
                     getBackgroundImageUrl(), 'assets/img/placeholder_item.png'),
               ),
+              const EnsoDivider(),
               _createStatusTile(),
               const EnsoDivider(),
               _createExplanationText(),
