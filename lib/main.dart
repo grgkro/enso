@@ -53,6 +53,7 @@ class MyApp extends StatelessWidget {
         ),
       ],
       child: MaterialApp(
+        debugShowCheckedModeBanner: false,
         title: 'Enso Fairleihbox',
         theme: ThemeData(
           primarySwatch: Colors.blue,

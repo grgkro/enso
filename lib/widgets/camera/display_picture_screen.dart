@@ -8,6 +8,7 @@ import 'package:camera_platform_interface/src/types/camera_description.dart';
 import 'package:ensobox/models/enso_user.dart';
 import 'package:ensobox/models/photo_side.dart';
 import 'package:ensobox/models/photo_type.dart';
+import 'package:ensobox/widgets/camera/display_selfie_id_pictures_screen.dart';
 import 'package:ensobox/widgets/camera/selfie_explanation_screen.dart';
 import 'package:ensobox/widgets/camera/take_picture_screen.dart';
 import 'package:ensobox/widgets/firebase_repository/storage_repo.dart';
@@ -141,6 +142,10 @@ class DisplayPictureScreen extends StatelessWidget {
                 _globalVariablesService.isComingFromTakePictureScreen = false;
                 _globalVariablesService.showScreen(
                     context, SelfieExplanationScreen());
+              } else if (photoType == PhotoType.selfie) {
+                log("Got all photos, going to the terms and conditions screen");
+                _globalVariablesService.showScreen(
+                    context, DisplaySelfieIdPicturesScreen());
               }
 
             // showUserIdDetailsScreen(context);

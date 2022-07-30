@@ -6,9 +6,9 @@ class DatabaseRepo {
     EnsoUser ensoUser = EnsoUser(EnsoUserBuilder());
     ensoUser.id = "testUid";
     ensoUser.email = "grg.kro@gmail.com";
-    ensoUser.frontIdPhoto = "testUrlFront";
-    ensoUser.backIdPhoto = "testUrlBack";
-    ensoUser.backIdPhoto = "testUrlBack";
+    ensoUser.frontIdPhotoUrl = "testUrlFront";
+    ensoUser.backIdPhotoUrl = "testUrlBack";
+    ensoUser.backIdPhotoUrl = "testUrlBack";
     ensoUser.emailVerified = false;
     ensoUser.phoneVerified = false;
     ensoUser.idUploaded = false;

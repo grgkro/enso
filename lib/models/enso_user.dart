@@ -47,8 +47,12 @@ class EnsoUser with ChangeNotifier {
   DateTime? expiryDate;
   String? personalNumber;
   String? personalNumber2;
-  String? frontIdPhoto;
-  String? backIdPhoto;
+  String? frontIdPhotoUrl;
+  String? frontIdPhotoPath;
+  String? backIdPhotoUrl;
+  String? backIdPhotoPath;
+  String? selfiePhotoUrl;
+  String? selfiePhotoPath;
 
   bool idUploaded = false;
   bool idApproved = false;
@@ -74,8 +78,8 @@ class EnsoUser with ChangeNotifier {
     expiryDate = builder.expiryDate;
     personalNumber = builder.personalNumber;
     personalNumber2 = builder.personalNumber2;
-    frontIdPhoto = builder.frontIdPhoto;
-    backIdPhoto = builder.backIdPhoto;
+    frontIdPhotoUrl = builder.frontIdPhoto;
+    backIdPhotoUrl = builder.backIdPhoto;
 
     idUploaded = builder.idUploaded;
     idApproved = builder.idApproved;

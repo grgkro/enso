@@ -59,6 +59,7 @@ dependencies:
   firebase_app_check: ^0.0.6+17
   cached_network_image: ^3.2.1
   app_settings: ^4.1.8
+  url_launcher: ^6.1.5
 
 dev_dependencies:
   flutter_test:
@@ -91,6 +92,8 @@ flutter:
     - assets/img/placeholder_box.PNG
     - assets/img/placeholder_item.png
     - assets/img/perso.png
+    - assets/img/perso-vs.png
+    - assets/img/perso-rs.png
 
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/assets-and-images/#resolution-aware

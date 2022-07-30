@@ -44,9 +44,9 @@ class StorageRepo {
       await storageRef.putFile(file);
       var photoUrl = await storageRef.getDownloadURL();
       if (photoType == PhotoType.id && photoSide == PhotoSide.front) {
-        currentUser.frontIdPhoto = photoUrl;
+        currentUser.frontIdPhotoUrl = photoUrl;
       } else if (photoType == PhotoType.id && photoSide == PhotoSide.back) {
-        currentUser.backIdPhoto = photoUrl;
+        currentUser.backIdPhotoUrl = photoUrl;
       } else {
         log("Can't save photoUrl to currentUser, passport photos not implemented yet.");
       }
