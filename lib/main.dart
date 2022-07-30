@@ -110,6 +110,7 @@ class _MyAppState extends State<Home> {
 
   @override
   Widget build(BuildContext context) {
+    const LatLng _mainLocation = const LatLng(25.69893, 32.6421);
     return Scaffold(
       appBar: AppBar(
         title: const Text('Was möchtest du ausleihen?:'),
@@ -125,6 +126,7 @@ class _MyAppState extends State<Home> {
                   .size
                   .width, // or use fixed size like 200
               height: MediaQuery.of(context).size.height / 2.3,
+
               child: GoogleMap(
                 onMapCreated: _onMapCreated,
                 initialCameraPosition: const CameraPosition(
