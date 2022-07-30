@@ -122,8 +122,6 @@ class BluetoothService {
       action: SnackBarAction(
         label: 'AKTIVIEREN',
         onPressed: () {
-          AppSettings.openWIFISettings();
-          AppSettings.openLocationSettings();
           AppSettings.openBluetoothSettings();
         },
       ),

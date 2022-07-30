@@ -4,7 +4,6 @@ import 'package:ensobox/providers/boxes.dart';
 import 'package:ensobox/providers/users.dart';
 import 'package:ensobox/widgets/auth/success_screen.dart';
 import 'package:ensobox/widgets/box_list.dart';
-import 'package:ensobox/widgets/camera/selfie_explanation_screen.dart';
 import 'package:ensobox/widgets/firebase_repository/auth_repo.dart';
 import 'package:ensobox/widgets/globals/enso_divider.dart';
 import 'package:ensobox/widgets/id_scanner/mrz_scanner.dart';
@@ -25,9 +24,10 @@ void main() async {
   setupServiceLocator(); // This will register any services you have with GetIt before the widget tree gets built.
   AuthRepo registerService = getIt<AuthRepo>();
   await registerService.initialize();
-  registerService.registerByEmailAndHiddenPW("grgkr.o@gmail.com");
+  // registerService.registerByEmailAndHiddenPW("grgkr.o@gmail.com");
 
   try {
+    // await registerService.clearSharedPreferences();
     await registerService.signInUserIfPossible();
   } catch (e) {
     log("Could not sign in User at start of the app: ${e.toString()}");
@@ -63,8 +63,8 @@ class MyApp extends StatelessWidget {
         //   // Pass the appropriate camera to the TakePictureScreen widget.
         //   camera: firstCamera,
         // ),
-        // home: Home(),
-        home: SelfieExplanationScreen(),
+        home: Home(),
+        // home: SelfieExplanationScreen(),
         // initialRoute: '/', // When using initialRoute, don’t define a home property.
         routes: {
           SuccessScreen.routeName: (ctx) => SuccessScreen(),

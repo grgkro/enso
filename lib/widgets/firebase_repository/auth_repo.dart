@@ -171,4 +171,9 @@ class AuthRepo {
     }
     return false;
   }
+
+  clearSharedPreferences() async {
+    final prefs = await SharedPreferences.getInstance();
+    prefs.clear();
+  }
 }
