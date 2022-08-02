@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:developer';
 
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:ensobox/widgets/auth/email_auth_form.dart';
 import 'package:firebase_app_check/firebase_app_check.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -11,6 +12,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../constants/constants.dart' as Constants;
 import '../../firebase_options.dart';
+import '../../models/enso_user.dart';
 import '../service_locator.dart';
 import '../services/global_service.dart';
 
@@ -110,7 +112,7 @@ class AuthRepo {
 
   void registerByEmailAndLink(String emailAuth) {
     // not working yet
-    var acs = ActionCodeSettings(
+    final ActionCodeSettings acs = ActionCodeSettings(
         // URL you want to redirect back to. The domain (www.example.com) for this
         // URL must be whitelisted in the Firebase Console.
         url: 'https://ensobox.page.link/',
@@ -126,8 +128,59 @@ class AuthRepo {
         .sendSignInLinkToEmail(email: emailAuth, actionCodeSettings: acs)
         .catchError((onError) =>
             print('Error sending email link verification $onError'))
-        .then((value) =>
-            print('Successfully sent email verification by email Link'));
+        .then((value) async {
+      print('Successfully sent email verification by email Link');
+      AuthCredential credential = EmailAuthProvider.credential(
+          email: emailAuth, password: "emailPassword");
+      await _auth.currentUser?.linkWithCredential(credential).then((value) {
+        log('linked email to existing account');
+      });
+    });
+  }
+
+  Future<void> saveUserToFirestore(EnsoUser user) async {
+    // Create a new user with a first and last name
+    final Map<String, dynamic> mappedUser = <String, dynamic>{
+      "id": user.id,
+      "billingAddress": user.billingAddress,
+      "givenNames": user.givenNames,
+      "surnames": user.surnames,
+      "countryCodeMrz": user.countryCodeMrz,
+      "nationalityCountryCode": user.nationalityCountryCode,
+      "documentType": user.documentType,
+      "documentNumber": user.documentNumber,
+      "birthDate": user.birthDate,
+      "sex": user.sex,
+      "expiryDate": user.expiryDate,
+      "personalNumber": user.personalNumber,
+      "personalNumber2": user.personalNumber2,
+      "frontIdPhotoUrl": user.frontIdPhotoUrl,
+      "frontIdPhotoPath": user.frontIdPhotoPath,
+      "backIdPhotoUrl": user.backIdPhotoUrl,
+      "backIdPhotoPath": user.backIdPhotoPath,
+      "selfiePhotoUrl": user.selfiePhotoUrl,
+      "selfiePhotoPath": user.selfiePhotoPath,
+      "idUploaded": user.idUploaded,
+      "idApproved": user.idApproved,
+      "emailVerified": user.emailVerified,
+      "phoneVerified": user.phoneVerified,
+      "selfieRandomNumber": user.selfieRandomNumber,
+    };
+
+    FirebaseFirestore db = FirebaseFirestore.instance;
+    await db.collection('users').doc(user.id).set(mappedUser);
+
+    print('DocumentSnapshot added with new ID: ${user.id}');
+    await db
+        .collection("users")
+        .doc(user.id)
+        .get()
+        .then((DocumentSnapshot<Map<String, dynamic>> event) {
+      // for (var doc in event.docs) {
+      print("------------RESPONSE:");
+      print("${event.id} => ${event.data()}");
+      // }
+    });
   }
 
   Future<bool> signInUserIfPossible() async {
@@ -159,6 +212,8 @@ class AuthRepo {
       if (userCredential.user != null) {
         _globalService.currentUser = userCredential.user;
         log("User was registered before and is now signed in: ${userCredential.user?.email ?? ''}");
+        log("User was registered before and is now signed in: ${userCredential.user?.uid ?? ''}");
+        log("User was registered before and is now signed in: ${await userCredential.user?.getIdToken() ?? ''}");
         _globalService.isPhoneVerified =
             prefs.getBool(Constants.hasVerifiedPhone) ?? false;
         _globalService.isEmailVerified = userCredential.user!.emailVerified;

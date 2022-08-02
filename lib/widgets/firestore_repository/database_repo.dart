@@ -3,8 +3,8 @@ import 'package:ensobox/models/enso_user.dart';
 class DatabaseRepo {
   EnsoUser getUser(String uid) {
     // replace with actual user from Firestore
-    EnsoUser ensoUser = EnsoUser(EnsoUserBuilder());
-    ensoUser.id = "testUid";
+    final EnsoUser ensoUser = EnsoUser(EnsoUserBuilder());
+    ensoUser.id = uid;
     ensoUser.email = "grg.kro@gmail.com";
     ensoUser.frontIdPhotoUrl = "testUrlFront";
     ensoUser.backIdPhotoUrl = "testUrlBack";

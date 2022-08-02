@@ -5,10 +5,13 @@ import 'package:ensobox/providers/users.dart';
 import 'package:ensobox/widgets/auth/success_screen.dart';
 import 'package:ensobox/widgets/box_list.dart';
 import 'package:ensobox/widgets/firebase_repository/auth_repo.dart';
+import 'package:ensobox/widgets/firestore_repository/database_repo.dart';
 import 'package:ensobox/widgets/globals/enso_divider.dart';
 import 'package:ensobox/widgets/id_scanner/mrz_scanner.dart';
 import 'package:ensobox/widgets/id_scanner/user_id_details_screen.dart';
 import 'package:ensobox/widgets/service_locator.dart';
+import 'package:ensobox/widgets/services/global_service.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:provider/provider.dart';
@@ -16,6 +19,10 @@ import 'package:provider/provider.dart';
 import 'models/enso_user.dart';
 import 'models/locations.dart' as locations;
 
+DatabaseRepo _databaseRepo = getIt<DatabaseRepo>();
+GlobalService _globalService = getIt<GlobalService>();
+
+//TODO: https://firebase.google.com/docs/firestore/quickstart#dart  Optional: Improve iOS & macOS build times by including the pre-compiled framework for Firestore
 void main() async {
   // Ensure that plugin services are initialized so that `availableCameras()`
   // can be called before `runApp()`
@@ -24,11 +31,21 @@ void main() async {
   setupServiceLocator(); // This will register any services you have with GetIt before the widget tree gets built.
   AuthRepo registerService = getIt<AuthRepo>();
   await registerService.initialize();
+  // registerService.registerByEmailAndLink("g.rgkro@gmail.com");
   // registerService.registerByEmailAndHiddenPW("grgkr.o@gmail.com");
 
   try {
     // await registerService.clearSharedPreferences();
     await registerService.signInUserIfPossible();
+    User currentUser = _globalService.currentUser!;
+    String userId = (await FirebaseAuth.instance.currentUser!).uid;
+    print(userId);
+    print(currentUser.uid);
+    print("currentUser.uid");
+    EnsoUser testUser = _databaseRepo.getUser(userId);
+    EnsoUser testUser2 = _databaseRepo.getUser(currentUser.uid);
+    await registerService.saveUserToFirestore(testUser);
+    await registerService.saveUserToFirestore(testUser2);
   } catch (e) {
     log("Could not sign in User at start of the app: ${e.toString()}");
   }
