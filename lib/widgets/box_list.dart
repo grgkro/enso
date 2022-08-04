@@ -6,7 +6,7 @@ import 'package:ensobox/models/item.dart';
 import 'package:flutter/material.dart';
 
 import '../models/locations.dart' as locations;
-import 'globals/image_util.dart';
+import 'globals/enso_circular_progress_indicator.dart';
 import 'item_details_screen.dart';
 
 class BoxList extends StatefulWidget {
@@ -23,14 +23,14 @@ class _BoxListState extends State<BoxList> {
       HashMap<int, int>(); // _items[3] belongs to _boxes[1] -> <3,1>
 
   Future<void> _getBoxesFromAPI() async {
-    var ensoBoxes = await locations.getBoxLocations();
+    locations.BoxLocations ensoBoxes = await locations.getBoxLocations();
     setState(() {
       int counterBoxes = 0;
       int counterItems = 0;
-      for (final box in ensoBoxes.boxes) {
+      for (final locations.Box box in ensoBoxes.boxes) {
         _boxes.add(box);
         if (box.items != null) {
-          for (final item in box.items!) {
+          for (final Item item in box.items!) {
             if (item != null) {
               _items.add(item);
               itemsBoxMap[counterItems] = counterBoxes;
@@ -47,7 +47,12 @@ class _BoxListState extends State<BoxList> {
 
   void selectCategory(
       BuildContext ctx, locations.Box selectedBox, Item selectedItem) {
-    Navigator.of(ctx).push(MaterialPageRoute(builder: (_) {
+    Navigator.of(ctx).push(
+        // PageRouteBuilder(
+        // transitionDuration: Duration(milliseconds: 500),
+        // pageBuilder: (_, __, ___) =>
+        //     ItemDetailsScreen(_boxes, selectedBox, selectedItem)));
+        MaterialPageRoute(builder: (_) {
       return ItemDetailsScreen(_boxes, selectedBox, selectedItem);
     }));
   }
@@ -61,7 +66,7 @@ class _BoxListState extends State<BoxList> {
   Widget build(BuildContext context) {
     return ListView.builder(
       itemCount: _items.length,
-      itemBuilder: (context, index) {
+      itemBuilder: (BuildContext context, int index) {
         return Card(
           child: InkWell(
             onTap: () => selectCategory(
@@ -81,9 +86,19 @@ class _BoxListState extends State<BoxList> {
                     width: MediaQuery.of(context).size.width * 0.2,
                     // padding: const EdgeInsets.only(bottom: 30),
                     // TODO: use a hero widget here https://api.flutter.dev/flutter/widgets/Hero-class.html
-                    child: ImageUtil.ensoCachedImage(
-                        _items[index].item_images!.first,
-                        'assets/img/placeholder_item.png'),
+                    child: Hero(
+                        tag: _items[index].item_images!.first,
+                        child: CachedNetworkImage(
+                            imageUrl: _items[index].item_images!.first,
+                            placeholder: (BuildContext context, String url) {
+                              return const EnsoCircularProgressIndicator();
+                            },
+                            errorWidget:
+                                (BuildContext context, String url, error) {
+                              log('ERROR: could not load image, going to show placeholder instead. url: ${url}, error: ${error.toString()}');
+                              return Image.asset(
+                                  'assets/img/placeholder_item.png');
+                            })),
                   ),
                   SizedBox(
                     width: 10,
@@ -221,8 +236,10 @@ class _BoxListState extends State<BoxList> {
       imageUrl: imageUrl,
       width: 100,
       height: 100,
-      placeholder: (context, url) => CircularProgressIndicator(),
-      errorWidget: (context, url, error) => const Icon(Icons.error),
+      placeholder: (BuildContext context, String url) =>
+          CircularProgressIndicator(),
+      errorWidget: (BuildContext context, String url, error) =>
+          const Icon(Icons.error),
     );
   }
 }

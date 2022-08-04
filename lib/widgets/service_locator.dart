@@ -1,4 +1,5 @@
 import 'package:ensobox/widgets/ble/bluetooth_service.dart';
+import 'package:ensobox/widgets/firestore_repository/rental_repo.dart';
 import 'package:ensobox/widgets/services/global_service.dart';
 import 'package:get_it/get_it.dart';
 
@@ -13,5 +14,6 @@ setupServiceLocator() {
   getIt.registerLazySingleton<AuthRepo>(() => AuthRepo());
   getIt.registerLazySingleton<BluetoothService>(() => BluetoothService());
   getIt.registerLazySingleton<GlobalService>(() => GlobalService());
+  getIt.registerLazySingleton<RentalRepo>(() => RentalRepo());
   getIt.registerLazySingleton<DatabaseRepo>(() => DatabaseRepo());
 }

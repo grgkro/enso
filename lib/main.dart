@@ -20,6 +20,7 @@ import 'models/enso_user.dart';
 import 'models/locations.dart' as locations;
 
 DatabaseRepo _databaseRepo = getIt<DatabaseRepo>();
+
 GlobalService _globalService = getIt<GlobalService>();
 
 //TODO: https://firebase.google.com/docs/firestore/quickstart#dart  Optional: Improve iOS & macOS build times by including the pre-compiled framework for Firestore
@@ -39,13 +40,9 @@ void main() async {
     await registerService.signInUserIfPossible();
     User currentUser = _globalService.currentUser!;
     String userId = (await FirebaseAuth.instance.currentUser!).uid;
-    print(userId);
-    print(currentUser.uid);
-    print("currentUser.uid");
+    print("currentUser.uid: $userId");
     EnsoUser testUser = _databaseRepo.getUser(userId);
-    EnsoUser testUser2 = _databaseRepo.getUser(currentUser.uid);
     await registerService.saveUserToFirestore(testUser);
-    await registerService.saveUserToFirestore(testUser2);
   } catch (e) {
     log("Could not sign in User at start of the app: ${e.toString()}");
   }

@@ -3,6 +3,7 @@ import 'dart:developer';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:ensobox/widgets/auth/email_auth_form.dart';
+import 'package:ensobox/widgets/firestore_repository/rental_repo.dart';
 import 'package:firebase_app_check/firebase_app_check.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
@@ -13,11 +14,13 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../../constants/constants.dart' as Constants;
 import '../../firebase_options.dart';
 import '../../models/enso_user.dart';
+import '../../models/rental.dart';
 import '../service_locator.dart';
 import '../services/global_service.dart';
 
 final FirebaseAuth _auth = FirebaseAuth.instance;
 GlobalService _globalService = getIt<GlobalService>();
+RentalRepo _rentalRepo = getIt<RentalRepo>();
 
 class AuthRepo {
   Future<void> initialize() async {
@@ -171,6 +174,29 @@ class AuthRepo {
     await db.collection('users').doc(user.id).set(mappedUser);
 
     print('DocumentSnapshot added with new ID: ${user.id}');
+
+    Rental testRental = _rentalRepo.getRental(user.id!);
+    final Map<String, dynamic> mappedRental = <String, dynamic>{
+      "id": testRental.id,
+      "userId": testRental.userId,
+      "itemId": testRental.itemId,
+      "start": testRental.start,
+      "end": testRental.end,
+      "totalCost": testRental.totalCost,
+      "currency": testRental.currency.toString(),
+      "isPayed": testRental.isPayed,
+      "dueDate": testRental.dueDate,
+      "notedDamages": testRental.notedDamages,
+      "damageImagesPaths": testRental.damageImagesPaths,
+      "endImagesPaths": testRental.endImagesPaths,
+    };
+    await db.collection('rentals').doc(testRental.id).set(mappedRental);
+    await FirebaseFirestore.instance
+        .collection('users')
+        .doc(user.id)
+        .collection("rentals")
+        .add(mappedRental);
+
     await db
         .collection("users")
         .doc(user.id)
@@ -178,6 +204,30 @@ class AuthRepo {
         .then((DocumentSnapshot<Map<String, dynamic>> event) {
       // for (var doc in event.docs) {
       print("------------RESPONSE:");
+      print("${event.id} => ${event.data()}");
+      // }
+    });
+
+    await db
+        .collection("rentals")
+        .doc(testRental.id)
+        .get()
+        .then((DocumentSnapshot<Map<String, dynamic>> event) {
+      // for (var doc in event.docs) {
+      print("------------RESPONSE for RENTAL:");
+      print("${event.id} => ${event.data()}");
+      // }
+    });
+
+    await db
+        .collection('users')
+        .doc(user.id)
+        .collection("rentals")
+        .doc(testRental.id)
+        .get()
+        .then((DocumentSnapshot<Map<String, dynamic>> event) {
+      // for (var doc in event.docs) {
+      print("------------RESPONSE for Users RENTAL:");
       print("${event.id} => ${event.data()}");
       // }
     });

@@ -1,6 +1,7 @@
 import 'dart:developer';
 import 'dart:io' show Platform;
 
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:ensobox/models/enso_user.dart';
 import 'package:ensobox/models/item.dart';
 import 'package:ensobox/widgets/ble/bluetooth_service.dart';
@@ -15,8 +16,8 @@ import 'package:location_permissions/location_permissions.dart';
 
 import '../models/locations.dart' as locations;
 import 'auth/verification_overview_screen.dart';
+import 'globals/enso_circular_progress_indicator.dart';
 import 'globals/enso_divider.dart';
-import 'globals/image_util.dart';
 
 BluetoothService _bleService = getIt<BluetoothService>();
 GlobalService _globalService = getIt<GlobalService>();
@@ -231,8 +232,17 @@ class _ItemDetailsScreenState extends State<ItemDetailsScreen> {
                 height: MediaQuery.of(context).size.height * .35,
                 width: MediaQuery.of(context).size.width,
                 // padding: const EdgeInsets.only(bottom: 30),
-                child: ImageUtil.ensoCachedImage(
-                    getBackgroundImageUrl(), 'assets/img/placeholder_item.png'),
+                child: Hero(
+                    tag: getBackgroundImageUrl(),
+                    child: CachedNetworkImage(
+                        imageUrl: getBackgroundImageUrl(),
+                        placeholder: (context, url) {
+                          return const EnsoCircularProgressIndicator();
+                        },
+                        errorWidget: (context, url, error) {
+                          log('ERROR: could not load image, going to show placeholder instead. url: ${url}, error: ${error.toString()}');
+                          return Image.asset('assets/img/placeholder_item.png');
+                        })),
               ),
               const EnsoDivider(),
               _createStatusTile(),
