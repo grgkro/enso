@@ -1,6 +1,5 @@
 import 'dart:developer';
 
-import 'package:ensobox/widgets/id_scanner/mrz_scanner.dart';
 import 'package:ensobox/widgets/user_add_email.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
@@ -121,7 +120,7 @@ class UserIdDetailsScreen extends StatelessWidget {
 
   void showMrzScanner(BuildContext ctx) {
     log("going to showUserIdDetailsScreen");
-    Navigator.pushReplacementNamed(ctx, MrzScanner.routeName);
+    // Navigator.pushReplacementNamed(ctx, MrzScanner.routeName);
     // Navigator.of(ctx).push(MaterialPageRoute(builder: (_) {
     //   return MrzScanner();
     // }));

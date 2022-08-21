@@ -3,7 +3,7 @@ import 'dart:developer';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:ensobox/widgets/auth/email_auth_form.dart';
-import 'package:ensobox/widgets/firestore_repository/rental_repo.dart';
+import 'package:ensobox/widgets/firebase_repository/rental_repo.dart';
 import 'package:firebase_app_check/firebase_app_check.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
@@ -37,6 +37,7 @@ class AuthRepo {
     _auth.authStateChanges().listen((User? user) async {
       if (user != null) {
         print("GOT THE USER FROM AUTH: ${user.uid}");
+        _globalService.currentUser = user;
       } else {
         print("user WAS NULL???");
       }
@@ -60,7 +61,7 @@ class AuthRepo {
           log('Error while verifying phone number: ${e.message}');
         },
         codeSent: (String verificationId, int? resendToken) async {
-          final prefs = await SharedPreferences.getInstance();
+          final SharedPreferences prefs = await SharedPreferences.getInstance();
           prefs.setString(Constants.verificationId, verificationId);
 
           if (resendToken != null) {
@@ -82,8 +83,13 @@ class AuthRepo {
   // void registerByEmailAndHiddenPW(
   //     BuildContext context, String email, String password) async {
   void registerByEmailAndHiddenPW(String email) async {
+    final SharedPreferences prefs = await SharedPreferences.getInstance();
+    String pw = "password";
+    // If it doesn't exist, returns null.
+    prefs.setString(Constants.emailKey, email);
+    prefs.setString(Constants.emailPasswordKey, pw);
     // TODO use asc for email & link method
-    var acs = ActionCodeSettings(
+    ActionCodeSettings acs = ActionCodeSettings(
         // URL you want to redirect back to. The domain (www.example.com) for this
         // URL must be whitelisted in the Firebase Console.
         url: 'https://ensobox.page.link/',
@@ -95,22 +101,31 @@ class AuthRepo {
         androidInstallApp: true,
         // minimumVersion
         androidMinimumVersion: '12');
-    // await _auth
-    //     .createUserWithEmailAndPassword(
-    //       email: email,
-    //       password: password,
-    //     )
     await _auth
-        .sendSignInLinkToEmail(email: email, actionCodeSettings: acs)
-        .whenComplete(() => null)
-        .catchError(
-            (onError) => log('Error sending email verification $onError'))
-        .then((value) {
-      log('Successfully sent email & hidden pw verification');
-      //TODO: replace email & pw with email & Link
-      _globalService.isEmailVerified = true;
-      // _globalService.showScreen(context, const VerificationOverviewScreen());
-    });
+        .createUserWithEmailAndPassword(
+          email: email,
+          password: 'password',
+        ).then(
+            (UserCredential value) {
+              log(
+                  'Successfully sent email & hidden pw verification. Returned value: $value');
+              //TODO: replace email & pw with email & Link
+              // _globalService.isEmailVerified = true;
+              // saveUserToFirestore(value);
+              //   // _globalService.showScreen(context, const VerificationOverviewScreen());
+            });
+    // await _auth
+    //     .sendSignInLinkToEmail(email: email, actionCodeSettings: acs)
+    //     .whenComplete(() => null)
+    //     .catchError(
+    //         (onError) => log('Error sending email verification $onError'))
+    //     .then((value) {
+    //   log('Successfully sent email & hidden pw verification');
+    //   //TODO: replace email & pw with email & Link
+    //   _globalService.isEmailVerified = true;
+    //   saveUserToFirestore()
+    //   // _globalService.showScreen(context, const VerificationOverviewScreen());
+    // });
   }
 
   void registerByEmailAndLink(String emailAuth) {
@@ -135,7 +150,7 @@ class AuthRepo {
       print('Successfully sent email verification by email Link');
       AuthCredential credential = EmailAuthProvider.credential(
           email: emailAuth, password: "emailPassword");
-      await _auth.currentUser?.linkWithCredential(credential).then((value) {
+      await _auth.currentUser?.linkWithCredential(credential).then((UserCredential value) {
         log('linked email to existing account');
       });
     });
@@ -175,7 +190,7 @@ class AuthRepo {
 
     print('DocumentSnapshot added with new ID: ${user.id}');
 
-    Rental testRental = _rentalRepo.getRental(user.id!);
+    final Rental testRental = await _rentalRepo.getRental(user.id!);
     final Map<String, dynamic> mappedRental = <String, dynamic>{
       "id": testRental.id,
       "userId": testRental.userId,
@@ -235,7 +250,7 @@ class AuthRepo {
 
   Future<bool> signInUserIfPossible() async {
     // TODO: move this lower into the app to avoid long initial loading time
-    final prefs = await SharedPreferences.getInstance();
+    final SharedPreferences prefs = await SharedPreferences.getInstance();
     // If it doesn't exist, returns null.
     String? email = prefs.getString(Constants.emailKey);
     String? emailPassword = prefs.getString(Constants.emailPasswordKey);
@@ -277,8 +292,22 @@ class AuthRepo {
     return false;
   }
 
+  void getUserFromFirebase(String userId) {
+    final FirebaseFirestore db = FirebaseFirestore.instance;
+
+    final docRef = db.collection("users").doc(userId);
+    docRef.get().then(
+          (DocumentSnapshot doc) {
+        final data = doc.data() as Map<String, dynamic>;
+        log("current User has idApproved: ${data['idApproved']}");
+      },
+      onError: (e) => print("Error getting document: $e"),
+    );
+
+  }
+
   clearSharedPreferences() async {
-    final prefs = await SharedPreferences.getInstance();
+    final SharedPreferences prefs = await SharedPreferences.getInstance();
     prefs.clear();
   }
 }

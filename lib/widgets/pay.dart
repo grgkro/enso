@@ -7,7 +7,6 @@ import 'package:ensobox/models/g_pay_info.dart';
 import 'package:ensobox/models/g_pay_tokenization_data.dart';
 import 'package:ensobox/models/photo_side.dart';
 import 'package:ensobox/models/photo_type.dart';
-import 'package:ensobox/widgets/id_scanner/mrz_scanner.dart';
 import 'package:flutter/material.dart';
 import 'package:pay/pay.dart';
 import 'package:provider/provider.dart';
@@ -47,9 +46,9 @@ class _PayState extends State<Pay> {
     }
 
     void showMrzScannerScreen(BuildContext ctx) {
-      Navigator.of(ctx).push(MaterialPageRoute(builder: (_) {
-        return const MrzScanner();
-      }));
+      // Navigator.of(ctx).push(MaterialPageRoute(builder: (_) {
+      //   return const MrzScanner();
+      // }));
     }
 
     void _showCamera() async {
@@ -143,16 +142,17 @@ class _PayState extends State<Pay> {
       body: ListView(
         padding: const EdgeInsets.all(20.0),
         children: [
-          Platform.isAndroid
-              ? GooglePayButton(
-                  paymentConfigurationAsset:
-                      'sample_payment_configuration.json',
-                  paymentItems: _paymentItems,
-                  style: GooglePayButtonStyle.black,
-                  type: GooglePayButtonType.pay,
-                  onPaymentResult: onGooglePayResult,
-                )
-              : RawApplePayButton(
+          // Platform.isAndroid
+          //     ? GooglePayButton(
+          //         paymentConfigurationAsset:
+          //             'sample_payment_configuration.json',
+          //         paymentItems: _paymentItems,
+          //         style: GooglePayButtonStyle.black,
+          //         type: GooglePayButtonType.pay,
+          //         onPaymentResult: onGooglePayResult,
+          //       )
+          //     :
+          RawApplePayButton(
                   style: ApplePayButtonStyle.black,
                   type: ApplePayButtonType.inStore,
                   onPressed: () {

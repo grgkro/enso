@@ -1,9 +1,9 @@
 import 'package:ensobox/widgets/ble/bluetooth_service.dart';
-import 'package:ensobox/widgets/firestore_repository/rental_repo.dart';
 import 'package:ensobox/widgets/services/global_service.dart';
 import 'package:get_it/get_it.dart';
 
 import 'firebase_repository/auth_repo.dart';
+import 'firebase_repository/rental_repo.dart';
 import 'firebase_repository/storage_repo.dart';
 import 'firestore_repository/database_repo.dart';
 

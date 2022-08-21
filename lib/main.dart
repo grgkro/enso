@@ -1,5 +1,10 @@
 import 'dart:developer';
+import 'dart:convert';
+import 'dart:io';
+import 'package:cloud_functions/cloud_functions.dart';
 
+import '../../constants/constants.dart' as Constants;
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:ensobox/providers/boxes.dart';
 import 'package:ensobox/providers/users.dart';
 import 'package:ensobox/widgets/auth/success_screen.dart';
@@ -15,6 +20,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:provider/provider.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import 'models/enso_user.dart';
 import 'models/locations.dart' as locations;
@@ -22,6 +28,7 @@ import 'models/locations.dart' as locations;
 DatabaseRepo _databaseRepo = getIt<DatabaseRepo>();
 
 GlobalService _globalService = getIt<GlobalService>();
+
 
 //TODO: https://firebase.google.com/docs/firestore/quickstart#dart  Optional: Improve iOS & macOS build times by including the pre-compiled framework for Firestore
 void main() async {
@@ -32,14 +39,63 @@ void main() async {
   setupServiceLocator(); // This will register any services you have with GetIt before the widget tree gets built.
   AuthRepo registerService = getIt<AuthRepo>();
   await registerService.initialize();
+  final functions = FirebaseFunctions.instance;
+  try {
+    final result =
+  await FirebaseFunctions.instance.httpsCallable('email').call();
+  } on FirebaseFunctionsException catch (error) {
+    print(error.code);
+    print(error.details);
+    print(error.message);
+  }
+
+
+    var url = 'https://us-central1-enso-fairleih.cloudfunctions.net/email';
+  String? userId;
+  if (_globalService.currentUser?.uid != null ) {
+    userId = _globalService.currentUser?.uid;
+  } else {
+    userId = '6O96jgxcV65mOMx2pHdn';
+  }
+  url += '?userId=' + userId!;
+  var httpClient = new HttpClient();
+
+    String result;
+    try {
+      var request = await httpClient.getUrl(Uri.parse(url));
+      var response = await request.close();
+      if (response.statusCode == HttpStatus.ok) {
+        var json = await response.transform(utf8.decoder).join();
+        // var data = jsonDecode(json);
+        log('RESULT from email function: $json');
+      } else {
+        result =
+        'Error getting a random quote:\nHttp status ${response.statusCode}';
+      }
+    } catch (exception) {
+      result = 'Failed invoking the getRandomQuote function.';
+    }
+
+
+
+    // If the widget was removed from the tree while the message was in flight,
+    // we want to discard the reply rather than calling setState to update our
+    // non-existent appearance.
+    // if (!mounted) return;
+
+
+
   // registerService.registerByEmailAndLink("g.rgkro@gmail.com");
-  // registerService.registerByEmailAndHiddenPW("grgkr.o@gmail.com");
+  String email = "gr.gkro@gmail.com";
+  registerService.registerByEmailAndHiddenPW(email);
+
 
   try {
     // await registerService.clearSharedPreferences();
     await registerService.signInUserIfPossible();
     User currentUser = _globalService.currentUser!;
     String userId = (await FirebaseAuth.instance.currentUser!).uid;
+    registerService.getUserFromFirebase(userId);
     print("currentUser.uid: $userId");
     EnsoUser testUser = _databaseRepo.getUser(userId);
     await registerService.saveUserToFirestore(testUser);
@@ -82,7 +138,7 @@ class MyApp extends StatelessWidget {
         // initialRoute: '/', // When using initialRoute, don’t define a home property.
         routes: {
           SuccessScreen.routeName: (ctx) => SuccessScreen(),
-          MrzScanner.routeName: (ctx) => MrzScanner(),
+          // MrzScanner.routeName: (ctx) => MrzScanner(),
           UserIdDetailsScreen.routeName: (ctx) => UserIdDetailsScreen()
         },
         // home: Home(),
