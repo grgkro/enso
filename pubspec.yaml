@@ -51,6 +51,7 @@ dependencies:
   shared_preferences: ^2.0.15
   get_it: ^7.2.0 # The most popular service locator package for Flutter
 #  flutter_mrz_scanner: ^2.0.0
+  connectivity_plus: ^2.3.6+1 # checking internet connection
   permission_handler: ^8.2.5
   camera: ^0.10.0
   image_picker: ^0.8.5+3

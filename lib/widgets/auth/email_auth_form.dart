@@ -10,10 +10,12 @@ import 'package:cloud_functions/cloud_functions.dart';
 
 import '../../constants/constants.dart' as Constants;
 import '../firebase_repository/auth_repo.dart';
+import '../firestore_repository/functions_repo.dart';
 import '../service_locator.dart';
 import '../services/global_service.dart';
 
 GlobalService _globalService = getIt<GlobalService>();
+FunctionsRepo _functionsRepo = getIt<FunctionsRepo>();
 
 class EmailAuthForm extends StatefulWidget {
   EmailAuthForm({Key? key}) : super(key: key);
@@ -132,8 +134,9 @@ class _EmailAuthFormState extends State<EmailAuthForm> {
                                     .then((value) {
                                   log('linked email to existing account');
                                   //TODO: replace email & pw with email & Link
-                                  _globalService.isEmailVerified = true;
+                                  _globalService.isEmailVerified = false;
                                   _globalService.isPhoneVerified = true;
+                                  _functionsRepo.sendVerificationEmail(value.user?.uid);
                                   _globalService.showScreen(context,
                                       const VerificationOverviewScreen());
                                 });

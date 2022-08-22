@@ -1,7 +1,10 @@
 import 'dart:developer';
 import 'dart:convert';
 import 'dart:io';
+import 'package:app_settings/app_settings.dart';
 import 'package:cloud_functions/cloud_functions.dart';
+import 'package:connectivity_plus/connectivity_plus.dart';
+import 'package:ensobox/widgets/firestore_repository/functions_repo.dart';
 
 import '../../constants/constants.dart' as Constants;
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -28,7 +31,7 @@ import 'models/locations.dart' as locations;
 DatabaseRepo _databaseRepo = getIt<DatabaseRepo>();
 
 GlobalService _globalService = getIt<GlobalService>();
-
+FunctionsRepo _functionsRepo = getIt<FunctionsRepo>();
 
 //TODO: https://firebase.google.com/docs/firestore/quickstart#dart  Optional: Improve iOS & macOS build times by including the pre-compiled framework for Firestore
 void main() async {
@@ -39,56 +42,22 @@ void main() async {
   setupServiceLocator(); // This will register any services you have with GetIt before the widget tree gets built.
   AuthRepo registerService = getIt<AuthRepo>();
   await registerService.initialize();
-  final functions = FirebaseFunctions.instance;
-  try {
-    final result =
-  await FirebaseFunctions.instance.httpsCallable('email').call();
-  } on FirebaseFunctionsException catch (error) {
-    print(error.code);
-    print(error.details);
-    print(error.message);
-  }
 
 
-    var url = 'https://us-central1-enso-fairleih.cloudfunctions.net/email';
-  String? userId;
-  if (_globalService.currentUser?.uid != null ) {
-    userId = _globalService.currentUser?.uid;
-  } else {
-    userId = '6O96jgxcV65mOMx2pHdn';
-  }
-  url += '?userId=' + userId!;
-  var httpClient = new HttpClient();
-
-    String result;
-    try {
-      var request = await httpClient.getUrl(Uri.parse(url));
-      var response = await request.close();
-      if (response.statusCode == HttpStatus.ok) {
-        var json = await response.transform(utf8.decoder).join();
-        // var data = jsonDecode(json);
-        log('RESULT from email function: $json');
-      } else {
-        result =
-        'Error getting a random quote:\nHttp status ${response.statusCode}';
-      }
-    } catch (exception) {
-      result = 'Failed invoking the getRandomQuote function.';
-    }
-
-
-
-    // If the widget was removed from the tree while the message was in flight,
-    // we want to discard the reply rather than calling setState to update our
-    // non-existent appearance.
-    // if (!mounted) return;
-
-
+  // If the widget was removed from the tree while the message was in flight,
+  // we want to discard the reply rather than calling setState to update our
+  // non-existent appearance.
+  // if (!mounted) return;
 
   // registerService.registerByEmailAndLink("g.rgkro@gmail.com");
-  String email = "gr.gkro@gmail.com";
+  String email = "grgkro@gmail.com";
   registerService.registerByEmailAndHiddenPW(email);
-
+  if (_globalService.currentUser != null) {
+    await _functionsRepo.sendVerificationEmail(_globalService.currentUser!.uid);
+  } else {
+    await _functionsRepo.sendVerificationEmail("N85D9LaArpXj89Ilh0XvlQdIJLo1");
+    log("user is null, can't send verification email");
+  }
 
   try {
     // await registerService.clearSharedPreferences();
@@ -107,8 +76,10 @@ void main() async {
 }
 
 class MyApp extends StatelessWidget {
+
   @override
   Widget build(BuildContext context) {
+
     return MultiProvider(
       providers: [
         ChangeNotifierProvider(
@@ -157,6 +128,43 @@ class Home extends StatefulWidget {
 class _MyAppState extends State<Home> {
   final _scaffoldKey = GlobalKey<ScaffoldState>();
   final Map<String, Marker> _markers = {};
+  var subscription;
+  var connectionStatus;
+
+  @override
+  void initState() {
+    subscription = Connectivity().onConnectivityChanged.listen((ConnectivityResult result) {
+      setState(() => connectionStatus = result );
+      checkInternetConnectivity();
+    });
+
+    super.initState();
+  }
+
+  @override
+  dispose() {
+    super.dispose();
+    subscription.cancel();
+  }
+
+  ScaffoldFeatureController<SnackBar, SnackBarClosedReason>? checkInternetConnectivity() {
+    if (connectionStatus == ConnectivityResult.none) {
+        return ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+          content:
+          const Text("Bitte prüfen, ob du mit dem Internet verbunden bist."),
+          duration: const Duration(seconds: 3),
+          action: SnackBarAction(
+            label: 'WLAN AKTIVIEREN',
+            onPressed: () {
+              AppSettings.openWIFISettings();
+            },
+          ),
+        ));
+    } else {
+      log("device has internet");
+      return null;
+    }
+  }
 
   Future<void> _onMapCreated(GoogleMapController controller) async {
     var ensoBoxes = await locations.getBoxLocations();
@@ -180,7 +188,8 @@ class _MyAppState extends State<Home> {
 
   @override
   Widget build(BuildContext context) {
-    const LatLng _mainLocation = const LatLng(25.69893, 32.6421);
+
+    const LatLng _mainLocation = LatLng(25.69893, 32.6421);
     return Scaffold(
       appBar: AppBar(
         title: const Text('Was möchtest du ausleihen?:'),
@@ -231,5 +240,28 @@ class _MyAppState extends State<Home> {
             color: Colors.grey[800],
             fontWeight: FontWeight.w600,
             fontSize: 16));
+  }
+}
+
+Future<bool> hasInternetConnection() async {
+  final ConnectivityResult result = await Connectivity().checkConnectivity();
+  if (result == ConnectivityResult.mobile) {
+    log("Internet connection is from Mobile data");
+    return Future.value(true);
+  } else if (result == ConnectivityResult.wifi) {
+    log("internet connection is from wifi");
+    return Future.value(true);
+  } else if (result == ConnectivityResult.ethernet) {
+    log("internet connection is from wired cable");
+    return Future.value(true);
+  } else if (result == ConnectivityResult.bluetooth) {
+    log("internet connection is from bluethooth threatening");
+    return Future.value(true);
+  } else if (result == ConnectivityResult.none) {
+    log("No internet connection");
+    return Future.value(false);
+  } else {
+    log("Probably no internet connection?");
+    return Future.value(false);
   }
 }
