@@ -11,6 +11,8 @@ class GlobalService {
   bool isComingFromTakePictureScreen = false;
   bool isPhoneVerified = false;
   bool isEmailVerified = false;
+  bool hasTriggeredConfirmtionEmail = false;
+  bool hasTriggeredConfirmationSms = false;
   String phoneAuthVerificationId = "";
   int? resendToken;
   User? currentUser;

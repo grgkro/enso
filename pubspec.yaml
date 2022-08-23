@@ -63,6 +63,10 @@ dependencies:
   app_settings: ^4.1.8
   url_launcher: ^6.1.5
   cloud_functions: ^3.3.5
+  open_mail_app: ^0.4.5
+  amplify_flutter: '<1.0.0'
+  amplify_auth_cognito: '<1.0.0'
+  amplify_analytics_pinpoint: '<1.0.0'
 
 
 dev_dependencies:

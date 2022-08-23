@@ -123,7 +123,7 @@ class _ItemDetailsScreenState extends State<ItemDetailsScreen> {
         // log('device: $device.name');
         _checkAgainstSelectedBox(device);
       }, onError: (Object e) {
-        log('Device scan fails with error: $e');
+        log('Device scan failed with error: $e');
         _bleService.handleError(e, context);
       });
     }
@@ -280,7 +280,7 @@ class _ItemDetailsScreenState extends State<ItemDetailsScreen> {
                 //   _bleService.connectToDevice();
                 if (userIsMissingNecessaryVerification()) {
                   _globalService.showScreen(
-                      context, const VerificationOverviewScreen());
+                      context, VerificationOverviewScreen());
                 } else if (currentEnsoUser.idApproved) {
                   log("let's go to the renting screen!");
                   // _globalService.showScreen(context, RentingScreen);

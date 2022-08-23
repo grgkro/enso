@@ -4,7 +4,10 @@ import 'dart:io';
 import 'package:app_settings/app_settings.dart';
 import 'package:cloud_functions/cloud_functions.dart';
 import 'package:connectivity_plus/connectivity_plus.dart';
+import 'package:ensobox/widgets/auth/verification_overview_screen.dart';
 import 'package:ensobox/widgets/firestore_repository/functions_repo.dart';
+import 'package:firebase_app_check/firebase_app_check.dart';
+import 'package:firebase_core/firebase_core.dart';
 
 import '../../constants/constants.dart' as Constants;
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -25,13 +28,15 @@ import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import 'firebase_options.dart';
 import 'models/enso_user.dart';
 import 'models/locations.dart' as locations;
 
+final FirebaseAuth _auth = FirebaseAuth.instance;
 DatabaseRepo _databaseRepo = getIt<DatabaseRepo>();
-
 GlobalService _globalService = getIt<GlobalService>();
 FunctionsRepo _functionsRepo = getIt<FunctionsRepo>();
+AuthRepo registerService = getIt<AuthRepo>();
 
 //TODO: https://firebase.google.com/docs/firestore/quickstart#dart  Optional: Improve iOS & macOS build times by including the pre-compiled framework for Firestore
 void main() async {
@@ -40,22 +45,35 @@ void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
   setupServiceLocator(); // This will register any services you have with GetIt before the widget tree gets built.
-  AuthRepo registerService = getIt<AuthRepo>();
-  await registerService.initialize();
 
+  // await registerService.initialize();
 
-  // If the widget was removed from the tree while the message was in flight,
-  // we want to discard the reply rather than calling setState to update our
-  // non-existent appearance.
-  // if (!mounted) return;
+  WidgetsFlutterBinding.ensureInitialized();
+
+  await Firebase.initializeApp(
+    options: DefaultFirebaseOptions.currentPlatform,
+  );
+
+  await FirebaseAppCheck.instance.activate(
+    webRecaptchaSiteKey: 'recaptcha-v3-site-key',
+  );
+
+  _auth.authStateChanges().listen((User? user) async {
+    if (user != null) {
+      print("GOT THE USER FROM AUTH: ${user.uid}");
+      _globalService.currentUser = user;
+    } else {
+      print("user WAS NULL???");
+    }
+  });
 
   // registerService.registerByEmailAndLink("g.rgkro@gmail.com");
-  String email = "grgkro@gmail.com";
+  String email = "grgk.ro@gmail.com";
   registerService.registerByEmailAndHiddenPW(email);
   if (_globalService.currentUser != null) {
-    await _functionsRepo.sendVerificationEmail(_globalService.currentUser!.uid);
+    await _functionsRepo.sendVerificationEmail(_globalService.currentUser!.uid, email);
   } else {
-    await _functionsRepo.sendVerificationEmail("N85D9LaArpXj89Ilh0XvlQdIJLo1");
+    await _functionsRepo.sendVerificationEmail("AxiWL1RKp3g6Ws1Bd4koFbRrPED3", email);
     log("user is null, can't send verification email");
   }
 
@@ -104,7 +122,7 @@ class MyApp extends StatelessWidget {
         //   // Pass the appropriate camera to the TakePictureScreen widget.
         //   camera: firstCamera,
         // ),
-        home: Home(),
+        home: VerificationOverviewScreen(),
         // home: SelfieExplanationScreen(),
         // initialRoute: '/', // When using initialRoute, don’t define a home property.
         routes: {

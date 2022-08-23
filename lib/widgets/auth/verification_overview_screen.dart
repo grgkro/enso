@@ -5,16 +5,22 @@ import 'package:ensobox/widgets/auth/email_auth_form.dart';
 import 'package:ensobox/widgets/auth/phone_auth_form.dart';
 import 'package:ensobox/widgets/services/global_service.dart';
 import 'package:flutter/material.dart';
+import 'package:open_mail_app/open_mail_app.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
+import '../../constants/constants.dart';
 import '../../models/photo_side.dart';
 import '../../models/photo_type.dart';
 import '../camera/take_picture_screen.dart';
 import '../service_locator.dart';
+import '../../constants/constants.dart' as Constants;
 
 GlobalService _globalService = getIt<GlobalService>();
+late final SharedPreferences prefs;
+bool hasTriggeredConfirmationSms = false;
+bool hasTriggeredConfirmationEmail = false;
 
 class VerificationOverviewScreen extends StatefulWidget {
-  const VerificationOverviewScreen({Key? key}) : super(key: key);
 
   @override
   State<VerificationOverviewScreen> createState() =>
@@ -23,15 +29,22 @@ class VerificationOverviewScreen extends StatefulWidget {
 
 class _VerificationOverviewScreenState
     extends State<VerificationOverviewScreen> {
+
+  @override
+  void initState() {
+
+
+  }
+
   void _showCamera() async {
-    final cameras = await availableCameras();
+    final List<CameraDescription> cameras = await availableCameras();
     _globalService.cameras = cameras;
-    final camera = cameras.first;
+    final CameraDescription camera = cameras.first;
 
     await Navigator.push(
       context,
       MaterialPageRoute(
-        builder: (context) => TakePictureScreen(
+        builder: (BuildContext context) => TakePictureScreen(
             camera: camera,
             photoType: PhotoType.id,
             photoSide: PhotoSide.front),
@@ -41,6 +54,7 @@ class _VerificationOverviewScreenState
 
   @override
   Widget build(BuildContext context) {
+
     return Scaffold(
       appBar: AppBar(
         title: const Text('Identität bestätigen:'),
@@ -51,15 +65,16 @@ class _VerificationOverviewScreenState
         children: [
           Text(
               "Bevor du die Bohrmaschine ausleihen kannst, benötigen wir folgende Infos von dir:"),
-          !_globalService.isPhoneVerified
+
+          !hasTriggeredConfirmationSms
               ? ElevatedButton(
                   onPressed:
                       // TODO: was wenn app geschlossen wird und neu angefangen wird? isEmailVerified muss auch in user oder sharedPref gespeichert werden
                       () => showAddPhoneScreen(context),
                   child: Text('Handynummer & Email hinzufügen'),
                 )
-              : _globalService.isPhoneVerified &&
-                      !_globalService.isEmailVerified
+              : hasTriggeredConfirmationSms &&
+                      !hasTriggeredConfirmationEmail
                   ? ElevatedButton(
                       onPressed: () =>
                           _globalService.showScreen(context, EmailAuthForm()),
@@ -126,4 +141,21 @@ class _VerificationOverviewScreenState
     log("Respond to button Email verifizieren press");
     // showMrzScannerScreen(context);
   }
+
+  void initPrefs() async {
+    if (prefs == null) {
+      prefs = await SharedPreferences.getInstance();
+    }
+
+    bool? hasTriggeredConfirmationSmsTmp = prefs.getBool(Constants.hasTriggeredConfirmationSms);
+    if (hasTriggeredConfirmationSmsTmp != null) {
+      hasTriggeredConfirmationSms = hasTriggeredConfirmationSmsTmp;
+    }
+    bool? hasTriggeredConfirmationEmailTmp = prefs.getBool(Constants.hasTriggeredConfirmationEmail);
+    if (hasTriggeredConfirmationEmailTmp != null) {
+      hasTriggeredConfirmationEmail = hasTriggeredConfirmationEmailTmp;
+    }
+  }
+
+
 }

@@ -112,12 +112,12 @@ class _OtpFormState extends State<OtpForm> {
                             await _auth
                                 .signInWithCredential(credential)
                                 .then((value) async {
-                              _globalService.isPhoneVerified = true;
+                              _globalService.hasTriggeredConfirmationSms = true;
 
                               final prefs =
                                   await SharedPreferences.getInstance();
                               // try {
-                              prefs.setBool(Constants.hasVerifiedPhone, true);
+                              prefs.setBool(Constants.hasTriggeredConfirmationSms, true);
                               _globalService.showScreen(
                                   context, EmailAuthForm());
                               // if the user already signed in with phone & smsCode, we don't want to create a new user but link the email to the existing one

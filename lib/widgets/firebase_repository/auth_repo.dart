@@ -82,38 +82,39 @@ class AuthRepo {
 
   // void registerByEmailAndHiddenPW(
   //     BuildContext context, String email, String password) async {
-  void registerByEmailAndHiddenPW(String email) async {
+  Future<UserCredential> registerByEmailAndHiddenPW(String email) async {
     final SharedPreferences prefs = await SharedPreferences.getInstance();
     String pw = "password";
     // If it doesn't exist, returns null.
     prefs.setString(Constants.emailKey, email);
     prefs.setString(Constants.emailPasswordKey, pw);
     // TODO use asc for email & link method
-    ActionCodeSettings acs = ActionCodeSettings(
-        // URL you want to redirect back to. The domain (www.example.com) for this
-        // URL must be whitelisted in the Firebase Console.
-        url: 'https://ensobox.page.link/',
-        // This must be true
-        handleCodeInApp: true,
-        iOSBundleId: 'com.example.ensobox',
-        androidPackageName: 'com.example.ensobox',
-        // installIfNotAvailable
-        androidInstallApp: true,
-        // minimumVersion
-        androidMinimumVersion: '12');
-    await _auth
+    // ActionCodeSettings acs = ActionCodeSettings(
+    //     // URL you want to redirect back to. The domain (www.example.com) for this
+    //     // URL must be whitelisted in the Firebase Console.
+    //     url: 'https://ensobox.page.link/',
+    //     // This must be true
+    //     handleCodeInApp: true,
+    //     iOSBundleId: 'com.example.ensobox',
+    //     androidPackageName: 'com.example.ensobox',
+    //     // installIfNotAvailable
+    //     androidInstallApp: true,
+    //     // minimumVersion
+    //     androidMinimumVersion: '12');
+    return _auth
         .createUserWithEmailAndPassword(
           email: email,
           password: 'password',
-        ).then(
-            (UserCredential value) {
-              log(
-                  'Successfully sent email & hidden pw verification. Returned value: $value');
-              //TODO: replace email & pw with email & Link
-              // _globalService.isEmailVerified = true;
-              // saveUserToFirestore(value);
-              //   // _globalService.showScreen(context, const VerificationOverviewScreen());
-            });
+        );
+        // .then(
+        //     (UserCredential value) {
+        //       log(
+        //           'Successfully sent email & hidden pw verification. Returned value: $value');
+        //       //TODO: replace email & pw with email & Link
+        //       // _globalService.isEmailVerified = true;
+        //       // saveUserToFirestore(value);
+        //       //   // _globalService.showScreen(context, const VerificationOverviewScreen());
+        //     });
     // await _auth
     //     .sendSignInLinkToEmail(email: email, actionCodeSettings: acs)
     //     .whenComplete(() => null)
