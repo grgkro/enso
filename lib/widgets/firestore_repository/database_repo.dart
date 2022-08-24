@@ -1,3 +1,5 @@
+import 'dart:developer';
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:ensobox/models/enso_user.dart';
 
@@ -27,7 +29,8 @@ class DatabaseRepo {
 
       return EnsoUser.fromData(userData.data() as Map<String, dynamic>);
     } catch (e) {
-      return e.toString();
+      log("Error while getUserFromDB, returning null as EnsoUser: ${e.toString()}");
+      return null;
     }
   }
 

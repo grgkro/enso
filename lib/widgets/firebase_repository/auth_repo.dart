@@ -103,18 +103,18 @@ class AuthRepo {
     //     androidMinimumVersion: '12');
     return _auth
         .createUserWithEmailAndPassword(
-          email: email,
-          password: 'password',
-        );
-        // .then(
-        //     (UserCredential value) {
-        //       log(
-        //           'Successfully sent email & hidden pw verification. Returned value: $value');
-        //       //TODO: replace email & pw with email & Link
-        //       // _globalService.isEmailVerified = true;
-        //       // saveUserToFirestore(value);
-        //       //   // _globalService.showScreen(context, const VerificationOverviewScreen());
-        //     });
+      email: email,
+      password: 'password',
+    );
+    // .then(
+    //     (UserCredential value) {
+    //       log(
+    //           'Successfully sent email & hidden pw verification. Returned value: $value');
+    //       //TODO: replace email & pw with email & Link
+    //       // _globalService.isEmailVerified = true;
+    //       // saveUserToFirestore(value);
+    //       //   // _globalService.showScreen(context, const VerificationOverviewScreen());
+    //     });
     // await _auth
     //     .sendSignInLinkToEmail(email: email, actionCodeSettings: acs)
     //     .whenComplete(() => null)
@@ -132,8 +132,8 @@ class AuthRepo {
   void registerByEmailAndLink(String emailAuth) {
     // not working yet
     final ActionCodeSettings acs = ActionCodeSettings(
-        // URL you want to redirect back to. The domain (www.example.com) for this
-        // URL must be whitelisted in the Firebase Console.
+      // URL you want to redirect back to. The domain (www.example.com) for this
+      // URL must be whitelisted in the Firebase Console.
         url: 'https://ensobox.page.link/',
         // This must be true
         handleCodeInApp: true,
@@ -146,12 +146,13 @@ class AuthRepo {
     _auth
         .sendSignInLinkToEmail(email: emailAuth, actionCodeSettings: acs)
         .catchError((onError) =>
-            print('Error sending email link verification $onError'))
+        print('Error sending email link verification $onError'))
         .then((value) async {
       print('Successfully sent email verification by email Link');
       AuthCredential credential = EmailAuthProvider.credential(
           email: emailAuth, password: "emailPassword");
-      await _auth.currentUser?.linkWithCredential(credential).then((UserCredential value) {
+      await _auth.currentUser?.linkWithCredential(credential).then((
+          UserCredential value) {
         log('linked email to existing account');
       });
     });
@@ -249,7 +250,7 @@ class AuthRepo {
     });
   }
 
-  Future<UserCredential?> signInUserIfPossible() async {
+  Future<UserCredential?> signInAuthUserIfPossible() async {
     UserCredential? userCredential;
     // TODO: move this lower into the app to avoid long initial loading time
     final SharedPreferences prefs = await SharedPreferences.getInstance();
@@ -272,28 +273,20 @@ class AuthRepo {
       }
     }
 
-    try {
-      if (credential != null) {
+    if (credential == null) {
+      log(
+          "Info: user could not be signed in, no user credentials found in sharedPrefs.");
+    } else {
+      try {
         userCredential = await _auth.signInWithCredential(credential);
-        log("User is now signed in: ${userCredential.user?.email ?? ''}");
-        if (userCredential.user != null) {
-          _globalService.currentUser = userCredential.user;
-          log("User was registered before and is now signed in: ${userCredential.user?.uid ?? ''}");
-          log("User was registered before and is now signed in: ${await userCredential.user?.getIdToken() ?? ''}");
-          _globalService.isPhoneVerified =
-              prefs.getBool(Constants.hasVerifiedPhone) ?? false;
-          _globalService.isEmailVerified = userCredential.user!.emailVerified;
-        } else {
-          log("Warn: User seems to have been registered before, but could not get signed in because userCredentials.user was null.");
-        }
-      } else {
-        log("Info: User seems to have been registered before, but could not get signed in, because credential was null.");
+        log("AuthUser is now signed in: ${userCredential.user?.email ?? ''}");
+      } catch (e) {
+        // e.g. the email was badly formatted: "grgk@gmail.com " (with space at the end...)
+        log("Error signing in User. ${e.toString()}");
+        //TODO: show SNACK
       }
-    } catch (e) {
-      // e.g. the email was badly formatted: "grgk@gmail.com " (with space at the end...)
+      return userCredential;
     }
-
-    return userCredential;
   }
 
   void getUserFromFirebase(String userId) {
@@ -307,8 +300,8 @@ class AuthRepo {
       },
       onError: (e) => print("Error getting document: $e"),
     );
-
   }
+
 
   clearSharedPreferences() async {
     final SharedPreferences prefs = await SharedPreferences.getInstance();

@@ -36,7 +36,7 @@ final FirebaseAuth _auth = FirebaseAuth.instance;
 DatabaseRepo _databaseRepo = getIt<DatabaseRepo>();
 GlobalService _globalService = getIt<GlobalService>();
 FunctionsRepo _functionsRepo = getIt<FunctionsRepo>();
-AuthRepo registerService = getIt<AuthRepo>();
+AuthRepo _authRepo = getIt<AuthRepo>();
 
 //TODO: https://firebase.google.com/docs/firestore/quickstart#dart  Optional: Improve iOS & macOS build times by including the pre-compiled framework for Firestore
 void main() async {
@@ -62,33 +62,37 @@ void main() async {
     if (user != null) {
       print("GOT THE USER FROM AUTH: ${user.uid}");
       _globalService.currentUser = user;
+      if (user.uid != _globalService.currentEnsoUser.id) {
+        EnsoUser currentEnsoUser = await _databaseRepo.getUserFromDB(user.uid);
+        if (currentEnsoUser != null ) {
+          _globalService.currentEnsoUser = currentEnsoUser;
+        }
+
+      }
     } else {
       print("user WAS NULL???");
     }
   });
 
-  // registerService.registerByEmailAndLink("g.rgkro@gmail.com");
-  String email = " grgk.ro@gmail.com ";
-  registerService.registerByEmailAndHiddenPW(email.trim());
-  // if (_globalService.currentUser != null) {
-  //   await _functionsRepo.sendVerificationEmail(_globalService.currentUser!.uid, email);
-  // } else {
-  //   // await _functionsRepo.sendVerificationEmail("AxiWL1RKp3g6Ws1Bd4koFbRrPED3", email);
-  //   log("user is null, can't send verification email");
-  // }
-
   try {
-    // await registerService.clearSharedPreferences();
-    await registerService.signInUserIfPossible();
-    User currentAuthUser = _globalService.currentUser!;
-    String userId = (await FirebaseAuth.instance.currentUser!).uid;
-    EnsoUser currentEnsoUser = await _databaseRepo.getUserFromDB(userId);
-    _globalService.currentEnsoUser = currentEnsoUser;
-    // registerService.getUserFromFirebase(userId);
-    log("currentUser.uid: $userId");
-    // EnsoUser testUser = _databaseRepo.getUser(userId);
-    // await registerService.saveUserToFirestore(testUser);
-    _databaseRepo.getUserFromDB(_globalService.currentEnsoUser.id!);
+    await _authRepo.clearSharedPreferences();
+    UserCredential? authUserCredential = await _authRepo.signInAuthUserIfPossible();
+    if (authUserCredential != null && authUserCredential.user != null) {
+      _globalService.currentUser = authUserCredential.user;
+      log("User was registered before and is now signed in: ${authUserCredential.user?.uid ?? ''}");
+      log("User was registered before and is now signed in: ${await authUserCredential.user?.getIdToken() ?? ''}");
+      EnsoUser currentEnsoUser = await _databaseRepo.getUserFromDB(authUserCredential.user!.uid);
+      if (currentEnsoUser != null) {
+        _globalService.currentEnsoUser = currentEnsoUser;
+        log("-------- successfully retrieved the currentUser from auth and DB: ${currentEnsoUser.id} --------");
+      } else {
+        log("Couldn't get currentEnsoUser in main.dart");
+      }
+    } else {
+      log("Warn: User seems to have been registered before, but could not get signed in because userCredentials.user was null."
+          "Maybe has been deleted from the DB?");
+      //TODO: show Snack?
+    }
   } catch (e) {
     log("Could not sign in User at start of the app: ${e.toString()}");
   }

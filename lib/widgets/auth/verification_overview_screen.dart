@@ -38,7 +38,14 @@ class _VerificationOverviewScreenState
   @override
   void initState() {
     super.initState();
-    _futureEnsoUser = fetchUserFromDB();
+    if (_globalService.currentEnsoUser.id != null) {
+      debugPrint(
+          'Step 1, fetch data for _globalService.currentEnsoUser.id: ${_globalService.currentEnsoUser.id!}');
+      _futureEnsoUser =
+          _databaseRepo.getUserFromDB(_globalService.currentEnsoUser.id!);
+    } else {
+      _futureEnsoUser = Future.value(EnsoUser(EnsoUserBuilder()));
+    }
   }
 
   void _showCamera() async {
@@ -90,44 +97,37 @@ class _VerificationOverviewScreenState
               "Bevor du die Bohrmaschine ausleihen kannst, benötigen wir folgende Infos von dir:"),
           !ensoUser.hasTriggeredConfirmationSms
               ? ElevatedButton(
-            onPressed:
-            // TODO: was wenn app geschlossen wird und neu angefangen wird? isEmailVerified muss auch in user oder sharedPref gespeichert werden
-                () => showAddPhoneScreen(context),
-            child: Text('Handynummer & Email hinzufügen'),
-          )
+                  onPressed:
+                      // TODO: was wenn app geschlossen wird und neu angefangen wird? isEmailVerified muss auch in user oder sharedPref gespeichert werden
+                      () => showAddPhoneScreen(context),
+                  child: Text('Handynummer & Email hinzufügen'),
+                )
               : ensoUser.hasTriggeredConfirmationSms &&
-              !ensoUser.hasTriggeredConfirmationEmail
-              ? ElevatedButton(
-            onPressed: () => _globalService.showScreen(
-                context, EmailAuthForm()),
-            child: const Text('Email hinzufügen'),
-          )
-              : ElevatedButton(
-            onPressed: () => showAddPhoneScreen(context),
-            style: ElevatedButton.styleFrom(
-              primary:
-              Colors.green, // background (button) color
-              onPrimary:
-              Colors.white, // foreground (text) color
-            ),
-            child: const Text('Handynummer oder Email ändern'),
-          ),
+                      !ensoUser.hasTriggeredConfirmationEmail
+                  ? ElevatedButton(
+                      onPressed: () =>
+                          _globalService.showScreen(context, EmailAuthForm()),
+                      child: const Text('Email hinzufügen'),
+                    )
+                  : ElevatedButton(
+                      onPressed: () => showAddPhoneScreen(context),
+                      style: ElevatedButton.styleFrom(
+                        primary: Colors.green, // background (button) color
+                        onPrimary: Colors.white, // foreground (text) color
+                      ),
+                      child: const Text('Handynummer oder Email ändern'),
+                    ),
           ElevatedButton(
             onPressed: !isIdFrontAdded()
                 ? startAddingIdFront
                 : !isIdFrontAdded()
-                ? startAddingIdBack
-                : null,
+                    ? startAddingIdBack
+                    : null,
             child: const Text('Perso oder Pass fotografieren'),
           )
         ],
       ),
     );
-  }
-
-  Future<dynamic> fetchUserFromDB() {
-    debugPrint('Step 1, fetch data for _globalService.currentEnsoUser.id: ${_globalService.currentEnsoUser.id!}');
-    return _databaseRepo.getUserFromDB(_globalService.currentEnsoUser.id!);
   }
 
   void startAddingIdFront() {
