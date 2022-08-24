@@ -113,7 +113,7 @@ class _EmailAuthFormState extends State<EmailAuthForm> {
                                     ?.linkWithCredential(emailCredential)
                                     .then((UserCredential value) async {
                                   log('linked email to existing account');
-                                  //TODO: replace email & pw with email & Link
+
                                   _globalService.hasTriggeredConfirmationSms = true;
 
                                   if (value.user != null &&

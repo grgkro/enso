@@ -1,6 +1,7 @@
 import 'dart:developer';
 
 import 'package:camera/camera.dart';
+import 'package:ensobox/models/enso_user.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -16,6 +17,7 @@ class GlobalService {
   String phoneAuthVerificationId = "";
   int? resendToken;
   User? currentUser;
+  EnsoUser currentEnsoUser = EnsoUser(EnsoUserBuilder());
   bool isSignedIn = false;
   List<CameraDescription>? cameras;
 

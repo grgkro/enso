@@ -20,7 +20,7 @@ import 'package:provider/provider.dart';
 
 import '../service_locator.dart';
 
-GlobalService _globalVariablesService = getIt<GlobalService>();
+GlobalService _globalService = getIt<GlobalService>();
 
 class DisplayPictureScreen extends StatelessWidget {
   final String imagePath;
@@ -42,14 +42,14 @@ class DisplayPictureScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final EnsoUser currentUser = Provider.of<EnsoUser>(context, listen: false);
+    final EnsoUser currentUser = _globalService.currentEnsoUser;
     CameraDescription? camera;
-    if (_globalVariablesService.cameras != null &&
-        _globalVariablesService.cameras!.isNotEmpty) {
+    if (_globalService.cameras != null &&
+        _globalService.cameras!.isNotEmpty) {
       if (photoType == PhotoType.selfie) {
-        camera = _globalVariablesService.cameras![1];
+        camera = _globalService.cameras![1];
       } else {
-        camera = _globalVariablesService.cameras![0];
+        camera = _globalService.cameras![0];
       }
     }
 
@@ -135,16 +135,16 @@ class DisplayPictureScreen extends StatelessWidget {
                     File(imagePath),
                     photoType,
                     photoSide);
-                _globalVariablesService.isComingFromTakePictureScreen = true;
+                _globalService.isComingFromTakePictureScreen = true;
                 _showCamera();
               } else if (photoType == PhotoType.id &&
                   photoSide == PhotoSide.back) {
-                _globalVariablesService.isComingFromTakePictureScreen = false;
-                _globalVariablesService.showScreen(
+                _globalService.isComingFromTakePictureScreen = false;
+                _globalService.showScreen(
                     context, SelfieExplanationScreen());
               } else if (photoType == PhotoType.selfie) {
                 log("Got all photos, going to the terms and conditions screen");
-                _globalVariablesService.showScreen(
+                _globalService.showScreen(
                     context, DisplaySelfieIdPicturesScreen());
               }
 

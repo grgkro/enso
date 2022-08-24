@@ -68,24 +68,27 @@ void main() async {
   });
 
   // registerService.registerByEmailAndLink("g.rgkro@gmail.com");
-  String email = "grgk.ro@gmail.com";
-  registerService.registerByEmailAndHiddenPW(email);
-  if (_globalService.currentUser != null) {
-    await _functionsRepo.sendVerificationEmail(_globalService.currentUser!.uid, email);
-  } else {
-    await _functionsRepo.sendVerificationEmail("AxiWL1RKp3g6Ws1Bd4koFbRrPED3", email);
-    log("user is null, can't send verification email");
-  }
+  String email = " grgk.ro@gmail.com ";
+  registerService.registerByEmailAndHiddenPW(email.trim());
+  // if (_globalService.currentUser != null) {
+  //   await _functionsRepo.sendVerificationEmail(_globalService.currentUser!.uid, email);
+  // } else {
+  //   // await _functionsRepo.sendVerificationEmail("AxiWL1RKp3g6Ws1Bd4koFbRrPED3", email);
+  //   log("user is null, can't send verification email");
+  // }
 
   try {
     // await registerService.clearSharedPreferences();
     await registerService.signInUserIfPossible();
-    User currentUser = _globalService.currentUser!;
+    User currentAuthUser = _globalService.currentUser!;
     String userId = (await FirebaseAuth.instance.currentUser!).uid;
-    registerService.getUserFromFirebase(userId);
-    print("currentUser.uid: $userId");
-    EnsoUser testUser = _databaseRepo.getUser(userId);
-    await registerService.saveUserToFirestore(testUser);
+    EnsoUser currentEnsoUser = await _databaseRepo.getUserFromDB(userId);
+    _globalService.currentEnsoUser = currentEnsoUser;
+    // registerService.getUserFromFirebase(userId);
+    log("currentUser.uid: $userId");
+    // EnsoUser testUser = _databaseRepo.getUser(userId);
+    // await registerService.saveUserToFirestore(testUser);
+    _databaseRepo.getUserFromDB(_globalService.currentEnsoUser.id!);
   } catch (e) {
     log("Could not sign in User at start of the app: ${e.toString()}");
   }

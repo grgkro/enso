@@ -1,7 +1,6 @@
 import 'package:ensobox/models/billing_address.dart';
 import 'package:flutter/material.dart';
 
-
 class EnsoUserBuilder {
   String? id;
 
@@ -59,7 +58,9 @@ class EnsoUser with ChangeNotifier {
   bool idApproved = false;
   String? phone;
   bool emailVerified = false;
+  bool hasTriggeredConfirmationEmail = false;
   bool phoneVerified = false;
+  bool hasTriggeredConfirmationSms = false;
 
   int selfieRandomNumber = 0;
 
@@ -90,4 +91,23 @@ class EnsoUser with ChangeNotifier {
   }
 
   void uploadPhoto() {}
+
+  EnsoUser.fromData(Map<String, dynamic> data)
+      : id = data['uid'],
+        email = data['email'],
+        hasTriggeredConfirmationEmail = data['hasTriggeredConfirmationEmail'],
+        hasTriggeredConfirmationSms = data['hasTriggeredConfirmationSms'],
+        idApproved = data['idApproved'];
+
+  // emailVerified = data['emailVerified'];
+
+  Map<String, dynamic> toJson() {
+    return {
+      'uid': id,
+      'email': email,
+      'hasTriggeredConfirmationEmail': hasTriggeredConfirmationEmail,
+      'hasTriggeredConfirmationSms': hasTriggeredConfirmationSms,
+      'idApproved': idApproved,
+    };
+  }
 }

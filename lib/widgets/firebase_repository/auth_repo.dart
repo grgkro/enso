@@ -249,7 +249,8 @@ class AuthRepo {
     });
   }
 
-  Future<bool> signInUserIfPossible() async {
+  Future<UserCredential?> signInUserIfPossible() async {
+    UserCredential? userCredential;
     // TODO: move this lower into the app to avoid long initial loading time
     final SharedPreferences prefs = await SharedPreferences.getInstance();
     // If it doesn't exist, returns null.
@@ -271,26 +272,28 @@ class AuthRepo {
       }
     }
 
-    if (credential != null) {
-      final UserCredential userCredential =
-          await _auth.signInWithCredential(credential);
-      log("User is now signed in: ${userCredential.user?.email ?? ''}");
-      if (userCredential.user != null) {
-        _globalService.currentUser = userCredential.user;
-        log("User was registered before and is now signed in: ${userCredential.user?.email ?? ''}");
-        log("User was registered before and is now signed in: ${userCredential.user?.uid ?? ''}");
-        log("User was registered before and is now signed in: ${await userCredential.user?.getIdToken() ?? ''}");
-        _globalService.isPhoneVerified =
-            prefs.getBool(Constants.hasVerifiedPhone) ?? false;
-        _globalService.isEmailVerified = userCredential.user!.emailVerified;
-        return true;
+    try {
+      if (credential != null) {
+        userCredential = await _auth.signInWithCredential(credential);
+        log("User is now signed in: ${userCredential.user?.email ?? ''}");
+        if (userCredential.user != null) {
+          _globalService.currentUser = userCredential.user;
+          log("User was registered before and is now signed in: ${userCredential.user?.uid ?? ''}");
+          log("User was registered before and is now signed in: ${await userCredential.user?.getIdToken() ?? ''}");
+          _globalService.isPhoneVerified =
+              prefs.getBool(Constants.hasVerifiedPhone) ?? false;
+          _globalService.isEmailVerified = userCredential.user!.emailVerified;
+        } else {
+          log("Warn: User seems to have been registered before, but could not get signed in because userCredentials.user was null.");
+        }
       } else {
-        log("Warn: User seems to have been registered before, but could not get signed in because userCredentials.user was null.");
+        log("Info: User seems to have been registered before, but could not get signed in, because credential was null.");
       }
-    } else {
-      log("Info: User seems to have been registered before, but could not get signed in, because credential was null.");
+    } catch (e) {
+      // e.g. the email was badly formatted: "grgk@gmail.com " (with space at the end...)
     }
-    return false;
+
+    return userCredential;
   }
 
   void getUserFromFirebase(String userId) {
