@@ -11,10 +11,14 @@ import 'package:url_launcher/url_launcher.dart';
 import '../../models/enso_user.dart';
 import '../auth/verification_overview_screen.dart';
 import '../auth/wait_for_approval_screen.dart';
+import '../firestore_repository/database_repo.dart';
+import '../firestore_repository/functions_repo.dart';
 import '../service_locator.dart';
 import '../services/global_service.dart';
 
-GlobalService _globalVariablesService = getIt<GlobalService>();
+GlobalService _globalService = getIt<GlobalService>();
+FunctionsRepo _functionsRepo = getIt<FunctionsRepo>();
+DatabaseRepo _databaseRepo = getIt<DatabaseRepo>();
 
 class DisplaySelfieIdPicturesScreen extends StatefulWidget {
   const DisplaySelfieIdPicturesScreen({Key? key}) : super(key: key);
@@ -26,11 +30,11 @@ class DisplaySelfieIdPicturesScreen extends StatefulWidget {
 
 class _DisplaySelfieIdPicturesScreenState
     extends State<DisplaySelfieIdPicturesScreen> {
-  bool agree = false;
+  bool _agree = false;
 
   void _showWaitForApprovalScreen(BuildContext ctx) {
     log("User accepted terms and condition");
-    _globalVariablesService.showScreen(ctx, const WaitForApprovalScreen());
+    _globalService.showScreen(ctx, const WaitForApprovalScreen());
     // Do something
   }
 
@@ -92,10 +96,10 @@ class _DisplaySelfieIdPicturesScreenState
             children: [
               Material(
                 child: Checkbox(
-                  value: agree,
+                  value: _agree,
                   onChanged: (value) {
                     setState(() {
-                      agree = value ?? false;
+                      _agree = value ?? false;
                     });
                   },
                 ),
@@ -159,32 +163,54 @@ class _DisplaySelfieIdPicturesScreenState
       ),
       // ),
       bottomNavigationBar: BottomNavigationBar(
-        items: [
-          BottomNavigationBarItem(
-              icon: Icon(
-                Icons.arrow_back_ios_new,
-                color: Colors.blue,
-              ),
-              label: "Abbrechen"),
-          BottomNavigationBarItem(
-              icon: Icon(
-                Icons.done_all,
-                color: Colors.blue,
-              ),
-              label: "Fertig"),
-        ],
-        onTap: (int itemIndex) {
-          log("Pressed" + itemIndex.toString());
-          switch (itemIndex) {
-            case 0:
-              _globalVariablesService.showScreen(
-                  context, VerificationOverviewScreen());
-              break;
-            case 1:
-              agree ? _showWaitForApprovalScreen(context) : null;
-          }
-        },
-      ),
+          items: const [
+            BottomNavigationBarItem(
+                icon: Icon(
+                  Icons.arrow_back_ios_new,
+                  color: Colors.blue,
+                ),
+                label: "Abbrechen"),
+            BottomNavigationBarItem(
+                icon: Icon(
+                  Icons.done_all,
+                  color: Colors.blue,
+                ),
+                label: "Fertig"),
+          ],
+          // TODO: show Snack or mark "Fertig" button as disabled
+          onTap: !_agree
+              ? null
+              : (int itemIndex) async {
+                  log("Pressed" + itemIndex.toString());
+                  switch (itemIndex) {
+                    case 0:
+                      _globalService.showScreen(
+                          context, VerificationOverviewScreen());
+                      break;
+                    case 1:
+                      if (!_agree) {
+                        null;
+                      } else {
+                        bool hasSuccessfullySendAdminEmail =
+                            await _functionsRepo.sendAdminApproveIdEmail(
+                                _globalService.currentEnsoUser.id);
+                        if (hasSuccessfullySendAdminEmail) {
+                          _globalService.currentEnsoUser.hasTriggeredIdApprovement = true;
+                          try {
+                            _databaseRepo.updateUser(
+                                _globalService.currentEnsoUser);
+                          } catch (e) {
+                            log("updating the user failed - tried to update hasTriggeredIdApprovement");
+                            log(e.toString());
+                          }
+                          _showWaitForApprovalScreen(context);
+                        } else {
+                          // TODO: add backup if sending verification email fails?
+                          log("TODO: add backup if sending verification email fails?");
+                        }
+                      }
+                  }
+                }),
     );
   }
 }

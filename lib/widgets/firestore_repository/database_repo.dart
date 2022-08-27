@@ -5,7 +5,7 @@ import 'package:ensobox/models/enso_user.dart';
 
 class DatabaseRepo {
   final CollectionReference _usersCollectionReference =
-  FirebaseFirestore.instance.collection("users");
+      FirebaseFirestore.instance.collection("users");
 
   late EnsoUser _currentUser;
 
@@ -25,7 +25,8 @@ class DatabaseRepo {
 
   Future getUserFromDB(String uid) async {
     try {
-      DocumentSnapshot<Object?> userData = await _usersCollectionReference.doc(uid).get();
+      DocumentSnapshot<Object?> userData =
+          await _usersCollectionReference.doc(uid).get();
 
       return EnsoUser.fromData(userData.data() as Map<String, dynamic>);
     } catch (e) {
@@ -42,15 +43,43 @@ class DatabaseRepo {
     }
   }
 
-  // dynamic createUser() {
-  //   return createUser = functions.auth.user().onCreate((user) => {
-  //   const { uid, displayName, email } = user;
-  //
-  //       return admin.firestore()
-  //       .collection('users')
-  //       .doc(uid)
-  //       .set({ uid, displayName, email })
-  // });
-  // }
+  Future updateUser(EnsoUser user) async {
+    log("Going to update the user: ${user.id}");
+    Map<String, dynamic> userData = {
+      // "type": 'Not Admin',
+    };
+    if (user.id != null) {
+      userData['uid'] = user.id;
+    } else {
+      // TODO: Return some error
+    }
+    if (user.email != null) {
+      userData['email'] = user.email;
+    }
+    if (user.hasTriggeredConfirmationEmail != null) {
+      userData['hasTriggeredConfirmationEmail'] = user.hasTriggeredConfirmationEmail;
+    }
+    if (user.hasTriggeredConfirmationSms != null) {
+      userData['hasTriggeredConfirmationSms'] = user.hasTriggeredConfirmationSms;
+    }
+    if (user.hasTriggeredIdApprovement != null) {
+      userData['hasTriggeredIdApprovement'] = user.hasTriggeredIdApprovement;
+    }
+    if (user.idApproved != null) {
+      userData['idApproved'] = user.idApproved;
+    }
+    return _usersCollectionReference.doc(user.id).update(userData);
+  }
+
+// dynamic createUser() {
+//   return createUser = functions.auth.user().onCreate((user) => {
+//   const { uid, displayName, email } = user;
+//
+//       return admin.firestore()
+//       .collection('users')
+//       .doc(uid)
+//       .set({ uid, displayName, email })
+// });
+// }
 
 }

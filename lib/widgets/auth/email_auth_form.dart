@@ -29,7 +29,7 @@ class _EmailAuthFormState extends State<EmailAuthForm> {
   final FirebaseAuth _auth = FirebaseAuth.instance;
   GlobalKey<FormState> _formKey = GlobalKey<FormState>();
   TextEditingController emailController =
-      TextEditingController(text: "gr.gkro@gmail.com");
+      TextEditingController(text: "grgk.ro@gmail.com");
   TextEditingController otpCode = TextEditingController();
 
   OutlineInputBorder border = OutlineInputBorder(

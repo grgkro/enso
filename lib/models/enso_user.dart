@@ -56,6 +56,7 @@ class EnsoUser with ChangeNotifier {
 
   bool idUploaded = false;
   bool idApproved = false;
+  bool hasTriggeredIdApprovement = false;
   String? phone;
   bool emailVerified = false;
   bool hasTriggeredConfirmationEmail = false;

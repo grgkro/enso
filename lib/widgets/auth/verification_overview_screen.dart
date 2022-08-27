@@ -3,6 +3,8 @@ import 'dart:developer';
 import 'package:camera/camera.dart';
 import 'package:ensobox/widgets/auth/email_auth_form.dart';
 import 'package:ensobox/widgets/auth/phone_auth_form.dart';
+import 'package:ensobox/widgets/auth/success_screen.dart';
+import 'package:ensobox/widgets/auth/wait_for_approval_screen.dart';
 import 'package:ensobox/widgets/services/global_service.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
@@ -10,6 +12,7 @@ import 'package:open_mail_app/open_mail_app.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../constants/constants.dart';
+import '../../main.dart';
 import '../../models/enso_user.dart';
 import '../../models/photo_side.dart';
 import '../../models/photo_type.dart';
@@ -72,9 +75,15 @@ class _VerificationOverviewScreenState
       builder: (context, snapshot) {
         if (snapshot.connectionState != ConnectionState.done) {
           return Center(child: CircularProgressIndicator());
-        } else if (snapshot.hasData && snapshot.data.runtimeType == EnsoUser) {
-          // hasData is wrong for null values
-          return _buildWidget(snapshot.data as EnsoUser);
+        } else if (snapshot.hasData && snapshot.data.runtimeType == EnsoUser) { // hasData is wrong for null values
+
+          if ((snapshot.data! as EnsoUser).idApproved) {
+            return _buildSuccessScreen(snapshot.data as EnsoUser);
+          } else if ((snapshot.data! as EnsoUser).hasTriggeredIdApprovement){
+            return const WaitForApprovalScreen();
+          } else {
+            return _buildVerificationScreen(snapshot.data as EnsoUser);
+          }
         } else {
           //TODO: replace endless Spinner with Error Screen -> the loaded User was null or an error occured during loading
           return Center(child: CircularProgressIndicator());
@@ -83,8 +92,42 @@ class _VerificationOverviewScreenState
     );
   }
 
-  Widget _buildWidget(EnsoUser ensoUser) {
-    debugPrint('Step 2, build widget, $ensoUser');
+  Widget _buildSuccessScreen(EnsoUser ensoUser) {
+    debugPrint('Step 2, build widget success, $ensoUser');
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('Account erfolgreich bestätigt 🐱‍🏍'),
+        backgroundColor: Colors.green[700],
+      ),
+      body: Container(
+        child: Text("Du kannst jetzt ausleihen"),
+      ),
+      bottomNavigationBar: BottomNavigationBar(
+        items: [
+          BottomNavigationBarItem(
+              icon: Icon(
+                Icons.done_all,
+                color: Colors.blue,
+              ),
+              label: "Jetzt ausleihen"),
+        ],
+        onTap: (int itemIndex) {
+          log("Pressed Jetzt ausleihen" + itemIndex.toString());
+          switch (itemIndex) {
+            case 0:
+              _globalService.showScreen(
+                  context, const Home());
+              break;
+
+          }
+        },
+      ),);
+  }
+
+  Widget _buildVerificationScreen(EnsoUser ensoUser) {
+    debugPrint('Step 2, build overview widget, hasTriggeredConfirmationSms?: ${ensoUser.hasTriggeredConfirmationSms}'
+        '\n hasTriggeredConfirmationEmail?: ${ensoUser.hasTriggeredConfirmationEmail}\n'
+        'idApproved?: ${ensoUser.idApproved}\n');
     return Scaffold(
       appBar: AppBar(
         title: const Text('Identität bestätigen:'),
