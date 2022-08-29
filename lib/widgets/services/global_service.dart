@@ -9,6 +9,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../auth/otp_form.dart';
 
 class GlobalService {
+  bool isFirebaseInitialized = false;
   bool isComingFromTakePictureScreen = false;
   String phoneAuthVerificationId = "";
   int? resendToken;

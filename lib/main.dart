@@ -7,6 +7,7 @@ import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:ensobox/widgets/auth/verification_overview_screen.dart';
 import 'package:ensobox/widgets/enso_drawer.dart';
 import 'package:ensobox/widgets/firestore_repository/functions_repo.dart';
+import 'package:ensobox/widgets/provider/current_user_provider.dart';
 import 'package:firebase_app_check/firebase_app_check.dart';
 import 'package:firebase_core/firebase_core.dart';
 
@@ -47,66 +48,6 @@ void main() async {
 
   setupServiceLocator(); // This will register any services you have with GetIt before the widget tree gets built.
 
-  // await registerService.initialize();
-
-  WidgetsFlutterBinding.ensureInitialized();
-
-  await Firebase.initializeApp(
-    options: DefaultFirebaseOptions.currentPlatform,
-  );
-
-  await FirebaseAppCheck.instance.activate(
-    webRecaptchaSiteKey: 'recaptcha-v3-site-key',
-  );
-
-  _firebaseAuth.authStateChanges().listen((User? user) async {
-    if (user != null) {
-      log("The user is now signed in and stored in the globalService: ${user.toString()}");
-      _globalService.isSignedIn = true;
-      _globalService.currentUser = user;
-      if (user.uid != _globalService.currentEnsoUser.id) {
-        EnsoUser currentEnsoUser = await _databaseRepo.getUserFromDB(user.uid);
-        if (currentEnsoUser != null) {
-          log("The EnsoUser was retrieved from the DB and is now stored in the globalService: ${currentEnsoUser.toString()}");
-          _globalService.currentEnsoUser = currentEnsoUser;
-        } else {
-          log("Getting the EnsoUser from the DB with this id ${user.uid} failed.");
-        }
-      } else {
-        log("The EnsoUser was already retrieved from the DB with this id ${user.uid}, no update needed.");
-      }
-    } else {
-      _globalService.isSignedIn = false;
-      print(
-          "User is not signed in, _auth.authStateChanges().listen() returned null");
-    }
-  });
-
-  try {
-    // await _authRepo.clearSharedPreferences();
-    UserCredential? authUserCredential =
-        await _authRepo.signInAuthUserIfPossible();
-    if (authUserCredential != null && authUserCredential.user != null) {
-      _globalService.currentUser = authUserCredential.user;
-      log("User was registered before and is now signed in: ${authUserCredential.user?.uid ?? ''}");
-      log("User was registered before and is now signed in: ${await authUserCredential.user?.getIdToken() ?? ''}");
-      EnsoUser currentEnsoUser =
-          await _databaseRepo.getUserFromDB(authUserCredential.user!.uid);
-      if (currentEnsoUser != null) {
-        _globalService.currentEnsoUser = currentEnsoUser;
-        log("-------- successfully retrieved the currentUser from auth and DB: ${currentEnsoUser.id} --------");
-      } else {
-        log("Couldn't get currentEnsoUser in main.dart");
-      }
-    } else {
-      log("Warn: User seems to have been registered before, but could not get signed in because userCredentials.user was null."
-          "Maybe has been deleted from the DB?");
-      //TODO: show Snack?
-    }
-  } catch (e) {
-    log("Could not sign in User at start of the app: ${e.toString()}");
-  }
-
   runApp(MyApp());
 }
 
@@ -117,13 +58,10 @@ class MyApp extends StatelessWidget {
       providers: [
         ChangeNotifierProvider(
           // all child widgets of MyApp widget can now listen for changes in Boxes
-          create: (ctx) => Boxes(),
+          create: (ctx) => Boxes(), // TODO: is this currently used?
         ),
         ChangeNotifierProvider(
-          create: (ctx) => EnsoUser(EnsoUserBuilder()),
-        ),
-        ChangeNotifierProvider(
-          create: (ctx) => Users(),
+          create: (ctx) => CurrentUserProvider(),
         ),
       ],
       child: MaterialApp(
@@ -165,6 +103,84 @@ class _MyAppState extends State<Home> {
   var subscription;
   var connectionStatus;
 
+  bool _initialized = false;
+  bool _error = false;
+
+  // Define an async function to initialize FlutterFire
+  void initializeFlutterFire() async {
+    try {
+      // Wait for Firebase to initialize and set `_initialized` state to true
+      await Firebase.initializeApp(
+        options: DefaultFirebaseOptions.currentPlatform,
+      );
+      _globalService.isFirebaseInitialized = true;
+      setState(() {
+        _initialized = true;
+      });
+      signIn();
+    } catch (e) {
+      // Set `_error` state to true if Firebase initialization fails
+      setState(() {
+        _error = true;
+      });
+    }
+  }
+
+  void signIn() async {
+    _firebaseAuth.authStateChanges().listen((User? user) async {
+      if (user != null) {
+        log("The user is now signed in and stored in the globalService: ${user.toString()}");
+        _globalService.currentUser = user;
+        _globalService.isSignedIn = true;
+        if (user.uid != _globalService.currentEnsoUser.id) {
+          EnsoUser currentEnsoUser =
+              await _databaseRepo.getUserFromDB(user.uid);
+          if (currentEnsoUser != null) {
+            log("The EnsoUser was retrieved from the DB and is now stored in the globalService: ${currentEnsoUser.toString()}");
+            _globalService.currentEnsoUser = currentEnsoUser;
+            final currentUserProvider =
+                Provider.of<CurrentUserProvider>(context, listen: false);
+            currentUserProvider
+                .setCurrentEnsoUser(_globalService.currentEnsoUser);
+          } else {
+            log("Getting the EnsoUser from the DB with this id ${user.uid} failed.");
+          }
+        } else {
+          log("The EnsoUser was already retrieved from the DB with this id ${user.uid}, no update needed.");
+        }
+      } else {
+        _globalService.isSignedIn = false;
+        print(
+            "User is not signed in, _auth.authStateChanges().listen() returned null");
+      }
+    });
+
+    try {
+      // await _authRepo.clearSharedPreferences();
+      UserCredential? authUserCredential =
+          await _authRepo.signInAuthUserIfPossible();
+      if (authUserCredential != null && authUserCredential.user != null) {
+        _globalService.currentUser = authUserCredential.user;
+        log("User was registered before and is now signed in: ${authUserCredential.user?.uid ?? ''}");
+        log("User was registered before and is now signed in: ${await authUserCredential.user?.getIdToken() ?? ''}");
+        EnsoUser currentEnsoUser =
+            await _databaseRepo.getUserFromDB(authUserCredential.user!.uid);
+        if (currentEnsoUser != null) {
+          _globalService.currentEnsoUser = currentEnsoUser;
+          log("-------- successfully retrieved the currentUser from auth and DB: ${currentEnsoUser.id} --------");
+        } else {
+          log("Couldn't get currentEnsoUser in main.dart");
+        }
+      } else {
+        log("Warn: User seems to have been registered before, but could not get signed in because userCredentials.user was null."
+            "Maybe has been deleted from the DB?");
+        //TODO: show Snack?
+      }
+    } catch (e) {
+      log("Could not sign in User at start of the app: ${e.toString()}");
+    }
+  }
+
   @override
   void initState() {
     subscription = Connectivity()
@@ -175,6 +191,8 @@ class _MyAppState extends State<Home> {
     });
 
     super.initState();
+
+    initializeFlutterFire();
   }
 
   @override
@@ -223,10 +241,43 @@ class _MyAppState extends State<Home> {
     });
   }
 
-
-
   @override
   Widget build(BuildContext context) {
+    // Show error message if initialization failed
+    if (_error) {
+      return MaterialApp(
+          home: Scaffold(
+        body: Container(
+          color: Colors.white,
+          child: Center(
+              child: Column(
+            children: const [
+              Icon(
+                Icons.error_outline,
+                color: Colors.red,
+                size: 25,
+              ),
+              SizedBox(height: 16),
+              Text(
+                'Es gab einen Fehler beim Initialisieren! Versuch es bitte später nochmal. Falls es weiterhin nicht klappt, mach einen Screenshot und schick ihn an support@fairleihbox.de, many thx!!',
+                style: TextStyle(color: Colors.red, fontSize: 25),
+              ),
+            ],
+          )),
+        ),
+      ));
+    }
+
+    // Show a loader until FlutterFire is initialized
+    if (!_initialized) {
+      return Container(
+        color: Colors.white,
+        child: const Center(
+          child: CircularProgressIndicator.adaptive(),
+        ),
+      );
+    }
+
     const LatLng _mainLocation = LatLng(25.69893, 32.6421);
     return Scaffold(
       drawer: const EnsoDrawer(),
