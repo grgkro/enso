@@ -9,7 +9,7 @@ class DatabaseRepo {
 
   late EnsoUser _currentUser;
 
-  EnsoUser getUser(String uid) {
+  EnsoUser getTestUser(String uid) {
     // replace with actual user from Firestore
     final EnsoUser ensoUser = EnsoUser(EnsoUserBuilder());
     ensoUser.id = uid;

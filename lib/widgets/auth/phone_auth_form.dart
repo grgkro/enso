@@ -18,7 +18,7 @@ class PhoneAuthForm extends StatefulWidget {
 class _PhoneAuthFormState extends State<PhoneAuthForm> {
   final FirebaseAuth _auth = FirebaseAuth.instance;
   GlobalKey<FormState> _formKey = GlobalKey<FormState>();
-  TextEditingController phoneNumber =
+  TextEditingController phoneNumberController =
       TextEditingController(text: "+4915126448312");
   TextEditingController otpCode = TextEditingController();
 
@@ -28,6 +28,12 @@ class _PhoneAuthFormState extends State<PhoneAuthForm> {
   bool isLoading = false;
 
   String? verificationId;
+
+  @override
+  void dispose() {
+    super.dispose();
+    phoneNumberController.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -50,7 +56,7 @@ class _PhoneAuthFormState extends State<PhoneAuthForm> {
                   width: size.width * 0.8,
                   child: TextFormField(
                       keyboardType: TextInputType.phone,
-                      controller: phoneNumber,
+                      controller: phoneNumberController,
                       decoration: InputDecoration(
                         labelText: "Handynummer",
                         contentPadding: EdgeInsets.symmetric(
@@ -88,9 +94,9 @@ class _PhoneAuthFormState extends State<PhoneAuthForm> {
                         width: size.width * 0.8,
                         child: OutlinedButton(
                           onPressed: () async {
-                            log("got ${phoneNumber.text}");
+                            log("got ${phoneNumberController.text}");
                             await registerService.verifyPhoneNumber(
-                                phoneNumber.text, context);
+                                phoneNumberController.text, context);
 
                             // registerService.registerByEmailAndHiddenPW("grg.kro@gmail.com");
                           },

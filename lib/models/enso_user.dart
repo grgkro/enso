@@ -29,6 +29,7 @@ class EnsoUserBuilder {
   String? phone;
   bool emailVerified = false;
   bool phoneVerified = false;
+  bool hasTriggeredIdApprovement = false;
 }
 
 class EnsoUser with ChangeNotifier {
@@ -88,7 +89,8 @@ class EnsoUser with ChangeNotifier {
     idApproved = builder.idApproved;
     phone = builder.phone;
     emailVerified = builder.emailVerified;
-    phoneVerified = builder.emailVerified;
+    phoneVerified = builder.phoneVerified;
+    hasTriggeredIdApprovement = builder.hasTriggeredIdApprovement;
   }
 
   void uploadPhoto() {}
@@ -98,6 +100,7 @@ class EnsoUser with ChangeNotifier {
         email = data['email'],
         hasTriggeredConfirmationEmail = data['hasTriggeredConfirmationEmail'],
         hasTriggeredConfirmationSms = data['hasTriggeredConfirmationSms'],
+        hasTriggeredIdApprovement = data['hasTriggeredIdApprovement'],
         idApproved = data['idApproved'];
 
   // emailVerified = data['emailVerified'];
@@ -108,7 +111,13 @@ class EnsoUser with ChangeNotifier {
       'email': email,
       'hasTriggeredConfirmationEmail': hasTriggeredConfirmationEmail,
       'hasTriggeredConfirmationSms': hasTriggeredConfirmationSms,
+      'hasTriggeredIdApprovement': hasTriggeredIdApprovement,
       'idApproved': idApproved,
     };
+  }
+
+  @override
+  String toString() {
+    return 'EnsoUser{id: $id, billingAddress: $billingAddress, email: $email, givenNames: $givenNames, surnames: $surnames, countryCodeMrz: $countryCodeMrz, nationalityCountryCode: $nationalityCountryCode, documentType: $documentType, documentNumber: $documentNumber, birthDate: $birthDate, sex: $sex, expiryDate: $expiryDate, personalNumber: $personalNumber, personalNumber2: $personalNumber2, frontIdPhotoUrl: $frontIdPhotoUrl, frontIdPhotoPath: $frontIdPhotoPath, backIdPhotoUrl: $backIdPhotoUrl, backIdPhotoPath: $backIdPhotoPath, selfiePhotoUrl: $selfiePhotoUrl, selfiePhotoPath: $selfiePhotoPath, idUploaded: $idUploaded, idApproved: $idApproved, hasTriggeredIdApprovement: $hasTriggeredIdApprovement, phone: $phone, emailVerified: $emailVerified, hasTriggeredConfirmationEmail: $hasTriggeredConfirmationEmail, phoneVerified: $phoneVerified, hasTriggeredConfirmationSms: $hasTriggeredConfirmationSms, selfieRandomNumber: $selfieRandomNumber}';
   }
 }

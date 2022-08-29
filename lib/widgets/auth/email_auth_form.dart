@@ -40,6 +40,12 @@ class _EmailAuthFormState extends State<EmailAuthForm> {
   String? verificationId;
 
   @override
+  void dispose() {
+    super.dispose();
+    emailController.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
     AuthRepo registerService = getIt<AuthRepo>();
 
@@ -114,7 +120,7 @@ class _EmailAuthFormState extends State<EmailAuthForm> {
                                     .then((UserCredential value) async {
                                   log('linked email to existing account');
 
-                                  _globalService.hasTriggeredConfirmationSms = true;
+                                  _globalService.currentEnsoUser.hasTriggeredConfirmationSms = true;
 
                                   if (value.user != null &&
                                       value.user!.uid != null) {
@@ -132,7 +138,7 @@ class _EmailAuthFormState extends State<EmailAuthForm> {
                                 });
                               } else {
                                 log("Could not link phone to email as the smsCode from shared Preferences was null.");
-                                _globalService.isEmailVerified = false;
+                                _globalService.currentEnsoUser.emailVerified = false;
                                 UserCredential userCredentials =
                                     await registerService
                                         .registerByEmailAndHiddenPW(
@@ -151,7 +157,7 @@ class _EmailAuthFormState extends State<EmailAuthForm> {
 
                             } catch (e) {
                               log('Error while signing in with phone and link email: ${e.toString()}');
-                              _globalService.isEmailVerified = false;
+                              _globalService.currentEnsoUser.emailVerified = false;
                               try {
                                 UserCredential userCredentials =
                                 await registerService

@@ -35,6 +35,12 @@ class _OtpFormState extends State<OtpForm> {
   String? verificationId;
 
   @override
+  void dispose() {
+    super.dispose();
+    otpController.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
     AuthRepo registerService = getIt<AuthRepo>();
 
@@ -112,7 +118,7 @@ class _OtpFormState extends State<OtpForm> {
                             await _auth
                                 .signInWithCredential(credential)
                                 .then((value) async {
-                              _globalService.hasTriggeredConfirmationSms = true;
+                              _globalService.currentEnsoUser.hasTriggeredConfirmationSms = true;
 
                               final prefs =
                                   await SharedPreferences.getInstance();

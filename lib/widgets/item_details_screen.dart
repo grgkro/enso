@@ -141,12 +141,7 @@ class _ItemDetailsScreenState extends State<ItemDetailsScreen> {
       _startScan(context);
     }
     User? currentUser = _globalService.currentUser;
-    EnsoUser currentEnsoUser = EnsoUser(EnsoUserBuilder());
-    // TODO: Remove next line
-    currentEnsoUser = _databaseRepo.getUser("testUid");
-    if (currentUser != null) {
-      currentEnsoUser = _databaseRepo.getUser(currentUser.uid);
-    }
+    EnsoUser currentEnsoUser = _globalService.currentEnsoUser;
 
     bool userIsMissingNecessaryVerification() {
       if (currentUser == null) {

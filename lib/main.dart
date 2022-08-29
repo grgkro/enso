@@ -5,6 +5,7 @@ import 'package:app_settings/app_settings.dart';
 import 'package:cloud_functions/cloud_functions.dart';
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:ensobox/widgets/auth/verification_overview_screen.dart';
+import 'package:ensobox/widgets/enso_drawer.dart';
 import 'package:ensobox/widgets/firestore_repository/functions_repo.dart';
 import 'package:firebase_app_check/firebase_app_check.dart';
 import 'package:firebase_core/firebase_core.dart';
@@ -32,7 +33,7 @@ import 'firebase_options.dart';
 import 'models/enso_user.dart';
 import 'models/locations.dart' as locations;
 
-final FirebaseAuth _auth = FirebaseAuth.instance;
+final FirebaseAuth _firebaseAuth = FirebaseAuth.instance;
 DatabaseRepo _databaseRepo = getIt<DatabaseRepo>();
 GlobalService _globalService = getIt<GlobalService>();
 FunctionsRepo _functionsRepo = getIt<FunctionsRepo>();
@@ -58,30 +59,39 @@ void main() async {
     webRecaptchaSiteKey: 'recaptcha-v3-site-key',
   );
 
-  _auth.authStateChanges().listen((User? user) async {
+  _firebaseAuth.authStateChanges().listen((User? user) async {
     if (user != null) {
-      print("GOT THE USER FROM AUTH: ${user.uid}");
+      log("The user is now signed in and stored in the globalService: ${user.toString()}");
+      _globalService.isSignedIn = true;
       _globalService.currentUser = user;
       if (user.uid != _globalService.currentEnsoUser.id) {
         EnsoUser currentEnsoUser = await _databaseRepo.getUserFromDB(user.uid);
-        if (currentEnsoUser != null ) {
+        if (currentEnsoUser != null) {
+          log("The EnsoUser was retrieved from the DB and is now stored in the globalService: ${currentEnsoUser.toString()}");
           _globalService.currentEnsoUser = currentEnsoUser;
+        } else {
+          log("Getting the EnsoUser from the DB with this id ${user.uid} failed.");
         }
-
+      } else {
+        log("The EnsoUser was already retrieved from the DB with this id ${user.uid}, no update needed.");
       }
     } else {
-      print("user WAS NULL???");
+      _globalService.isSignedIn = false;
+      print(
+          "User is not signed in, _auth.authStateChanges().listen() returned null");
     }
   });
 
   try {
-    await _authRepo.clearSharedPreferences();
-    UserCredential? authUserCredential = await _authRepo.signInAuthUserIfPossible();
+    // await _authRepo.clearSharedPreferences();
+    UserCredential? authUserCredential =
+        await _authRepo.signInAuthUserIfPossible();
     if (authUserCredential != null && authUserCredential.user != null) {
       _globalService.currentUser = authUserCredential.user;
       log("User was registered before and is now signed in: ${authUserCredential.user?.uid ?? ''}");
       log("User was registered before and is now signed in: ${await authUserCredential.user?.getIdToken() ?? ''}");
-      EnsoUser currentEnsoUser = await _databaseRepo.getUserFromDB(authUserCredential.user!.uid);
+      EnsoUser currentEnsoUser =
+          await _databaseRepo.getUserFromDB(authUserCredential.user!.uid);
       if (currentEnsoUser != null) {
         _globalService.currentEnsoUser = currentEnsoUser;
         log("-------- successfully retrieved the currentUser from auth and DB: ${currentEnsoUser.id} --------");
@@ -101,10 +111,8 @@ void main() async {
 }
 
 class MyApp extends StatelessWidget {
-
   @override
   Widget build(BuildContext context) {
-
     return MultiProvider(
       providers: [
         ChangeNotifierProvider(
@@ -129,7 +137,8 @@ class MyApp extends StatelessWidget {
         //   // Pass the appropriate camera to the TakePictureScreen widget.
         //   camera: firstCamera,
         // ),
-        home: VerificationOverviewScreen(),
+        home: const Home(),
+        // home: VerificationOverviewScreen(),
         // home: SelfieExplanationScreen(),
         // initialRoute: '/', // When using initialRoute, don’t define a home property.
         routes: {
@@ -158,8 +167,10 @@ class _MyAppState extends State<Home> {
 
   @override
   void initState() {
-    subscription = Connectivity().onConnectivityChanged.listen((ConnectivityResult result) {
-      setState(() => connectionStatus = result );
+    subscription = Connectivity()
+        .onConnectivityChanged
+        .listen((ConnectivityResult result) {
+      setState(() => connectionStatus = result);
       checkInternetConnectivity();
     });
 
@@ -172,19 +183,20 @@ class _MyAppState extends State<Home> {
     subscription.cancel();
   }
 
-  ScaffoldFeatureController<SnackBar, SnackBarClosedReason>? checkInternetConnectivity() {
+  ScaffoldFeatureController<SnackBar, SnackBarClosedReason>?
+      checkInternetConnectivity() {
     if (connectionStatus == ConnectivityResult.none) {
-        return ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-          content:
-          const Text("Bitte prüfen, ob du mit dem Internet verbunden bist."),
-          duration: const Duration(seconds: 3),
-          action: SnackBarAction(
-            label: 'WLAN AKTIVIEREN',
-            onPressed: () {
-              AppSettings.openWIFISettings();
-            },
-          ),
-        ));
+      return ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+        content:
+            const Text("Bitte prüfen, ob du mit dem Internet verbunden bist."),
+        duration: const Duration(seconds: 3),
+        action: SnackBarAction(
+          label: 'WLAN AKTIVIEREN',
+          onPressed: () {
+            AppSettings.openWIFISettings();
+          },
+        ),
+      ));
     } else {
       log("device has internet");
       return null;
@@ -211,11 +223,13 @@ class _MyAppState extends State<Home> {
     });
   }
 
+
+
   @override
   Widget build(BuildContext context) {
-
     const LatLng _mainLocation = LatLng(25.69893, 32.6421);
     return Scaffold(
+      drawer: const EnsoDrawer(),
       appBar: AppBar(
         title: const Text('Was möchtest du ausleihen?:'),
         backgroundColor: Colors.green[700],

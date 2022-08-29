@@ -76,12 +76,15 @@ class _VerificationOverviewScreenState
         if (snapshot.connectionState != ConnectionState.done) {
           return Center(child: CircularProgressIndicator());
         } else if (snapshot.hasData && snapshot.data.runtimeType == EnsoUser) { // hasData is wrong for null values
-
-          if ((snapshot.data! as EnsoUser).idApproved) {
+          EnsoUser user = snapshot.data! as EnsoUser;
+          if (user.idApproved && user.emailVerified && user.phoneVerified) {
+            log("user is already approved. -> success screen");
             return _buildSuccessScreen(snapshot.data as EnsoUser);
           } else if ((snapshot.data! as EnsoUser).hasTriggeredIdApprovement){
+            log("user has triggered id Approval already, but is not approved yet. -> WaitForApprovalScreen");
             return const WaitForApprovalScreen();
           } else {
+            log("user has not triggered id Approval yet. -> _buildVerificationScreen");
             return _buildVerificationScreen(snapshot.data as EnsoUser);
           }
         } else {

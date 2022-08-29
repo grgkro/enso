@@ -196,11 +196,13 @@ class _DisplaySelfieIdPicturesScreenState
                                 _globalService.currentEnsoUser.id);
                         if (hasSuccessfullySendAdminEmail) {
                           _globalService.currentEnsoUser.hasTriggeredIdApprovement = true;
+
                           try {
-                            _databaseRepo.updateUser(
-                                _globalService.currentEnsoUser);
+                            EnsoUser user = await _databaseRepo.getUserFromDB(_globalService.currentEnsoUser.id!);
+                            user.hasTriggeredIdApprovement = true;
+                            _databaseRepo.updateUser(user);
                           } catch (e) {
-                            log("updating the user failed - tried to update hasTriggeredIdApprovement");
+                            log("updating the user failed - tried to update hasTriggeredIdApprovement to true");
                             log(e.toString());
                           }
                           _showWaitForApprovalScreen(context);

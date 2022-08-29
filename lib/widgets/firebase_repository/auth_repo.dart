@@ -15,12 +15,14 @@ import '../../constants/constants.dart' as Constants;
 import '../../firebase_options.dart';
 import '../../models/enso_user.dart';
 import '../../models/rental.dart';
+import '../firestore_repository/database_repo.dart';
 import '../service_locator.dart';
 import '../services/global_service.dart';
 
 final FirebaseAuth _auth = FirebaseAuth.instance;
 GlobalService _globalService = getIt<GlobalService>();
 RentalRepo _rentalRepo = getIt<RentalRepo>();
+DatabaseRepo _databaseRepo = getIt<DatabaseRepo>();
 
 class AuthRepo {
   Future<void> initialize() async {
@@ -48,9 +50,11 @@ class AuthRepo {
     await _auth.verifyPhoneNumber(
         phoneNumber: number,
         verificationCompleted: (PhoneAuthCredential credential) async {
-          log("Oh aeyh, verificationCompleted");
-          _globalService.isPhoneVerified = true;
-
+          log("Oh yeah, verificationCompleted");
+          _globalService.currentEnsoUser.phoneVerified = true;
+          EnsoUser user = await _databaseRepo.getUserFromDB(_globalService.currentEnsoUser.id!);
+          user.phoneVerified = true;
+          _databaseRepo.updateUser(user);
           _globalService.showScreen(context, EmailAuthForm());
         },
         verificationFailed: (FirebaseAuthException e) {
@@ -276,16 +280,19 @@ class AuthRepo {
     if (credential == null) {
       log(
           "Info: user could not be signed in, no user credentials found in sharedPrefs.");
+      return Future.error("Info: user could not be signed in, no user credentials found in sharedPrefs.");
     } else {
       try {
         userCredential = await _auth.signInWithCredential(credential);
         log("AuthUser is now signed in: ${userCredential.user?.email ?? ''}");
+        return userCredential;
       } catch (e) {
         // e.g. the email was badly formatted: "grgk@gmail.com " (with space at the end...)
         log("Error signing in User. ${e.toString()}");
         //TODO: show SNACK
+        return Future.error("Error signing in User. ${e.toString()}");
       }
-      return userCredential;
+
     }
   }
 

@@ -8,11 +8,14 @@ import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import '../../models/enso_user.dart';
 import '../service_locator.dart';
 import '../services/global_service.dart';
 import '../../constants/constants.dart' as Constants;
+import 'database_repo.dart';
 
 GlobalService _globalService = getIt<GlobalService>();
+DatabaseRepo _databaseRepo = getIt<DatabaseRepo>();
 final HttpClient httpClient = new HttpClient();
 SharedPreferences? prefs = null;
 
@@ -47,7 +50,7 @@ class FunctionsRepo {
       if (response.statusCode == HttpStatus.ok) {
         final String json = await response.transform(utf8.decoder).join();
         result = 'result from email function: $json';
-        _globalService.hasTriggeredConfirmtionEmail = true;
+        _globalService.currentEnsoUser.hasTriggeredConfirmationEmail = true;
         prefs!.setBool(Constants.hasTriggeredConfirmationEmail, true);
         return Future.value(true);
       } else {
@@ -94,7 +97,7 @@ class FunctionsRepo {
       if (response.statusCode == HttpStatus.ok) {
         final String json = await response.transform(utf8.decoder).join();
         result = 'result from approve id function: $json';
-        _globalService.isIdApproved = true;
+
         return Future.value(true);
       } else {
         result =
