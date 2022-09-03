@@ -11,6 +11,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../../models/enso_user.dart';
 import '../../models/photo_side.dart';
 import '../../models/photo_type.dart';
+import '../provider/current_user_provider.dart';
 import '../services/global_service.dart';
 import 'auth_repo.dart';
 
@@ -36,9 +37,13 @@ class StorageRepo {
     prefs.setString('test_image', tempImage.path);
   }
 
-  uploadFile(BuildContext ctx, String refPath, File file, PhotoType photoType,
+  uploadFile(BuildContext context, String refPath, File file, PhotoType photoType,
       PhotoSide photoSide) async {
-    // EnsoUser currentUser = Provider.of<EnsoUser>(ctx, listen: false); TODO: learn more about Provider
+
+    EnsoUser currentEnsoUser = context.read<EnsoUser>();
+    final currentUserProvider =
+    Provider.of<CurrentUserProvider>(context, listen: false);
+
     // Create a reference to "path"
     var storageRef =
         // storage.ref().child("user/idphoto/${currentUser.id}/frontside");
@@ -47,14 +52,15 @@ class StorageRepo {
       await storageRef.putFile(file);
       var photoUrl = await storageRef.getDownloadURL();
       if (photoType == PhotoType.id && photoSide == PhotoSide.front) {
-        _globalService.currentEnsoUser.frontIdPhotoUrl = photoUrl;
+        currentEnsoUser.frontIdPhotoUrl = photoUrl;
       } else if (photoType == PhotoType.id && photoSide == PhotoSide.back) {
-        _globalService.currentEnsoUser.backIdPhotoUrl = photoUrl;
+        currentEnsoUser.backIdPhotoUrl = photoUrl;
       } else {
         log("Can't save photoUrl to currentUser, passport photos not implemented yet.");
       }
+      currentUserProvider.setCurrentEnsoUser(currentEnsoUser);
     } on FirebaseException catch (e) {
-      log("Big trouble while uploading photo to firstore.");
+      log("Big trouble while uploading photo to firstore: $e");
     }
   }
 }

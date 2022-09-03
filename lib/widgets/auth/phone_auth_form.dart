@@ -3,9 +3,12 @@ import 'dart:developer';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:provider/provider.dart';
 
 import '../../constants/constants.dart' as Constants;
+import '../../models/enso_user.dart';
 import '../firebase_repository/auth_repo.dart';
+import '../provider/current_user_provider.dart';
 import '../service_locator.dart';
 
 class PhoneAuthForm extends StatefulWidget {
@@ -40,6 +43,7 @@ class _PhoneAuthFormState extends State<PhoneAuthForm> {
     AuthRepo registerService = getIt<AuthRepo>();
 
     Size size = MediaQuery.of(context).size;
+
     return Scaffold(
         appBar: AppBar(
           title: Text("Bitte Handynummer eingeben"),

@@ -42,7 +42,8 @@ class DisplayPictureScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final EnsoUser currentUser = _globalService.currentEnsoUser;
+    final EnsoUser currentEnsoUser = context.read<EnsoUser>();
+
     CameraDescription? camera;
     if (_globalService.cameras != null &&
         _globalService.cameras!.isNotEmpty) {
@@ -77,9 +78,9 @@ class DisplayPictureScreen extends StatelessWidget {
     } else if (photoType == PhotoType.id && photoSide == PhotoSide.back) {
       appBarTitle = 'Rückseite prüfen';
     } else if (photoType == PhotoType.selfie) {
-      appBarTitle = 'Selfie mit ${currentUser.selfieRandomNumber.toString()}';
+      appBarTitle = 'Selfie mit ${currentEnsoUser.selfieRandomNumber.toString()}';
       upperText =
-          'Bitte stell sicher, dass dein Gesicht und die Zahl ${currentUser.selfieRandomNumber.toString()} gut zu erkennen sind.';
+          'Bitte stell sicher, dass dein Gesicht und die Zahl ${currentEnsoUser.selfieRandomNumber.toString()} gut zu erkennen sind.';
     }
     return Scaffold(
       appBar: AppBar(
@@ -131,7 +132,7 @@ class DisplayPictureScreen extends StatelessWidget {
                 _storage.storeFileOnPhone(File(imagePath));
                 _storage.uploadFile(
                     context,
-                    "user/idphoto/${currentUser.id}/frontside",
+                    "user/idphoto/${currentEnsoUser.id}/frontside",
                     File(imagePath),
                     photoType,
                     photoSide);

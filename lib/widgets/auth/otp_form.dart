@@ -5,10 +5,13 @@ import 'package:ensobox/widgets/services/global_service.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../constants/constants.dart' as Constants;
+import '../../models/enso_user.dart';
 import '../firebase_repository/auth_repo.dart';
+import '../provider/current_user_provider.dart';
 import '../service_locator.dart';
 
 GlobalService _globalService = getIt<GlobalService>();
@@ -118,7 +121,14 @@ class _OtpFormState extends State<OtpForm> {
                             await _auth
                                 .signInWithCredential(credential)
                                 .then((value) async {
-                              _globalService.currentEnsoUser.hasTriggeredConfirmationSms = true;
+
+                              EnsoUser currentEnsoUser = context.read<EnsoUser>();
+                              currentEnsoUser.hasTriggeredConfirmationSms = true;
+                              final currentUserProvider =
+                              Provider.of<CurrentUserProvider>(context, listen: false);
+                              currentUserProvider
+                                  .setCurrentEnsoUser(currentEnsoUser);
+                              // _globalService.currentEnsoUser.hasTriggeredConfirmationSms = true;
 
                               final prefs =
                                   await SharedPreferences.getInstance();

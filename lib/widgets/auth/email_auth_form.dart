@@ -136,7 +136,7 @@ class _EmailAuthFormState extends State<EmailAuthForm> {
                                       value.user!.uid != null) {
                                     final bool hasSendEmail =
                                         await _functionsRepo
-                                            .sendVerificationEmail(
+                                            .sendVerificationEmail(context,
                                                 value.user?.uid, emailController.text,);
                                     if (hasSendEmail) {
                                       showOpenMailAppSnack(context);
@@ -165,7 +165,7 @@ class _EmailAuthFormState extends State<EmailAuthForm> {
                                     userCredentials.user!.uid != null) {
                                     final bool hasSendEmail =
                                     await _functionsRepo
-                                        .sendVerificationEmail(
+                                        .sendVerificationEmail(context,
                                     userCredentials.user?.uid, emailController.text,);
                                     if (hasSendEmail) {
                                       showOpenMailAppSnack(context);
@@ -184,7 +184,7 @@ class _EmailAuthFormState extends State<EmailAuthForm> {
                                     userCredentials.user!.uid != null) {
                                   final bool hasSendEmail =
                                   await _functionsRepo
-                                      .sendVerificationEmail(
+                                      .sendVerificationEmail(context,
                                       userCredentials.user?.uid, emailController.text,);
                                   if (hasSendEmail) {
                                     showOpenMailAppSnack(context);

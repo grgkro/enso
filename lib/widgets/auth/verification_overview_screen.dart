@@ -9,6 +9,7 @@ import 'package:ensobox/widgets/services/global_service.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:open_mail_app/open_mail_app.dart';
+import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../constants/constants.dart';
@@ -41,11 +42,13 @@ class _VerificationOverviewScreenState
   @override
   void initState() {
     super.initState();
-    if (_globalService.currentEnsoUser.id != null) {
+    final EnsoUser currentEnsoUser = context.read<EnsoUser>();
+
+    if (currentEnsoUser.id != null) {
       debugPrint(
-          'Step 1, fetch data for _globalService.currentEnsoUser.id: ${_globalService.currentEnsoUser.id!}');
+          'Step 1, fetch data for _globalService.currentEnsoUser.id: ${currentEnsoUser.id!}');
       _futureEnsoUser =
-          _databaseRepo.getUserFromDB(_globalService.currentEnsoUser.id!);
+          _databaseRepo.getUserFromDB(currentEnsoUser.id!);
     } else {
       _futureEnsoUser = Future.value(EnsoUser(EnsoUserBuilder()));
     }

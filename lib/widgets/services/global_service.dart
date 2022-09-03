@@ -17,7 +17,7 @@ class GlobalService {
   String phoneAuthVerificationId = "";
   int? resendToken;
   User? currentAuthUser;
-  EnsoUser currentEnsoUser = EnsoUser(EnsoUserBuilder());
+  // EnsoUser currentEnsoUser = EnsoUser(EnsoUserBuilder());
   bool isSignedIn = false;
   List<CameraDescription>? cameras;
 

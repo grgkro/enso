@@ -7,6 +7,7 @@ import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:ensobox/widgets/auth/verification_overview_screen.dart';
 import 'package:ensobox/widgets/enso_drawer.dart';
 import 'package:ensobox/widgets/firestore_repository/functions_repo.dart';
+import 'package:ensobox/widgets/map_item_overview_screen.dart';
 import 'package:ensobox/widgets/provider/current_user_provider.dart';
 import 'package:ensobox/widgets/services/authentication_service.dart';
 import 'package:firebase_app_check/firebase_app_check.dart';
@@ -33,7 +34,6 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 import 'firebase_options.dart';
 import 'models/enso_user.dart';
-import 'models/locations.dart' as locations;
 
 final FirebaseAuth _firebaseAuth = FirebaseAuth.instance;
 DatabaseRepo _databaseRepo = getIt<DatabaseRepo>();
@@ -100,7 +100,7 @@ class Home extends StatefulWidget {
 
 class _MyAppState extends State<Home> {
   final _scaffoldKey = GlobalKey<ScaffoldState>();
-  final Map<String, Marker> _markers = {};
+
   var subscription;
   var connectionStatus;
 
@@ -117,34 +117,6 @@ class _MyAppState extends State<Home> {
       _globalService.isFirebaseInitialized = true;
       setState(() {
         _initialized = true;
-      });
-
-      _firebaseAuth.authStateChanges().listen((User? authUser) async {
-        if (authUser != null) {
-          log("The user is now signed in and stored in the globalService: ${authUser.toString()}");
-          _globalService.currentAuthUser = authUser;
-          _globalService.isSignedIn = true;
-          if (_globalService.currentEnsoUser.id == null || authUser.uid != _globalService.currentEnsoUser.id) {
-            EnsoUser? currentEnsoUser =
-            await _databaseRepo.getUserFromDB(authUser.uid);
-            if (currentEnsoUser != null) {
-              log("The EnsoUser was retrieved from the DB and is now stored in the globalService: ${currentEnsoUser.toString()}");
-              _globalService.currentEnsoUser = currentEnsoUser;
-              final currentUserProvider =
-              Provider.of<CurrentUserProvider>(context, listen: false);
-              currentUserProvider
-                  .setCurrentEnsoUser(currentEnsoUser);
-            } else {
-              log("Getting the EnsoUser from the DB with this id ${authUser.uid} failed.");
-            }
-          } else {
-            log("The EnsoUser was already retrieved from the DB with this id ${authUser.uid}, no update needed.");
-          }
-        } else {
-          _globalService.isSignedIn = false;
-          print(
-              "User is not signed in, _auth.authStateChanges().listen() returned null");
-        }
       });
     } catch (e) {
       // Set `_error` state to true if Firebase initialization fails
@@ -194,32 +166,11 @@ class _MyAppState extends State<Home> {
     }
   }
 
-  Future<void> _onMapCreated(GoogleMapController controller) async {
-    var ensoBoxes = await locations.getBoxLocations();
-    setState(() {
-      _markers.clear();
-      for (final box in ensoBoxes.boxes) {
-        log(box.id);
-        final marker = Marker(
-          markerId: MarkerId(box.name),
-          position:
-              LatLng(box.lat ?? 48.7553846205735, box.lng ?? 9.172653858386855),
-          infoWindow: InfoWindow(
-            title: box.name,
-            snippet: box.address,
-          ),
-        );
-        _markers[box.name] = marker;
-      }
-    });
-  }
-
   @override
   Widget build(BuildContext context) {
     // Show error message if initialization failed
     if (_error) {
-      return MaterialApp(
-          home: Scaffold(
+      return Scaffold(
         body: Container(
           color: Colors.white,
           child: Center(
@@ -238,7 +189,7 @@ class _MyAppState extends State<Home> {
             ],
           )),
         ),
-      ));
+      );
     }
 
     // Show a loader until FlutterFire is initialized
@@ -251,58 +202,20 @@ class _MyAppState extends State<Home> {
       );
     }
 
-    const LatLng _mainLocation = LatLng(25.69893, 32.6421);
-    return Scaffold(
-      drawer: const EnsoDrawer(),
-      appBar: AppBar(
-        title: const Text('Was möchtest du ausleihen?:'),
-        backgroundColor: Colors.green[700],
-      ),
-      key: _scaffoldKey,
-      resizeToAvoidBottomInset: false,
-      body: SafeArea(
-        child: Column(
-          children: <Widget>[
-            SizedBox(
-              width: MediaQuery.of(context)
-                  .size
-                  .width, // or use fixed size like 200
-              height: MediaQuery.of(context).size.height / 2.3,
-
-              child: GoogleMap(
-                onMapCreated: _onMapCreated,
-                initialCameraPosition: const CameraPosition(
-                  target: LatLng(48.7553846205735, 9.172653858386855),
-                  zoom: 14,
-                ),
-                markers: _markers.values.toSet(),
-              ),
-            ),
-            const EnsoDivider(),
-            getMainText(),
-            const EnsoDivider(),
-            Expanded(
-              child: Container(
-                width: MediaQuery.of(context)
-                    .size
-                    .width, // or use fixed size like 200
-                // height: MediaQuery.of(context).size.height / 2 - 100,
-                child: BoxList(),
-              ),
-            ),
-          ],
-        ),
-      ),
+    return Builder(
+      builder: (BuildContext context) {
+        return Scaffold(
+          drawer: const EnsoDrawer(),
+          appBar: AppBar(
+            title: const Text('Was möchtest du ausleihen?:'),
+            backgroundColor: Colors.green[700],
+          ),
+          // key: _scaffoldKey,
+          resizeToAvoidBottomInset: false,
+          body: const MapItemOverviewScreen(),
+        );
+      },
     );
-  }
-
-  Text getMainText() {
-    return Text('Tippe auf den Gegenstand, den du gerne ausleihen möchtest:',
-        textAlign: TextAlign.center,
-        style: TextStyle(
-            color: Colors.grey[800],
-            fontWeight: FontWeight.w600,
-            fontSize: 16));
   }
 }
 

@@ -7,12 +7,14 @@ import 'package:ensobox/models/item.dart';
 import 'package:ensobox/widgets/ble/bluetooth_service.dart';
 import 'package:ensobox/widgets/firestore_repository/database_repo.dart';
 import 'package:ensobox/widgets/pay.dart';
+import 'package:ensobox/widgets/provider/current_user_provider.dart';
 import 'package:ensobox/widgets/service_locator.dart';
 import 'package:ensobox/widgets/services/global_service.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_reactive_ble/flutter_reactive_ble.dart';
 import 'package:location_permissions/location_permissions.dart';
+import 'package:provider/provider.dart';
 
 import '../models/locations.dart' as locations;
 import 'auth/verification_overview_screen.dart';
@@ -141,7 +143,7 @@ class _ItemDetailsScreenState extends State<ItemDetailsScreen> {
       _startScan(context);
     }
     User? currentUser = _globalService.currentAuthUser;
-    EnsoUser currentEnsoUser = _globalService.currentEnsoUser;
+    EnsoUser currentEnsoUser = context.read<EnsoUser>();
 
     bool userIsMissingNecessaryVerification() {
       if (currentUser == null) {

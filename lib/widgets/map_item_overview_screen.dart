@@ -1,0 +1,130 @@
+import 'dart:developer';
+
+import 'package:ensobox/widgets/provider/current_user_provider.dart';
+import 'package:ensobox/widgets/service_locator.dart';
+import 'package:ensobox/widgets/services/global_service.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/cupertino.dart';
+import 'package:flutter/material.dart';
+import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'package:provider/provider.dart';
+
+import '../models/enso_user.dart';
+import 'box_list.dart';
+import 'enso_drawer.dart';
+import 'firebase_repository/auth_repo.dart';
+import 'firestore_repository/database_repo.dart';
+import 'globals/enso_divider.dart';
+import '../models/locations.dart' as locations;
+
+AuthRepo _authRepo = getIt<AuthRepo>();
+GlobalService _globalService = getIt<GlobalService>();
+final FirebaseAuth _firebaseAuth = FirebaseAuth.instance;
+DatabaseRepo _databaseRepo = getIt<DatabaseRepo>();
+
+class MapItemOverviewScreen extends StatefulWidget {
+  const MapItemOverviewScreen({Key? key}) : super(key: key);
+
+  @override
+  State<MapItemOverviewScreen> createState() => _MapItemOverviewScreenState();
+}
+
+class _MapItemOverviewScreenState extends State<MapItemOverviewScreen> {
+  final Map<String, Marker> _markers = {};
+
+  Future<void> _onMapCreated(GoogleMapController controller) async {
+    var ensoBoxes = await locations.getBoxLocations();
+    setState(() {
+      _markers.clear();
+      for (final box in ensoBoxes.boxes) {
+        log(box.id);
+        final marker = Marker(
+          markerId: MarkerId(box.name),
+          position:
+          LatLng(box.lat ?? 48.7553846205735, box.lng ?? 9.172653858386855),
+          infoWindow: InfoWindow(
+            title: box.name,
+            snippet: box.address,
+          ),
+        );
+        _markers[box.name] = marker;
+      }
+    });
+  }
+
+  Text getMainText() {
+    return Text('Tippe auf den Gegenstand, den du gerne ausleihen möchtest:',
+        textAlign: TextAlign.center,
+        style: TextStyle(
+            color: Colors.grey[800],
+            fontWeight: FontWeight.w600,
+            fontSize: 16));
+  }
+
+  void startListeningForEnsoUserChanges(BuildContext context) {
+    final currentUserProvider =
+    Provider.of<CurrentUserProvider>(context, listen: false);
+
+    _firebaseAuth.authStateChanges().listen((User? authUser) async {
+      if (authUser != null) {
+        log("The user is now signed in and stored in the globalService: ${authUser.toString()}");
+        _globalService.currentAuthUser = authUser;
+        _globalService.isSignedIn = true;
+        if (currentUserProvider.currentEnsoUser.id == null || authUser.uid != currentUserProvider.currentEnsoUser.id) {
+          EnsoUser? currentEnsoUser =
+          await _databaseRepo.getUserFromDB(authUser.uid);
+          if (currentEnsoUser != null) {
+            log("The EnsoUser was retrieved from the DB and is now stored in the globalService: ${currentEnsoUser.toString()}");
+            currentUserProvider.setCurrentEnsoUser(currentEnsoUser);
+          } else {
+            log("Getting the EnsoUser from the DB with this id ${authUser.uid} failed.");
+          }
+        } else {
+          log("The EnsoUser was already retrieved from the DB with this id ${authUser.uid}, no update needed.");
+        }
+      } else {
+        _globalService.isSignedIn = false;
+        print(
+            "User is not signed in, _auth.authStateChanges().listen() returned null");
+      }
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    startListeningForEnsoUserChanges(context);
+    return SafeArea(
+        child: Column(
+          children: <Widget>[
+            SizedBox(
+              width: MediaQuery.of(context)
+                  .size
+                  .width, // or use fixed size like 200
+              height: MediaQuery.of(context).size.height / 2.3,
+
+              child: GoogleMap(
+                onMapCreated: _onMapCreated,
+                initialCameraPosition: const CameraPosition(
+                  target: LatLng(48.7553846205735, 9.172653858386855),
+                  zoom: 14,
+                ),
+                markers: _markers.values.toSet(),
+              ),
+            ),
+            const EnsoDivider(),
+            getMainText(),
+            const EnsoDivider(),
+            Expanded(
+              child: Container(
+                width: MediaQuery.of(context)
+                    .size
+                    .width, // or use fixed size like 200
+                // height: MediaQuery.of(context).size.height / 2 - 100,
+                child: BoxList(),
+              ),
+            ),
+          ],
+        ),
+    );
+  }
+}

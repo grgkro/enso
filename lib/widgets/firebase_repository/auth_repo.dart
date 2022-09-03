@@ -9,6 +9,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../constants/constants.dart' as Constants;
@@ -16,6 +17,7 @@ import '../../firebase_options.dart';
 import '../../models/enso_user.dart';
 import '../../models/rental.dart';
 import '../firestore_repository/database_repo.dart';
+import '../provider/current_user_provider.dart';
 import '../service_locator.dart';
 import '../services/global_service.dart';
 
@@ -47,14 +49,21 @@ class AuthRepo {
   }
 
   Future<void> verifyPhoneNumber(String number, BuildContext context) async {
+    EnsoUser currentEnsoUser = context.read<EnsoUser>();
+    final currentUserProvider =
+    Provider.of<CurrentUserProvider>(context, listen: false);
+
     await _auth.verifyPhoneNumber(
         phoneNumber: number,
         verificationCompleted: (PhoneAuthCredential credential) async {
           log("Oh yeah, verificationCompleted");
-          _globalService.currentEnsoUser.phoneVerified = true;
-          EnsoUser user = await _databaseRepo.getUserFromDB(_globalService.currentEnsoUser.id!);
+
+          EnsoUser user = await _databaseRepo.getUserFromDB(currentEnsoUser.id!);
           user.phoneVerified = true;
+          currentUserProvider
+              .setCurrentEnsoUser(currentEnsoUser);
           _databaseRepo.updateUser(user);
+
           _globalService.showScreen(context, EmailAuthForm());
         },
         verificationFailed: (FirebaseAuthException e) {

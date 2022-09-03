@@ -13,6 +13,7 @@ import '../auth/verification_overview_screen.dart';
 import '../auth/wait_for_approval_screen.dart';
 import '../firestore_repository/database_repo.dart';
 import '../firestore_repository/functions_repo.dart';
+import '../provider/current_user_provider.dart';
 import '../service_locator.dart';
 import '../services/global_service.dart';
 
@@ -191,14 +192,20 @@ class _DisplaySelfieIdPicturesScreenState
                       if (!_agree) {
                         null;
                       } else {
+                        EnsoUser currentEnsoUser = context.read<EnsoUser>();
+
                         bool hasSuccessfullySendAdminEmail =
                             await _functionsRepo.sendAdminApproveIdEmail(
-                                _globalService.currentEnsoUser.id);
+                                currentEnsoUser.id);
                         if (hasSuccessfullySendAdminEmail) {
-                          _globalService.currentEnsoUser.hasTriggeredIdApprovement = true;
+                          currentEnsoUser.hasTriggeredIdApprovement = true;
+                          final currentUserProvider =
+                          Provider.of<CurrentUserProvider>(context, listen: false);
+                          currentUserProvider
+                              .setCurrentEnsoUser(currentEnsoUser);
 
                           try {
-                            EnsoUser user = await _databaseRepo.getUserFromDB(_globalService.currentEnsoUser.id!);
+                            EnsoUser user = await _databaseRepo.getUserFromDB(currentEnsoUser.id!);
                             user.hasTriggeredIdApprovement = true;
                             _databaseRepo.updateUser(user);
                           } catch (e) {

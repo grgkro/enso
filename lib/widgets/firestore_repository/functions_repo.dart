@@ -6,9 +6,11 @@ import 'dart:io';
 import 'package:app_settings/app_settings.dart';
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../models/enso_user.dart';
+import '../provider/current_user_provider.dart';
 import '../service_locator.dart';
 import '../services/global_service.dart';
 import '../../constants/constants.dart' as Constants;
@@ -20,7 +22,11 @@ final HttpClient httpClient = new HttpClient();
 SharedPreferences? prefs = null;
 
 class FunctionsRepo {
-  Future<bool> sendVerificationEmail(String? uid, String email) async {
+  Future<bool> sendVerificationEmail(BuildContext context, String? uid, String email) async {
+    EnsoUser currentEnsoUser = context.read<EnsoUser>();
+    final currentUserProvider =
+    Provider.of<CurrentUserProvider>(context, listen: false);
+
     if (prefs == null) {
       prefs = await SharedPreferences.getInstance();
     }
@@ -50,7 +56,10 @@ class FunctionsRepo {
       if (response.statusCode == HttpStatus.ok) {
         final String json = await response.transform(utf8.decoder).join();
         result = 'result from email function: $json';
-        _globalService.currentEnsoUser.hasTriggeredConfirmationEmail = true;
+
+        currentEnsoUser.hasTriggeredConfirmationEmail = true;
+        currentUserProvider.setCurrentEnsoUser(currentEnsoUser);
+
         prefs!.setBool(Constants.hasTriggeredConfirmationEmail, true);
         return Future.value(true);
       } else {
