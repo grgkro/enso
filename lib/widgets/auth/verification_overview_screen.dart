@@ -62,13 +62,18 @@ class _VerificationOverviewScreenState
     _globalService.cameras = cameras;
     final CameraDescription camera = cameras.first;
 
+    PhotoSide idSide = PhotoSide.front;
+    if (isIdFrontAdded()) {
+      idSide = PhotoSide.back;
+    }
+
     await Navigator.push(
       context,
       MaterialPageRoute(
         builder: (BuildContext context) => TakePictureScreen(
             camera: camera,
             photoType: PhotoType.id,
-            photoSide: PhotoSide.front),
+            photoSide: idSide),
       ),
     );
   }
@@ -96,10 +101,26 @@ class _VerificationOverviewScreenState
             // return _buildEmailAuthFormScreen(ensoUser);
           } else if (!ensoUser.hasTriggeredConfirmationSms) {
             log("user has triggered email, but not id Approval or sms yet -> _buildPhoneScreen");
-            return _buildEmailAuthFormScreen(ensoUser);
+            return PhoneAuthForm();
           } else {
             log("user has not triggered id Approval or sms yet, but email. -> _buildIdVerificationScreen");
-            return _buildEmailAuthFormScreen(ensoUser);
+
+            final List<CameraDescription>? cameras = _globalService.cameras;
+            late CameraDescription camera;
+            if (cameras != null) {
+              camera = cameras.first;
+            }
+
+
+            PhotoSide idSide = PhotoSide.front;
+            if (isIdFrontAdded()) {
+              idSide = PhotoSide.back;
+            }
+
+            return TakePictureScreen(
+                camera: camera,
+                photoType: PhotoType.id,
+                photoSide: idSide);
           }
         } else {
           //TODO: replace endless Spinner with Error Screen -> the loaded User was null or an error occured during loading

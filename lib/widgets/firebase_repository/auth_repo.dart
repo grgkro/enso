@@ -28,6 +28,7 @@ DatabaseRepo _databaseRepo = getIt<DatabaseRepo>();
 
 class AuthRepo {
   Future<void> initialize() async {
+    log("THE INITIALIZE() FUNC HAS BEEN CALLED IN AUTHREPO - shouldn't happen");
     WidgetsFlutterBinding.ensureInitialized();
 
     await Firebase.initializeApp(
@@ -93,8 +94,6 @@ class AuthRepo {
         });
   }
 
-  // void registerByEmailAndHiddenPW(
-  //     BuildContext context, String email, String password) async {
   Future<UserCredential> registerByEmailAndHiddenPW(String email) async {
     final SharedPreferences prefs = await SharedPreferences.getInstance();
     String pw = "password";

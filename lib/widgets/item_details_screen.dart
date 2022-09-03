@@ -14,6 +14,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_reactive_ble/flutter_reactive_ble.dart';
 import 'package:location_permissions/location_permissions.dart';
+import 'package:open_mail_app/open_mail_app.dart';
 import 'package:provider/provider.dart';
 
 import '../models/locations.dart' as locations;
@@ -145,7 +146,7 @@ class _ItemDetailsScreenState extends State<ItemDetailsScreen> {
 
     User? currentUser = _globalService.currentAuthUser;
     final currentUserProvider =
-    Provider.of<CurrentUserProvider>(context, listen: false);
+        Provider.of<CurrentUserProvider>(context, listen: false);
     EnsoUser currentEnsoUser = currentUserProvider.currentEnsoUser;
 
     bool userIsMissingNecessaryVerification() {
@@ -294,67 +295,6 @@ class _ItemDetailsScreenState extends State<ItemDetailsScreen> {
             }
           },
         ),
-        // persistentFooterButtons: [
-        //   // We want to enable this button if the scan has NOT started
-        //   // If the scan HAS started, it should be disabled.
-        //   _bleService.scanStarted
-        //       // True condition
-        //       ? ElevatedButton(
-        //           style: ElevatedButton.styleFrom(
-        //             primary: Colors.grey, // background
-        //             onPrimary: Colors.white, // foreground
-        //           ),
-        //           onPressed: () {},
-        //           child: const Icon(Icons.search),
-        //         )
-        //       // False condition
-        //       : ElevatedButton(
-        //           style: ElevatedButton.styleFrom(
-        //             primary: Colors.blue, // background
-        //             onPrimary: Colors.white, // foreground
-        //           ),
-        //           onPressed: _startScan,
-        //           child: const Icon(Icons.search),
-        //         ),
-        //   _bleService.foundDeviceWaitingToConnect
-        //       // True condition
-        //       ? ElevatedButton(
-        //           style: ElevatedButton.styleFrom(
-        //             primary: Colors.blue, // background
-        //             onPrimary: Colors.white, // foreground
-        //           ),
-        //           onPressed: _connectToDevice,
-        //           child: const Icon(Icons.bluetooth),
-        //         )
-        //       // False condition
-        //       : ElevatedButton(
-        //           style: ElevatedButton.styleFrom(
-        //             primary: Colors.grey, // background
-        //             onPrimary: Colors.white, // foreground
-        //           ),
-        //           onPressed: () {},
-        //           child: const Icon(Icons.bluetooth),
-        //         ),
-        //   _bleService.connected
-        //       // True condition
-        //       ? ElevatedButton(
-        //           style: ElevatedButton.styleFrom(
-        //             primary: Colors.blue, // background
-        //             onPrimary: Colors.white, // foreground
-        //           ),
-        //           onPressed: _partyTime,
-        //           child: const Icon(Icons.celebration_rounded),
-        //         )
-        //       // False condition
-        //       : ElevatedButton(
-        //           style: ElevatedButton.styleFrom(
-        //             primary: Colors.grey, // background
-        //             onPrimary: Colors.white, // foreground
-        //           ),
-        //           onPressed: () => goToPayment(context),
-        //           child: const Icon(Icons.celebration_rounded),
-        //         ),
-        // ],
       ),
     );
   }
@@ -425,4 +365,6 @@ class _ItemDetailsScreenState extends State<ItemDetailsScreen> {
       ],
     );
   }
+
+
 }

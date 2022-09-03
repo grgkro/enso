@@ -12,6 +12,7 @@ import '../auth/otp_form.dart';
 import '../provider/current_user_provider.dart';
 
 class GlobalService {
+  late FirebaseAuth firebaseAuth;
   bool isFirebaseInitialized = false;
   bool isComingFromTakePictureScreen = false;
   String phoneAuthVerificationId = "";

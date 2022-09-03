@@ -23,9 +23,6 @@ SharedPreferences? prefs = null;
 
 class FunctionsRepo {
   Future<bool> sendVerificationEmail(BuildContext context, String? uid, String email) async {
-    EnsoUser currentEnsoUser = context.read<EnsoUser>();
-    final currentUserProvider =
-    Provider.of<CurrentUserProvider>(context, listen: false);
 
     if (prefs == null) {
       prefs = await SharedPreferences.getInstance();
@@ -56,9 +53,6 @@ class FunctionsRepo {
       if (response.statusCode == HttpStatus.ok) {
         final String json = await response.transform(utf8.decoder).join();
         result = 'result from email function: $json';
-
-        currentEnsoUser.hasTriggeredConfirmationEmail = true;
-        currentUserProvider.setCurrentEnsoUser(currentEnsoUser);
 
         prefs!.setBool(Constants.hasTriggeredConfirmationEmail, true);
         return Future.value(true);

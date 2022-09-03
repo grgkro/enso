@@ -2,6 +2,7 @@ import 'dart:developer';
 import 'dart:convert';
 import 'dart:io';
 import 'package:app_settings/app_settings.dart';
+import 'package:camera/camera.dart';
 import 'package:cloud_functions/cloud_functions.dart';
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:ensobox/widgets/auth/verification_overview_screen.dart';
@@ -35,20 +36,17 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'firebase_options.dart';
 import 'models/enso_user.dart';
 
-final FirebaseAuth _firebaseAuth = FirebaseAuth.instance;
 DatabaseRepo _databaseRepo = getIt<DatabaseRepo>();
 GlobalService _globalService = getIt<GlobalService>();
+final FirebaseAuth _firebaseAuth = FirebaseAuth.instance;
 FunctionsRepo _functionsRepo = getIt<FunctionsRepo>();
 AuthRepo _authRepo = getIt<AuthRepo>();
 
 //TODO: https://firebase.google.com/docs/firestore/quickstart#dart  Optional: Improve iOS & macOS build times by including the pre-compiled framework for Firestore
 void main() async {
-  // Ensure that plugin services are initialized so that `availableCameras()`
-  // can be called before `runApp()`
+  // Ensure that plugin services are initialized so that `availableCameras()` can be called before `runApp()`
   WidgetsFlutterBinding.ensureInitialized();
-
   setupServiceLocator(); // This will register any services you have with GetIt before the widget tree gets built.
-
   runApp(MyApp());
 }
 
@@ -99,8 +97,6 @@ class Home extends StatefulWidget {
 }
 
 class _MyAppState extends State<Home> {
-  final _scaffoldKey = GlobalKey<ScaffoldState>();
-
   var subscription;
   var connectionStatus;
 
@@ -110,54 +106,53 @@ class _MyAppState extends State<Home> {
   // Define an async function to initialize FlutterFire
   void initializeFlutterFire() async {
     try {
-      // Wait for Firebase to initialize and set `_initialized` state to true
       await Firebase.initializeApp(
         options: DefaultFirebaseOptions.currentPlatform,
       );
+      _globalService.firebaseAuth = FirebaseAuth.instance;
       _globalService.isFirebaseInitialized = true;
       setState(() {
         _initialized = true;
       });
     } catch (e) {
-      // Set `_error` state to true if Firebase initialization fails
       setState(() {
         _error = true;
       });
     }
 
-    try {
-      final credential = await FirebaseAuth.instance.createUserWithEmailAndPassword(
-        email: 'grgkro@gmail.com',
-        password: 'password1234',
-      );
-    } on FirebaseAuthException catch (e) {
-      if (e.code == 'weak-password') {
-        print('The password provided is too weak.');
-      } else if (e.code == 'email-already-in-use') {
-        print('The account already exists for that email.');
-      }
-    } catch (e) {
-      print(e);
-    }
-
-    await FirebaseAuth.instance.verifyPhoneNumber(
-      phoneNumber: '+49 151 264 483 12',
-      verificationCompleted: (PhoneAuthCredential credential) async {
-        await _firebaseAuth.currentUser!.linkWithCredential(credential);
-      },
-      verificationFailed: (FirebaseAuthException e) { print(e.toString());},
-      codeSent: (String verificationId, int? resendToken) async {
-        // Update the UI - wait for the user to enter the SMS code
-        String smsCode = '123456';
-
-        // Create a PhoneAuthCredential with the code
-        PhoneAuthCredential credential = PhoneAuthProvider.credential(verificationId: verificationId, smsCode: smsCode);
-
-        // Sign the user in (or link) with the credential
-        await _firebaseAuth.currentUser!.linkWithCredential(credential);
-      },
-      codeAutoRetrievalTimeout: (String verificationId) {},
-    );
+    // try {
+    //   final credential = await FirebaseAuth.instance.createUserWithEmailAndPassword(
+    //     email: 'grgkro@gmail.com',
+    //     password: 'password1234',
+    //   );
+    // } on FirebaseAuthException catch (e) {
+    //   if (e.code == 'weak-password') {
+    //     print('The password provided is too weak.');
+    //   } else if (e.code == 'email-already-in-use') {
+    //     print('The account already exists for that email.');
+    //   }
+    // } catch (e) {
+    //   print(e);
+    // }
+    //
+    // await FirebaseAuth.instance.verifyPhoneNumber(
+    //   phoneNumber: '+49 151 264 483 12',
+    //   verificationCompleted: (PhoneAuthCredential credential) async {
+    //     await _firebaseAuth.currentUser!.linkWithCredential(credential);
+    //   },
+    //   verificationFailed: (FirebaseAuthException e) { print(e.toString());},
+    //   codeSent: (String verificationId, int? resendToken) async {
+    //     // Update the UI - wait for the user to enter the SMS code
+    //     String smsCode = '123456';
+    //
+    //     // Create a PhoneAuthCredential with the code
+    //     PhoneAuthCredential credential = PhoneAuthProvider.credential(verificationId: verificationId, smsCode: smsCode);
+    //
+    //     // Sign the user in (or link) with the credential
+    //     await _firebaseAuth.currentUser!.linkWithCredential(credential);
+    //   },
+    //   codeAutoRetrievalTimeout: (String verificationId) {},
+    // );
   }
 
   @override
@@ -172,6 +167,8 @@ class _MyAppState extends State<Home> {
     super.initState();
 
     initializeFlutterFire();
+
+    getAvailableCameras();
   }
 
   @override
@@ -244,12 +241,18 @@ class _MyAppState extends State<Home> {
             title: const Text('Was möchtest du ausleihen?:'),
             backgroundColor: Colors.green[700],
           ),
-          // key: _scaffoldKey,
           resizeToAvoidBottomInset: false,
           body: const MapItemOverviewScreen(),
         );
       },
     );
+  }
+
+  void getAvailableCameras() async {
+    log('Going to retrieve the available cameras');
+    final List<CameraDescription> cameras = await availableCameras();
+    _globalService.cameras = cameras;
+    log('Retrieved the available cameras, the device has ${cameras.length} different cameras.');
   }
 }
 
