@@ -1,6 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
+import '../service_locator.dart';
+import '../services/global_service.dart';
 import 'fade_animation.dart';
+
+GlobalService _globalService = getIt<GlobalService>();
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({Key? key}) : super(key: key);
@@ -10,6 +15,10 @@ class LoginScreen extends StatefulWidget {
 }
 
 class _LoginScreenState extends State<LoginScreen> {
+  final _formKey = GlobalKey<FormState>();
+  final TextEditingController _emailController = TextEditingController();
+  final TextEditingController _passwordController = TextEditingController();
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -42,13 +51,15 @@ class _LoginScreenState extends State<LoginScreen> {
                 )),
             Expanded(
               child: Container(
-                  width: double.infinity,
-                  decoration: const BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.only(
-                          topLeft: Radius.circular(50),
-                          topRight: Radius.circular(50))),
-                  margin: const EdgeInsets.only(top: 60),
+                width: double.infinity,
+                decoration: const BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.only(
+                        topLeft: Radius.circular(50),
+                        topRight: Radius.circular(50))),
+                margin: const EdgeInsets.only(top: 60),
+                child: Form(
+                  key: _formKey,
                   child: SingleChildScrollView(
                     child: Column(
                       children: [
@@ -67,8 +78,7 @@ class _LoginScreenState extends State<LoginScreen> {
                                     fontSize: 35,
                                     color: Colors.black87,
                                     // letterSpacing: 2,
-                                    fontFamily: "Lobster"
-                                ),
+                                    fontFamily: "Lobster"),
                               ),
                             )),
                         FadeAnimation(
@@ -100,6 +110,13 @@ class _LoginScreenState extends State<LoginScreen> {
                                     child: Container(
                                       margin: const EdgeInsets.only(left: 10),
                                       child: TextFormField(
+                                        autofocus: true,
+                                        keyboardType:
+                                            TextInputType.emailAddress,
+                                        controller: _emailController,
+                                        textInputAction: TextInputAction.next,
+                                        validator: (value) =>
+                                            _globalService.validateEmail(value),
                                         maxLines: 1,
                                         decoration: const InputDecoration(
                                           label: Text(" E-mail ..."),
@@ -140,6 +157,13 @@ class _LoginScreenState extends State<LoginScreen> {
                                     child: Container(
                                       margin: const EdgeInsets.only(left: 10),
                                       child: TextFormField(
+                                        keyboardType:
+                                        TextInputType.visiblePassword,
+                                        obscureText: true,
+                                        controller: _passwordController,
+                                        textInputAction: TextInputAction.done,
+                                        validator: (value) =>
+                                            _globalService.validatePassword(value),
                                         maxLines: 1,
                                         decoration: const InputDecoration(
                                           label: Text(" Password ..."),
@@ -157,7 +181,16 @@ class _LoginScreenState extends State<LoginScreen> {
                         FadeAnimation(
                           2,
                           ElevatedButton(
-                            onPressed: () {},
+                            onPressed: () {
+                              // Validate returns true if the form is valid, or false otherwise.
+                              if (_formKey.currentState!.validate()) {
+                                // If the form is valid, display a snackbar. In the real world,
+                                // you'd often call a server or save the information in a database.
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  const SnackBar(content: Text('Processing Data')),
+                                );
+                              }
+                            },
                             style: ElevatedButton.styleFrom(
                                 onPrimary: Colors.purpleAccent,
                                 shadowColor: Colors.purpleAccent,
@@ -195,7 +228,7 @@ class _LoginScreenState extends State<LoginScreen> {
                               alignment: Alignment.center,
                               margin: const EdgeInsets.only(top: 10),
                               child: const Text(
-                                " Subscrib in Scosial Media App ",
+                                " Subscribe in social Media App ",
                                 style: TextStyle(
                                     color: Colors.black54, fontSize: 15),
                               )),
@@ -228,11 +261,20 @@ class _LoginScreenState extends State<LoginScreen> {
                         )
                       ],
                     ),
-                  )),
+                  ),
+                ),
+              ),
             )
           ],
         ),
       ),
     );
+  }
+
+  _login() async {
+    final SharedPreferences prefs = await SharedPreferences.getInstance();
+
+    // final AuthCredential emailCredential = EmailAuthProvider.credential(
+    //     email: emailController.text, password: password);
   }
 }

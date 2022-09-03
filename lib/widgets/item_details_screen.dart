@@ -140,7 +140,7 @@ class _ItemDetailsScreenState extends State<ItemDetailsScreen> {
     if (!_bleService.scanStarted) {
       _startScan(context);
     }
-    User? currentUser = _globalService.currentUser;
+    User? currentUser = _globalService.currentAuthUser;
     EnsoUser currentEnsoUser = _globalService.currentEnsoUser;
 
     bool userIsMissingNecessaryVerification() {

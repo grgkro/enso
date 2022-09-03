@@ -76,8 +76,9 @@ class _VerificationOverviewScreenState
         if (snapshot.connectionState != ConnectionState.done) {
           return Center(child: CircularProgressIndicator());
         } else if (snapshot.hasData && snapshot.data.runtimeType == EnsoUser) { // hasData is wrong for null values
-          EnsoUser user = snapshot.data! as EnsoUser;
-          if (user.idApproved && user.emailVerified && user.phoneVerified) {
+          EnsoUser ensoUser = snapshot.data! as EnsoUser;
+          User? user = _globalService.currentAuthUser;
+          if (ensoUser.idApproved && user != null && user.emailVerified) {
             log("user is already approved. -> success screen");
             return _buildSuccessScreen(snapshot.data as EnsoUser);
           } else if ((snapshot.data! as EnsoUser).hasTriggeredIdApprovement){

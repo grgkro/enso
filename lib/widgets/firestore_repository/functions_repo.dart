@@ -28,8 +28,8 @@ class FunctionsRepo {
     String? userId;
     if (uid != null) {
       userId = uid;
-    } else if (_globalService.currentUser?.uid != null) {
-      userId = _globalService.currentUser?.uid;
+    } else if (_globalService.currentAuthUser?.uid != null) {
+      userId = _globalService.currentAuthUser?.uid;
     } else {
       log("Can't send the confirmation email without a uid");
       return Future.value(false);
@@ -76,8 +76,8 @@ class FunctionsRepo {
     String? userId;
     if (uid != null) {
       userId = uid;
-    } else if (_globalService.currentUser?.uid != null) {
-      userId = _globalService.currentUser?.uid;
+    } else if (_globalService.currentAuthUser?.uid != null) {
+      userId = _globalService.currentAuthUser?.uid;
     } else {
       log("Can't send the confirmation email without a uid");
       return Future.value(false);

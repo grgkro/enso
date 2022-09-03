@@ -3,10 +3,12 @@ import 'dart:developer';
 import 'package:ensobox/widgets/auth/login_screen.dart';
 import 'package:ensobox/widgets/provider/current_user_provider.dart';
 import 'package:ensobox/widgets/service_locator.dart';
+import 'package:ensobox/widgets/services/authentication_service.dart';
 import 'package:ensobox/widgets/services/global_service.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import '../models/enso_user.dart';
 import 'firebase_repository/auth_repo.dart';
@@ -36,12 +38,12 @@ class _EnsoDrawerState extends State<EnsoDrawer> {
             children: [
               UserAccountsDrawerHeader(
                 accountName: Text(
-                    isSignedIn && currentUserProvider.currentUser.email != null
-                        ? currentUserProvider.currentUser.email!.split('@')[0]
+                    isSignedIn && currentUserProvider.currentEnsoUser.email != null
+                        ? currentUserProvider.currentEnsoUser.email!.split('@')[0]
                         : "Gast"),
                 accountEmail: Text(
-                    isSignedIn && currentUserProvider.currentUser.email != null
-                        ? currentUserProvider.currentUser.email!
+                    isSignedIn && currentUserProvider.currentEnsoUser.email != null
+                        ? currentUserProvider.currentEnsoUser.email!
                         : ""),
                 currentAccountPicture: CircleAvatar(
                   child: ClipOval(
@@ -67,8 +69,8 @@ class _EnsoDrawerState extends State<EnsoDrawer> {
                 onTap: () => null,
               ),
               ListTile(
-                leading: Icon(Icons.person),
-                title: Text('Freunde'),
+                leading: Icon(Icons.list_rounded),
+                title: Text('Bisherige Ausleihen'),
                 onTap: () => null,
               ),
               ListTile(
@@ -106,9 +108,25 @@ class _EnsoDrawerState extends State<EnsoDrawer> {
                   ? ListTile(
                       title: Text('Einloggen'),
                       leading: Icon(Icons.exit_to_app),
-                      onTap: () {
-                        log("Going to log-in screen");
-                        _globalService.showScreen(context, const LoginScreen());
+                      onTap: () async {
+                        log("Trying to log in from prefs.");
+
+                        _authRepo.signInAuthUserIfPossible().then((authCredentials) {
+                          if (authCredentials != null && authCredentials.user != null) {
+                            log("logged in from prefs");
+                            setState(() {
+                              isSignedIn = true;
+                            });
+                          } else {
+                            log("Couldn't log in from prefs, Going to log-in screen");
+
+                          }
+                        })
+                        .catchError((e) {
+                          log("Error while trying to log in from prefs: ${e}");
+                          log("Going to log-in screen");
+                          _globalService.showScreen(context, const LoginScreen());
+                        });
                       })
                   : ListTile(
                       title: Text('Ausloggen'),

@@ -1,17 +1,20 @@
 import 'dart:developer';
 
+import 'package:ensobox/models/enso_user.dart';
 import 'package:ensobox/widgets/auth/verification_overview_screen.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:open_mail_app/open_mail_app.dart';
+import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:cloud_functions/cloud_functions.dart';
 
 import '../../constants/constants.dart' as Constants;
 import '../firebase_repository/auth_repo.dart';
 import '../firestore_repository/functions_repo.dart';
+import '../provider/current_user_provider.dart';
 import '../service_locator.dart';
 import '../services/global_service.dart';
 
@@ -66,7 +69,7 @@ class _EmailAuthFormState extends State<EmailAuthForm> {
                 SizedBox(
                   width: size.width * 0.8,
                   child: TextFormField(
-                      keyboardType: TextInputType.phone,
+                      keyboardType: TextInputType.emailAddress,
                       controller: emailController,
                       decoration: InputDecoration(
                         labelText: "Email",
@@ -83,6 +86,7 @@ class _EmailAuthFormState extends State<EmailAuthForm> {
                     ? SizedBox(
                         width: size.width * 0.8,
                         child: OutlinedButton(
+                            child: Text(Constants.textSignInEmail),
                           onPressed: () async {
                             //TODO: validate email
                             log("got ${emailController.text}");
@@ -120,7 +124,13 @@ class _EmailAuthFormState extends State<EmailAuthForm> {
                                     .then((UserCredential value) async {
                                   log('linked email to existing account');
 
-                                  _globalService.currentEnsoUser.hasTriggeredConfirmationSms = true;
+                                  EnsoUser currentEnsoUser = context.read<EnsoUser>();
+                                  currentEnsoUser.hasTriggeredConfirmationSms = true;
+                                  final currentUserProvider =
+                                  Provider.of<CurrentUserProvider>(context, listen: false);
+                                  currentUserProvider
+                                      .setCurrentEnsoUser(currentEnsoUser);
+                                  // _globalService.currentEnsoUser.hasTriggeredConfirmationSms = true;
 
                                   if (value.user != null &&
                                       value.user!.uid != null) {
@@ -138,7 +148,15 @@ class _EmailAuthFormState extends State<EmailAuthForm> {
                                 });
                               } else {
                                 log("Could not link phone to email as the smsCode from shared Preferences was null.");
-                                _globalService.currentEnsoUser.emailVerified = false;
+
+                                EnsoUser currentEnsoUser = context.read<EnsoUser>();
+                                currentEnsoUser.emailVerified = false;
+                                final currentUserProvider =
+                                Provider.of<CurrentUserProvider>(context, listen: false);
+                                currentUserProvider
+                                    .setCurrentEnsoUser(currentEnsoUser);
+
+                                // _globalService.currentEnsoUser.emailVerified = false;
                                 UserCredential userCredentials =
                                     await registerService
                                         .registerByEmailAndHiddenPW(
@@ -157,7 +175,6 @@ class _EmailAuthFormState extends State<EmailAuthForm> {
 
                             } catch (e) {
                               log('Error while signing in with phone and link email: ${e.toString()}');
-                              _globalService.currentEnsoUser.emailVerified = false;
                               try {
                                 UserCredential userCredentials =
                                 await registerService
@@ -187,8 +204,8 @@ class _EmailAuthFormState extends State<EmailAuthForm> {
 
                             _globalService.showScreen(
                                 context, VerificationOverviewScreen());
-                          },
-                          child: Text(Constants.textSignInEmail),
+                          }
+
                           //   style: ButtonStyle(
                           //       // foregroundColor: MaterialStateProperty.all<Color>(
                           //       //     Constants.kPrimaryColor),

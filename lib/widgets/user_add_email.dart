@@ -1,8 +1,12 @@
+import 'package:ensobox/widgets/service_locator.dart';
+import 'package:ensobox/widgets/services/global_service.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import '../models/enso_user.dart';
+
+GlobalService _globalService = getIt<GlobalService>();
 
 class UserAddEmail extends StatefulWidget {
   const UserAddEmail({Key? key}) : super(key: key);
@@ -59,18 +63,6 @@ class _UserAddEmailState extends State<UserAddEmail> {
     }
   }
 
-  String? _validateEmail(String? value) {
-    String pattern =
-        r"^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]"
-        r"{0,253}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]"
-        r"{0,253}[a-zA-Z0-9])?)*$";
-    RegExp regex = RegExp(pattern);
-    if (value == null || value.isEmpty || !regex.hasMatch(value))
-      return 'Enter a valid email address';
-    else
-      return null;
-  }
-
   @override
   Widget build(BuildContext context) {
     EnsoUser currentUser = Provider.of<EnsoUser>(context, listen: false);
@@ -100,11 +92,12 @@ class _UserAddEmailState extends State<UserAddEmail> {
                   children: <Widget>[
                     TextFormField(
                       autofocus: true,
+                      maxLines: 1,
                       focusNode: _emailFocusNode,
                       controller: _emailController,
                       keyboardType: TextInputType.emailAddress,
                       textInputAction: TextInputAction.done,
-                      validator: (value) => _validateEmail(value),
+                      validator: (value) => _globalService.validateEmail(value),
                       onFieldSubmitted: (String value) {
                         _submitForm();
                       },

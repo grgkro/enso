@@ -39,7 +39,7 @@ class AuthRepo {
     _auth.authStateChanges().listen((User? user) async {
       if (user != null) {
         print("GOT THE USER FROM AUTH: ${user.uid}");
-        _globalService.currentUser = user;
+        _globalService.currentAuthUser = user;
       } else {
         print("user WAS NULL???");
       }
@@ -256,7 +256,24 @@ class AuthRepo {
 
   Future<UserCredential?> signInAuthUserIfPossible() async {
     UserCredential? userCredential;
-    // TODO: move this lower into the app to avoid long initial loading time
+    AuthCredential? authCredential = await getUserCredentialsFromSharedPrefs();
+    if (authCredential == null) {
+      return Future.error("Info: user could not be signed in, no user credentials found in sharedPrefs.");
+    } else {
+      try {
+        userCredential = await _auth.signInWithCredential(authCredential);
+        log("AuthUser is now signed in - email: ${userCredential.user?.email ?? ''} - phone: ${userCredential.user?.phoneNumber ?? ''}");
+        return userCredential;
+      } catch (e) {
+        // e.g. the email was badly formatted: "grgk@gmail.com " (with space at the end...)
+        //TODO: show SNACK
+        return Future.error("Error signing in User. ${e.toString()}");
+      }
+
+    }
+  }
+
+  Future<AuthCredential?> getUserCredentialsFromSharedPrefs() async {
     final SharedPreferences prefs = await SharedPreferences.getInstance();
     // If it doesn't exist, returns null.
     String? email = prefs.getString(Constants.emailKey);
@@ -276,24 +293,7 @@ class AuthRepo {
         log("found the user's credentials in shared pref (phone & smsCode)");
       }
     }
-
-    if (credential == null) {
-      log(
-          "Info: user could not be signed in, no user credentials found in sharedPrefs.");
-      return Future.error("Info: user could not be signed in, no user credentials found in sharedPrefs.");
-    } else {
-      try {
-        userCredential = await _auth.signInWithCredential(credential);
-        log("AuthUser is now signed in: ${userCredential.user?.email ?? ''}");
-        return userCredential;
-      } catch (e) {
-        // e.g. the email was badly formatted: "grgk@gmail.com " (with space at the end...)
-        log("Error signing in User. ${e.toString()}");
-        //TODO: show SNACK
-        return Future.error("Error signing in User. ${e.toString()}");
-      }
-
-    }
+    return credential;
   }
 
   void getUserFromFirebase(String userId) {

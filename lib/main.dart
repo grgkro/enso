@@ -8,6 +8,7 @@ import 'package:ensobox/widgets/auth/verification_overview_screen.dart';
 import 'package:ensobox/widgets/enso_drawer.dart';
 import 'package:ensobox/widgets/firestore_repository/functions_repo.dart';
 import 'package:ensobox/widgets/provider/current_user_provider.dart';
+import 'package:ensobox/widgets/services/authentication_service.dart';
 import 'package:firebase_app_check/firebase_app_check.dart';
 import 'package:firebase_core/firebase_core.dart';
 
@@ -117,67 +118,39 @@ class _MyAppState extends State<Home> {
       setState(() {
         _initialized = true;
       });
-      signIn();
+
+      _firebaseAuth.authStateChanges().listen((User? authUser) async {
+        if (authUser != null) {
+          log("The user is now signed in and stored in the globalService: ${authUser.toString()}");
+          _globalService.currentAuthUser = authUser;
+          _globalService.isSignedIn = true;
+          if (_globalService.currentEnsoUser.id == null || authUser.uid != _globalService.currentEnsoUser.id) {
+            EnsoUser? currentEnsoUser =
+            await _databaseRepo.getUserFromDB(authUser.uid);
+            if (currentEnsoUser != null) {
+              log("The EnsoUser was retrieved from the DB and is now stored in the globalService: ${currentEnsoUser.toString()}");
+              _globalService.currentEnsoUser = currentEnsoUser;
+              final currentUserProvider =
+              Provider.of<CurrentUserProvider>(context, listen: false);
+              currentUserProvider
+                  .setCurrentEnsoUser(currentEnsoUser);
+            } else {
+              log("Getting the EnsoUser from the DB with this id ${authUser.uid} failed.");
+            }
+          } else {
+            log("The EnsoUser was already retrieved from the DB with this id ${authUser.uid}, no update needed.");
+          }
+        } else {
+          _globalService.isSignedIn = false;
+          print(
+              "User is not signed in, _auth.authStateChanges().listen() returned null");
+        }
+      });
     } catch (e) {
       // Set `_error` state to true if Firebase initialization fails
       setState(() {
         _error = true;
       });
-    }
-  }
-
-  void signIn() async {
-    _firebaseAuth.authStateChanges().listen((User? user) async {
-      if (user != null) {
-        log("The user is now signed in and stored in the globalService: ${user.toString()}");
-        _globalService.currentUser = user;
-        _globalService.isSignedIn = true;
-        if (user.uid != _globalService.currentEnsoUser.id) {
-          EnsoUser currentEnsoUser =
-              await _databaseRepo.getUserFromDB(user.uid);
-          if (currentEnsoUser != null) {
-            log("The EnsoUser was retrieved from the DB and is now stored in the globalService: ${currentEnsoUser.toString()}");
-            _globalService.currentEnsoUser = currentEnsoUser;
-            final currentUserProvider =
-                Provider.of<CurrentUserProvider>(context, listen: false);
-            currentUserProvider
-                .setCurrentEnsoUser(_globalService.currentEnsoUser);
-          } else {
-            log("Getting the EnsoUser from the DB with this id ${user.uid} failed.");
-          }
-        } else {
-          log("The EnsoUser was already retrieved from the DB with this id ${user.uid}, no update needed.");
-        }
-      } else {
-        _globalService.isSignedIn = false;
-        print(
-            "User is not signed in, _auth.authStateChanges().listen() returned null");
-      }
-    });
-
-    try {
-      // await _authRepo.clearSharedPreferences();
-      UserCredential? authUserCredential =
-          await _authRepo.signInAuthUserIfPossible();
-      if (authUserCredential != null && authUserCredential.user != null) {
-        _globalService.currentUser = authUserCredential.user;
-        log("User was registered before and is now signed in: ${authUserCredential.user?.uid ?? ''}");
-        log("User was registered before and is now signed in: ${await authUserCredential.user?.getIdToken() ?? ''}");
-        EnsoUser currentEnsoUser =
-            await _databaseRepo.getUserFromDB(authUserCredential.user!.uid);
-        if (currentEnsoUser != null) {
-          _globalService.currentEnsoUser = currentEnsoUser;
-          log("-------- successfully retrieved the currentUser from auth and DB: ${currentEnsoUser.id} --------");
-        } else {
-          log("Couldn't get currentEnsoUser in main.dart");
-        }
-      } else {
-        log("Warn: User seems to have been registered before, but could not get signed in because userCredentials.user was null."
-            "Maybe has been deleted from the DB?");
-        //TODO: show Snack?
-      }
-    } catch (e) {
-      log("Could not sign in User at start of the app: ${e.toString()}");
     }
   }
 
