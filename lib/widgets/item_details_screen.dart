@@ -142,8 +142,11 @@ class _ItemDetailsScreenState extends State<ItemDetailsScreen> {
     if (!_bleService.scanStarted) {
       _startScan(context);
     }
+
     User? currentUser = _globalService.currentAuthUser;
-    EnsoUser currentEnsoUser = context.read<EnsoUser>();
+    final currentUserProvider =
+    Provider.of<CurrentUserProvider>(context, listen: false);
+    EnsoUser currentEnsoUser = currentUserProvider.currentEnsoUser;
 
     bool userIsMissingNecessaryVerification() {
       if (currentUser == null) {

@@ -124,6 +124,40 @@ class _MyAppState extends State<Home> {
         _error = true;
       });
     }
+
+    try {
+      final credential = await FirebaseAuth.instance.createUserWithEmailAndPassword(
+        email: 'grgkro@gmail.com',
+        password: 'password1234',
+      );
+    } on FirebaseAuthException catch (e) {
+      if (e.code == 'weak-password') {
+        print('The password provided is too weak.');
+      } else if (e.code == 'email-already-in-use') {
+        print('The account already exists for that email.');
+      }
+    } catch (e) {
+      print(e);
+    }
+
+    await FirebaseAuth.instance.verifyPhoneNumber(
+      phoneNumber: '+49 151 264 483 12',
+      verificationCompleted: (PhoneAuthCredential credential) async {
+        await _firebaseAuth.currentUser!.linkWithCredential(credential);
+      },
+      verificationFailed: (FirebaseAuthException e) { print(e.toString());},
+      codeSent: (String verificationId, int? resendToken) async {
+        // Update the UI - wait for the user to enter the SMS code
+        String smsCode = '123456';
+
+        // Create a PhoneAuthCredential with the code
+        PhoneAuthCredential credential = PhoneAuthProvider.credential(verificationId: verificationId, smsCode: smsCode);
+
+        // Sign the user in (or link) with the credential
+        await _firebaseAuth.currentUser!.linkWithCredential(credential);
+      },
+      codeAutoRetrievalTimeout: (String verificationId) {},
+    );
   }
 
   @override

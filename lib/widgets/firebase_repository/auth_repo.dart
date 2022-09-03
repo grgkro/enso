@@ -49,9 +49,9 @@ class AuthRepo {
   }
 
   Future<void> verifyPhoneNumber(String number, BuildContext context) async {
-    EnsoUser currentEnsoUser = context.read<EnsoUser>();
     final currentUserProvider =
     Provider.of<CurrentUserProvider>(context, listen: false);
+    EnsoUser currentEnsoUser = currentUserProvider.currentEnsoUser;
 
     await _auth.verifyPhoneNumber(
         phoneNumber: number,

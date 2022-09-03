@@ -122,10 +122,10 @@ class _OtpFormState extends State<OtpForm> {
                                 .signInWithCredential(credential)
                                 .then((value) async {
 
-                              EnsoUser currentEnsoUser = context.read<EnsoUser>();
-                              currentEnsoUser.hasTriggeredConfirmationSms = true;
                               final currentUserProvider =
                               Provider.of<CurrentUserProvider>(context, listen: false);
+                              EnsoUser currentEnsoUser = currentUserProvider.currentEnsoUser;
+                              currentEnsoUser.hasTriggeredConfirmationSms = true;
                               currentUserProvider
                                   .setCurrentEnsoUser(currentEnsoUser);
                               // _globalService.currentEnsoUser.hasTriggeredConfirmationSms = true;

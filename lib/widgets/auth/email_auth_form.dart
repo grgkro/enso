@@ -124,10 +124,10 @@ class _EmailAuthFormState extends State<EmailAuthForm> {
                                     .then((UserCredential value) async {
                                   log('linked email to existing account');
 
-                                  EnsoUser currentEnsoUser = context.read<EnsoUser>();
-                                  currentEnsoUser.hasTriggeredConfirmationSms = true;
                                   final currentUserProvider =
                                   Provider.of<CurrentUserProvider>(context, listen: false);
+                                  EnsoUser currentEnsoUser = currentUserProvider.currentEnsoUser;
+                                  currentEnsoUser.hasTriggeredConfirmationSms = true;
                                   currentUserProvider
                                       .setCurrentEnsoUser(currentEnsoUser);
                                   // _globalService.currentEnsoUser.hasTriggeredConfirmationSms = true;

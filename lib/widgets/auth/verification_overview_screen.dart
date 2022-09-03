@@ -19,6 +19,7 @@ import '../../models/photo_side.dart';
 import '../../models/photo_type.dart';
 import '../camera/take_picture_screen.dart';
 import '../firestore_repository/database_repo.dart';
+import '../provider/current_user_provider.dart';
 import '../service_locator.dart';
 import '../../constants/constants.dart' as Constants;
 
@@ -42,7 +43,9 @@ class _VerificationOverviewScreenState
   @override
   void initState() {
     super.initState();
-    final EnsoUser currentEnsoUser = context.read<EnsoUser>();
+    final currentUserProvider =
+    Provider.of<CurrentUserProvider>(context, listen: false);
+    EnsoUser currentEnsoUser = currentUserProvider.currentEnsoUser;
 
     if (currentEnsoUser.id != null) {
       debugPrint(
@@ -83,13 +86,20 @@ class _VerificationOverviewScreenState
           User? user = _globalService.currentAuthUser;
           if (ensoUser.idApproved && user != null && user.emailVerified) {
             log("user is already approved. -> success screen");
-            return _buildSuccessScreen(snapshot.data as EnsoUser);
-          } else if ((snapshot.data! as EnsoUser).hasTriggeredIdApprovement){
+            return _buildSuccessScreen(ensoUser);
+          } else if (ensoUser.hasTriggeredIdApprovement){
             log("user has triggered id Approval already, but is not approved yet. -> WaitForApprovalScreen");
             return const WaitForApprovalScreen();
+          } else if (!ensoUser.hasTriggeredConfirmationEmail){
+            log("user has not triggered id Approval or email yet. -> _buildVerificationScreen");
+            return EmailAuthForm();
+            // return _buildEmailAuthFormScreen(ensoUser);
+          } else if (!ensoUser.hasTriggeredConfirmationSms) {
+            log("user has triggered email, but not id Approval or sms yet -> _buildPhoneScreen");
+            return _buildEmailAuthFormScreen(ensoUser);
           } else {
-            log("user has not triggered id Approval yet. -> _buildVerificationScreen");
-            return _buildVerificationScreen(snapshot.data as EnsoUser);
+            log("user has not triggered id Approval or sms yet, but email. -> _buildIdVerificationScreen");
+            return _buildEmailAuthFormScreen(ensoUser);
           }
         } else {
           //TODO: replace endless Spinner with Error Screen -> the loaded User was null or an error occured during loading
@@ -131,7 +141,7 @@ class _VerificationOverviewScreenState
       ),);
   }
 
-  Widget _buildVerificationScreen(EnsoUser ensoUser) {
+  Widget _buildEmailAuthFormScreen(EnsoUser ensoUser) {
     debugPrint('Step 2, build overview widget, hasTriggeredConfirmationSms?: ${ensoUser.hasTriggeredConfirmationSms}'
         '\n hasTriggeredConfirmationEmail?: ${ensoUser.hasTriggeredConfirmationEmail}\n'
         'idApproved?: ${ensoUser.idApproved}\n');
