@@ -1,6 +1,7 @@
 import 'dart:developer';
 
 import 'package:ensobox/widgets/auth/email_auth_form.dart';
+import 'package:ensobox/widgets/auth/verification_overview_screen.dart';
 import 'package:ensobox/widgets/services/global_service.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
@@ -135,7 +136,7 @@ class _OtpFormState extends State<OtpForm> {
                               // try {
                               prefs.setBool(Constants.hasTriggeredConfirmationSms, true);
                               _globalService.showScreen(
-                                  context, EmailAuthForm());
+                                  context, VerificationOverviewScreen());
                               // if the user already signed in with phone & smsCode, we don't want to create a new user but link the email to the existing one
                               // String? email =
                               //     prefs.getString(Constants.emailKey);

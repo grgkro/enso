@@ -49,49 +49,8 @@ class AuthRepo {
     });
   }
 
-  Future<void> verifyPhoneNumber(String number, BuildContext context) async {
-    final currentUserProvider =
-    Provider.of<CurrentUserProvider>(context, listen: false);
-    EnsoUser currentEnsoUser = currentUserProvider.currentEnsoUser;
+  Future<dynamic> verifyPhoneNumber(String number, BuildContext context) async {
 
-    await _auth.verifyPhoneNumber(
-        phoneNumber: number,
-        verificationCompleted: (PhoneAuthCredential credential) async {
-          log("Oh yeah, verificationCompleted");
-
-          EnsoUser user = await _databaseRepo.getUserFromDB(currentEnsoUser.id!);
-          user.phoneVerified = true;
-          currentUserProvider
-              .setCurrentEnsoUser(currentEnsoUser);
-          _databaseRepo.updateUser(user);
-
-          _globalService.showScreen(context, EmailAuthForm());
-        },
-        verificationFailed: (FirebaseAuthException e) {
-          // TODO: Display ERROR Message and let user try again
-          if (e.code == 'invalid-phone-number') {
-            log(level: 1, 'The provided phone number is not valid.');
-          }
-          log('Error while verifying phone number: ${e.message}');
-        },
-        codeSent: (String verificationId, int? resendToken) async {
-          final SharedPreferences prefs = await SharedPreferences.getInstance();
-          prefs.setString(Constants.verificationId, verificationId);
-
-          if (resendToken != null) {
-            prefs.setInt(Constants.resendToken, resendToken);
-          }
-          _globalService.phoneAuthVerificationId = verificationId;
-          _globalService.resendToken = resendToken;
-
-          _globalService.showOtpScreen(context);
-        },
-        timeout: const Duration(seconds: 30),
-        codeAutoRetrievalTimeout: (String verificationId) {
-          // Auto-resolution timed out...
-          log("codeAutoRetrievelTimeout - phone could not get verified");
-          // TODO: Error Screen
-        });
   }
 
   Future<UserCredential> registerByEmailAndHiddenPW(String email) async {
@@ -307,10 +266,10 @@ class AuthRepo {
   void getUserFromFirebase(String userId) {
     final FirebaseFirestore db = FirebaseFirestore.instance;
 
-    final docRef = db.collection("users").doc(userId);
+    final DocumentReference<Map<String, dynamic>> docRef = db.collection("users").doc(userId);
     docRef.get().then(
           (DocumentSnapshot doc) {
-        final data = doc.data() as Map<String, dynamic>;
+        final Map<String, dynamic> data = doc.data() as Map<String, dynamic>;
         log("current User has idApproved: ${data['idApproved']}");
       },
       onError: (e) => print("Error getting document: $e"),
