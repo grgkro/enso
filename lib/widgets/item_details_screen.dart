@@ -270,13 +270,13 @@ class _ItemDetailsScreenState extends State<ItemDetailsScreen> {
                 label: "Jetzt ausleihen"),
           ],
           onTap: (int itemIndex) {
-            log("Pressed" + itemIndex.toString());
+            log("Pressed Button no: " + (1 + itemIndex).toString());
             switch (itemIndex) {
               case 0:
                 Navigator.pop(context);
                 break;
               case 1:
-                log("Pressed 111" + itemIndex.toString());
+                log("Pressed Button no: " + (1 + itemIndex).toString());
                 // if (_isCurrentDeviceDiscovered()) {
                 //   _bleService.connectToDevice();
                 if (userIsMissingNecessaryVerification()) {

@@ -51,8 +51,8 @@ class FunctionsRepo {
       final HttpClientRequest request = await httpClient.getUrl(url);
       final HttpClientResponse response = await request.close();
       if (response.statusCode == HttpStatus.ok) {
-        final String json = await response.transform(utf8.decoder).join();
-        result = 'result from email function: $json';
+        // final String json = await response.transform(utf8.decoder).join();
+        // result = 'result from email function: $json';
 
         prefs!.setBool(Constants.hasTriggeredConfirmationEmail, true);
         return Future.value(true);

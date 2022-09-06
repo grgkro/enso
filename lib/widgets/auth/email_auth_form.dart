@@ -15,9 +15,11 @@ import 'package:cloud_functions/cloud_functions.dart';
 import '../../constants/constants.dart' as Constants;
 import '../firebase_repository/auth_repo.dart';
 import '../firestore_repository/functions_repo.dart';
+import '../globals/enso_divider.dart';
 import '../provider/current_user_provider.dart';
 import '../service_locator.dart';
 import '../services/global_service.dart';
+import 'login_screen.dart';
 
 GlobalService _globalService = getIt<GlobalService>();
 FunctionsRepo _functionsRepo = getIt<FunctionsRepo>();
@@ -34,13 +36,14 @@ class _EmailAuthFormState extends State<EmailAuthForm> {
   final FirebaseAuth _firebaseAuth = _globalService.firebaseAuth;
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
   TextEditingController emailController =
-      TextEditingController(text: "grgk.ro@gmail.com");
+      TextEditingController(text: _globalService.emailInput);
   TextEditingController otpCode = TextEditingController();
 
   OutlineInputBorder border = const OutlineInputBorder(
       borderSide: BorderSide(color: Constants.kBorderColor, width: 3.0));
 
   bool isLoading = false;
+  bool showProgress = false;
 
   String? verificationId;
 
@@ -66,125 +69,266 @@ class _EmailAuthFormState extends State<EmailAuthForm> {
         body: Center(
           child: Form(
             key: _formKey,
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                SizedBox(
-                  width: size.width * 0.8,
-                  child: TextFormField(
-                      keyboardType: TextInputType.emailAddress,
-                      controller: emailController,
-                      decoration: InputDecoration(
-                        labelText: "Email",
-                        contentPadding: const EdgeInsets.symmetric(
-                            vertical: 15.0, horizontal: 10.0),
-                        border: border,
-                      )),
-                ),
-                SizedBox(
-                  height: size.height * 0.01,
-                ),
-                Padding(padding: EdgeInsets.only(bottom: size.height * 0.05)),
-                !isLoading
-                    ? SizedBox(
-                        width: size.width * 0.8,
-                        child: OutlinedButton(
-                            child: const Text(Constants.textSignInEmail),
-                            onPressed: () async {
-                              log("got email input: ${emailController.text}");
+            child: SingleChildScrollView(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  SizedBox(
+                    width: size.width * 0.8,
+                    child: TextFormField(
+                        keyboardType: TextInputType.emailAddress,
+                        controller: emailController,
+                        decoration: InputDecoration(
+                          labelText: "Email",
+                          contentPadding: const EdgeInsets.symmetric(
+                              vertical: 15.0, horizontal: 10.0),
+                          border: border,
+                        )),
+                  ),
+                  SizedBox(
+                    height: size.height * 0.01,
+                  ),
+                  Padding(padding: EdgeInsets.only(bottom: size.height * 0.05)),
+                  !isLoading
+                      ? SizedBox(
+                          width: size.width * 0.8,
+                          child: OutlinedButton(
+                              child: const Text(Constants.textSignInEmail),
+                              onPressed: () async {
+                                setState(() {
+                                  isLoading = true;
+                                });
 
-                              final SharedPreferences prefs =
-                                  await SharedPreferences.getInstance();
+                                log("got email input: ${emailController.text}");
+                                _globalService.emailInput =
+                                    emailController.text;
 
-                              final String password = generateRandPassword();
+                                final SharedPreferences prefs =
+                                    await SharedPreferences.getInstance();
 
-                              EnsoUser newEnsoUser =
-                                  EnsoUser(EnsoUserBuilder());
-                              try {
-                                final credential = await _globalService
-                                    .firebaseAuth
-                                    .createUserWithEmailAndPassword(
-                                  email: emailController.text,
-                                  password: password,
-                                );
-                                if (credential.user != null) {
-                                  log("CREDENTIAL: ${credential.user!.uid}");
-                                  newEnsoUser.id = credential.user!.uid;
-                                  newEnsoUser.email = credential.user!.email;
-                                } else {
-                                  // TODO: what to do now?
-                                  log('Should not happen');
+                                final String password = generateRandPassword();
+
+                                EnsoUser newEnsoUser =
+                                    EnsoUser(EnsoUserBuilder());
+                                try {
+                                  final credential = await _globalService
+                                      .firebaseAuth
+                                      .createUserWithEmailAndPassword(
+                                    email: emailController.text,
+                                    password: password,
+                                  );
+                                  if (credential.user != null) {
+                                    log("CREDENTIAL: ${credential.user!.uid}");
+                                    newEnsoUser.id = credential.user!.uid;
+                                    newEnsoUser.email = credential.user!.email;
+                                  } else {
+                                    log('User was null after createUserWithEmailAndPassword');
+                                    ScaffoldMessenger.of(context).showSnackBar(
+                                      SnackBar(
+                                          content: Text(
+                                              'Anlegen eines neuen Accounts wurde unerwartet abgelehnt, genauer Grund unbekannt.'),
+                                          duration: Duration(seconds: 20),
+                                          action: SnackBarAction(
+                                            label: 'Admins informieren',
+                                            onPressed: () {
+                                              // TODO: add Admins informieren?
+                                              ScaffoldMessenger.of(context)
+                                                  .hideCurrentSnackBar();
+                                            },
+                                          )),
+                                    );
+                                  }
+                                } on FirebaseAuthException catch (e) {
+                                  if (e.code ==
+                                      'account-exists-with-different-credential') {
+                                    // The account already exists with a different credential
+                                    String email = emailController.text;
+                                    AuthCredential? pendingCredential =
+                                        e.credential;
+
+                                    if (pendingCredential == null) {
+                                      ScaffoldMessenger.of(context)
+                                          .showSnackBar(
+                                        SnackBar(
+                                            content: Text(
+                                                'Anlegen eines neuen Accounts wurde unerwartet abgelehnt, genauer Grund unbekannt.'),
+                                            duration: Duration(seconds: 20),
+                                            action: SnackBarAction(
+                                              label: 'Admins informieren',
+                                              onPressed: () {
+                                                ScaffoldMessenger.of(context)
+                                                    .hideCurrentSnackBar();
+                                              },
+                                            )),
+                                      );
+                                    }
+                                    // Fetch a list of what sign-in methods exist for the conflicting user
+                                    List<String> userSignInMethods =
+                                        await _globalService.firebaseAuth
+                                            .fetchSignInMethodsForEmail(email);
+
+                                    // If the user has several sign-in methods,
+                                    // the first method in the list will be the "recommended" method to use.
+                                    if (userSignInMethods.first == 'password') {
+                                      // TODO: Prompt the user to enter their password
+                                      String password = '...';
+
+                                      // Sign the user in to their account with the password
+                                      UserCredential userCredential =
+                                          await _globalService.firebaseAuth
+                                              .signInWithEmailAndPassword(
+                                        email: email,
+                                        password: password,
+                                      );
+
+                                      // Link the pending credential with the existing account
+                                      await userCredential.user!
+                                          .linkWithCredential(
+                                              pendingCredential!);
+
+                                      newEnsoUser.id = userCredential.user!.uid;
+                                      newEnsoUser.email =
+                                          userCredential.user!.email;
+
+                                      // Success!
+                                      ScaffoldMessenger.of(context)
+                                          .showSnackBar(
+                                        SnackBar(
+                                          content: Text(Constants
+                                              .successfullyCreatedAccount),
+                                          duration: Duration(seconds: 20),
+                                        ),
+                                      );
+                                    }
+                                    // Handle other OAuth providers...
+                                  } else {
+                                    _globalService.handleFirebaseAuthException(
+                                        context, e);
+                                  }
+                                } catch (e) {
+                                  print(e);
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    SnackBar(
+                                      content: Text(e.toString()),
+                                      duration: Duration(seconds: 20),
+                                    ),
+                                  );
                                 }
-                              } on FirebaseAuthException catch (e) {
-                                if (e.code == 'weak-password') {
-                                  log('The password provided is too weak.');
-                                  //TODO: macht keinen Sinn, da User PW nicht wählen darf.
-                                  return;
-                                } else if (e.code == 'email-already-in-use') {
-                                  log('The account already exists for that email.');
-                                  // TODO: Show Snack
-                                  return;
-                                } else if (e.code == 'invalid-email') {
-                                  log('invalid-email');
-                                  // TODO: Show Snack
-                                  return;
-                                } else {
-                                  log('Unexpected FirebaseAuthException: ${e.code}');
-                                  // TODO: Show Snack
-                                  return;
+
+                                if (newEnsoUser.email != null) {
+                                  try {
+                                    final bool hasSendEmail =
+                                        await _functionsRepo
+                                            .sendVerificationEmail(
+                                      context,
+                                      newEnsoUser.id,
+                                      emailController.text,
+                                    );
+                                    if (hasSendEmail) {
+                                      newEnsoUser
+                                          .hasTriggeredConfirmationEmail = true;
+                                    } else {
+                                      // the creation of the user in firestore by cloud function triggered
+                                      // at creation of the user in authentication needs some time, so maybe it's not finished yet
+                                      await Future.delayed(
+                                          const Duration(milliseconds: 1300));
+                                      log('hasSendEmail = false, probably clouf function triggered by user creation has not finished, going to wait 1.3 s and try again.');
+
+                                      final bool hasSendEmail =
+                                          await _functionsRepo
+                                              .sendVerificationEmail(
+                                        context,
+                                        newEnsoUser.id,
+                                        emailController.text,
+                                      );
+
+                                      if (hasSendEmail) {
+                                        newEnsoUser
+                                                .hasTriggeredConfirmationEmail =
+                                            true;
+                                      } else {
+                                        ScaffoldMessenger.of(context)
+                                            .showSnackBar(
+                                          SnackBar(
+                                            content: Text(
+                                                'Anlegen eines neuen Accounts wurde unerwartet abgelehnt, genauer Grund unbekannt.'),
+                                            duration: Duration(seconds: 20),
+                                            action: SnackBarAction(
+                                              label: 'Admins informieren',
+                                              onPressed: () {
+                                                // TODO: add Admins informieren?
+                                                ScaffoldMessenger.of(context)
+                                                    .hideCurrentSnackBar();
+                                              },
+                                            ),
+                                          ),
+                                        );
+                                      }
+                                    }
+
+                                    final CurrentUserProvider
+                                        currentUserProvider =
+                                        Provider.of<CurrentUserProvider>(
+                                            context,
+                                            listen: false);
+                                    currentUserProvider
+                                        .setCurrentEnsoUser(newEnsoUser);
+
+                                    _databaseRepo.updateUser(newEnsoUser);
+
+                                    prefs.setString(Constants.emailKey,
+                                        emailController.text);
+                                    prefs.setString(
+                                        Constants.emailPasswordKey, password);
+
+                                    Navigator.popAndPushNamed(
+                                        context, '/verification');
+                                  } catch (e) {
+                                    // TODO: what to do if this fails? ErrorScreen
+                                    log('Error while signing in with email: ${e.toString()}');
+                                  }
                                 }
-                              } catch (e) {
-                                print(e);
-                                return;
+
+                                setState(() {
+                                  isLoading = false;
+                                });
+
+                                // _globalService.showScreen(
+                                //     context, VerificationOverviewScreen());
                               }
 
-                              try {
-                                final bool hasSendEmail =
-                                    await _functionsRepo.sendVerificationEmail(
-                                  context,
-                                  newEnsoUser.id,
-                                  emailController.text,
-                                );
-                                if (hasSendEmail) {
-                                  newEnsoUser.hasTriggeredConfirmationEmail =
-                                      true;
-                                }
-
-                                final currentUserProvider =
-                                    Provider.of<CurrentUserProvider>(context,
-                                        listen: false);
-                                currentUserProvider
-                                    .setCurrentEnsoUser(newEnsoUser);
-
-                                _databaseRepo.updateUser(newEnsoUser);
-
-                                prefs.setString(
-                                    Constants.emailKey, emailController.text);
-                                prefs.setString(
-                                    Constants.emailPasswordKey, password);
-                              } catch (e) {
-                                // TODO: what to do if this fails? ErrorScreen
-                                log('Error while signing in with email: ${e.toString()}');
-                              }
-
-                              _globalService.showScreen(
-                                  context, VerificationOverviewScreen());
-                            }
-
-                            //   style: ButtonStyle(
-                            //       // foregroundColor: MaterialStateProperty.all<Color>(
-                            //       //     Constants.kPrimaryColor),
-                            //       // backgroundColor: MaterialStateProperty.all<Color>(
-                            //       //     Constants.kBlackColor),
-                            //       side: MaterialStateProperty.all<BorderSide>(
-                            //           BorderSide.none)),
-                            ),
-                      )
-                    : CircularProgressIndicator(),
-              ],
+                              //   style: ButtonStyle(
+                              //       // foregroundColor: MaterialStateProperty.all<Color>(
+                              //       //     Constants.kPrimaryColor),
+                              //       // backgroundColor: MaterialStateProperty.all<Color>(
+                              //       //     Constants.kBlackColor),
+                              //       side: MaterialStateProperty.all<BorderSide>(
+                              //           BorderSide.none)),
+                              ),
+                        )
+                      : CircularProgressIndicator(),
+                  loginFooter(),
+                ],
+              ),
             ),
           ),
         ));
+  }
+
+  Widget loginFooter() {
+    return Column(
+      children: [
+        const EnsoDivider(),
+        Text("Du hast bereits einen Account?"),
+        ElevatedButton(
+          onPressed: () {
+            log("User already has an account, going to LoginScreen");
+            _globalService.showScreen(context, LoginScreen());
+          },
+          child: const Text('Einloggen'),
+        ),
+      ],
+    );
   }
 
   String generateRandPassword() {

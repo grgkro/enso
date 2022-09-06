@@ -38,11 +38,10 @@ class _PhoneAuthFormState extends State<PhoneAuthForm> {
 
   bool isLoading = false;
   bool showProgress = false;
-  bool isAddingOtp = false;
+  bool showOtpForm = false;
   String buttonText = Constants.textVerifyPhoneNumber;
   String _verificationId = "";
   int? _resendToken;
-
 
   String? verificationId;
 
@@ -109,57 +108,81 @@ class _PhoneAuthFormState extends State<PhoneAuthForm> {
                 Padding(padding: EdgeInsets.only(bottom: size.height * 0.05)),
                 !isLoading
                     ? showProgress
-                    ? const CircularProgressIndicator()
-                    :SizedBox(
-                        width: size.width * 0.8,
-                        child: OutlinedButton(
-                          onPressed: () async {
-                            if (!isAddingOtp) {
-                              await startAddingPhoneNumber(context);
-                            } else {
-                              setState(() {
-                                showProgress = true;
-                              });
-                              log("User has entered the otp: ${phoneNumberController.text}");
-                              PhoneAuthCredential credential =
-                              PhoneAuthProvider.credential(verificationId: _verificationId, smsCode: phoneNumberController.text);
-                              _globalService.firebaseAuth.currentUser!.linkWithCredential(credential).then((value) async {;
+                        ? const CircularProgressIndicator()
+                        : SizedBox(
+                            width: size.width * 0.8,
+                            child: OutlinedButton(
+                              onPressed: () async {
+                                if (!showOtpForm) {
+                                  await startAddingPhoneNumber(context);
+                                } else {
+                                  setState(() {
+                                    showProgress = true;
+                                  });
+                                  log("User has entered the otp: ${phoneNumberController.text}");
+                                  PhoneAuthCredential credential =
+                                      PhoneAuthProvider.credential(
+                                          verificationId: _verificationId,
+                                          smsCode: phoneNumberController.text);
 
-                                final currentUserProvider =
-                                Provider.of<CurrentUserProvider>(context, listen: false);
-                                EnsoUser currentEnsoUser = currentUserProvider.currentEnsoUser;
-                                currentEnsoUser.hasTriggeredConfirmationSms = true;
-                                currentUserProvider
-                                    .setCurrentEnsoUser(currentEnsoUser);
-                                // _globalService.currentEnsoUser.hasTriggeredConfirmationSms = true;
+                                  try {
+                                    log("Going to link Phone to existing account.");
+                                    await _globalService
+                                        .firebaseAuth.currentUser!
+                                        .linkWithCredential(credential);
 
-                                final prefs =
-                                await SharedPreferences.getInstance();
-                                // try {
-                                prefs.setBool(Constants.hasTriggeredConfirmationSms, true);
-                                _globalService.showScreen(
-                                    context, VerificationOverviewScreen());
+                                    final currentUserProvider =
+                                        Provider.of<CurrentUserProvider>(
+                                            context,
+                                            listen: false);
+                                    EnsoUser currentEnsoUser =
+                                        currentUserProvider.currentEnsoUser;
+                                    currentEnsoUser
+                                        .hasTriggeredConfirmationSms = true;
+                                    currentUserProvider
+                                        .setCurrentEnsoUser(currentEnsoUser);
+                                    _databaseRepo.updateUser(currentEnsoUser);
+                                    // _globalService.currentEnsoUser.hasTriggeredConfirmationSms = true;
 
-                              }).onError((error, stackTrace) {
-                                log(error.toString());
-                                return null;
-                              });
-                            }
+                                    final prefs =
+                                        await SharedPreferences.getInstance();
+                                    // try {
+                                    prefs.setBool(
+                                        Constants.hasTriggeredConfirmationSms,
+                                        true);
+                                    _globalService.showScreen(
+                                        context, VerificationOverviewScreen());
+                                  } on FirebaseAuthException catch (e) {
+                                    setState(() {
+                                      showProgress = false;
+                                    });
+                                    _globalService.handleFirebaseAuthException(context, e);
+                                  } catch (e) {
+                                    setState(() {
+                                      showProgress = false;
+                                    });
+                                    log(e.toString());
+                                    ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                                        content: Text(e.toString()),
+                                        duration: Duration(seconds: 20),
+                                    ),);
+                                    // TODO: Show message
+                                    return null;
+                                  }
+                                }
 
-
-
-                            // registerService.registerByEmailAndHiddenPW("grg.kro@gmail.com");
-                          },
-                          child: Text(buttonText),
-                          //   style: ButtonStyle(
-                          //       // foregroundColor: MaterialStateProperty.all<Color>(
-                          //       //     Constants.kPrimaryColor),
-                          //       // backgroundColor: MaterialStateProperty.all<Color>(
-                          //       //     Constants.kBlackColor),
-                          //       side: MaterialStateProperty.all<BorderSide>(
-                          //           BorderSide.none)),
-                        ),
-                      )
+                                // registerService.registerByEmailAndHiddenPW("grg.kro@gmail.com");
+                              },
+                              child: Text(buttonText),
+                              //   style: ButtonStyle(
+                              //       // foregroundColor: MaterialStateProperty.all<Color>(
+                              //       //     Constants.kPrimaryColor),
+                              //       // backgroundColor: MaterialStateProperty.all<Color>(
+                              //       //     Constants.kBlackColor),
+                              //       side: MaterialStateProperty.all<BorderSide>(
+                              //           BorderSide.none)),
+                            ),
+                          )
                     : CircularProgressIndicator(),
               ],
             ),
@@ -173,19 +196,22 @@ class _PhoneAuthFormState extends State<PhoneAuthForm> {
     });
     log("got ${phoneNumberController.text}");
     final CurrentUserProvider currentUserProvider =
-    Provider.of<CurrentUserProvider>(context, listen: false);
+        Provider.of<CurrentUserProvider>(context, listen: false);
     EnsoUser currentEnsoUser = currentUserProvider.currentEnsoUser;
 
     await _auth.verifyPhoneNumber(
         phoneNumber: phoneNumberController.text,
         verificationCompleted: (PhoneAuthCredential credential) async {
+          // ANDROID ONLY! TODO: how to verify on ios?
+
           log("Oh yeah, verificationCompleted");
 
-          EnsoUser user = await _databaseRepo.getUserFromDB(currentEnsoUser.id!);
+          EnsoUser user =
+              await _databaseRepo.getUserFromDB(currentEnsoUser.id!);
           user.phoneVerified = true;
-          await _globalService.firebaseAuth.currentUser!.linkWithCredential(credential);
-          currentUserProvider
-              .setCurrentEnsoUser(currentEnsoUser);
+          await _globalService.firebaseAuth.currentUser!
+              .linkWithCredential(credential);
+          currentUserProvider.setCurrentEnsoUser(currentEnsoUser);
           _databaseRepo.updateUser(user);
           setState(() {
             showProgress = false;
@@ -203,13 +229,15 @@ class _PhoneAuthFormState extends State<PhoneAuthForm> {
           });
         },
         codeSent: (String verificationId, int? resendToken) async {
-          isAddingOtp = true;
-          buttonText = Constants.checkOtp;
+          // A resendToken is only supported on Android devices, iOS devices will always return a null value
+
+          buttonText = Constants.submitOtpText;
           phoneNumberController.text = '123456';
           _verificationId = verificationId;
           _resendToken = resendToken;
 
           setState(() {
+            showOtpForm = true;
             showProgress = false;
           });
 
@@ -222,11 +250,11 @@ class _PhoneAuthFormState extends State<PhoneAuthForm> {
           _globalService.phoneAuthVerificationId = verificationId;
           _globalService.resendToken = resendToken;
         },
-        timeout: const Duration(seconds: 30),
+        timeout: const Duration(seconds: 120),
         codeAutoRetrievalTimeout: (String verificationId) {
-          // Auto-resolution timed out...
-          log("codeAutoRetrievelTimeout - phone could not get verified");
-          // TODO: Error Screen
+          // ANDROID ONLY!
+          // Auto-resolution timed out, but can still verified by the user by manually inputting the smsCode.
+          log("Auto-resolution timed out... phone could not get verified automatically");
         });
   }
 }

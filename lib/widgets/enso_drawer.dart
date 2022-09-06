@@ -37,14 +37,14 @@ class _EnsoDrawerState extends State<EnsoDrawer> {
             padding: EdgeInsets.zero,
             children: [
               UserAccountsDrawerHeader(
-                accountName: Text(
-                    isSignedIn && currentUserProvider.currentEnsoUser.email != null
-                        ? currentUserProvider.currentEnsoUser.email!.split('@')[0]
-                        : "Gast"),
-                accountEmail: Text(
-                    isSignedIn && currentUserProvider.currentEnsoUser.email != null
-                        ? currentUserProvider.currentEnsoUser.email!
-                        : ""),
+                accountName: Text(isSignedIn &&
+                        currentUserProvider.currentEnsoUser.email != null
+                    ? currentUserProvider.currentEnsoUser.email!.split('@')[0]
+                    : "Gast"),
+                accountEmail: Text(isSignedIn &&
+                        currentUserProvider.currentEnsoUser.email != null
+                    ? currentUserProvider.currentEnsoUser.email!
+                    : ""),
                 currentAccountPicture: CircleAvatar(
                   child: ClipOval(
                     child: Image.network(
@@ -111,21 +111,23 @@ class _EnsoDrawerState extends State<EnsoDrawer> {
                       onTap: () async {
                         log("Trying to log in from prefs.");
 
-                        _authRepo.signInAuthUserIfPossible().then((authCredentials) {
-                          if (authCredentials != null && authCredentials.user != null) {
+                        _authRepo
+                            .signInAuthUserIfPossible()
+                            .then((authCredentials) {
+                          if (authCredentials != null &&
+                              authCredentials.user != null) {
                             log("logged in from prefs");
                             setState(() {
                               isSignedIn = true;
                             });
                           } else {
                             log("Couldn't log in from prefs, Going to log-in screen");
-
                           }
-                        })
-                        .catchError((e) {
+                        }).catchError((e) {
                           log("Error while trying to log in from prefs: ${e}");
                           log("Going to log-in screen");
-                          _globalService.showScreen(context, const LoginScreen());
+                          _globalService.showScreen(
+                              context, const LoginScreen());
                         });
                       })
                   : ListTile(
@@ -134,11 +136,20 @@ class _EnsoDrawerState extends State<EnsoDrawer> {
                       onTap: () async {
                         log("Trying to log out");
                         _firebaseAuth.signOut().then((res) {
+                          _globalService.clearPwFromSharedPref();
                           setState(() {
                             isSignedIn = false;
                           });
                           log("Successfully logged out: isloggedIn: ${isSignedIn}");
-                        });
+                        }).catchError((error, stackTrace) => {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(
+                                  content: Text(
+                                      'Fehler beim Ausloggen. Bitte versuch es später noch mal.'),
+                                  duration: Duration(seconds: 4),
+                                ),
+                              )
+                            });
                       }),
             ],
           ),

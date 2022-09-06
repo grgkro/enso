@@ -100,7 +100,7 @@ class _MapItemOverviewScreenState extends State<MapItemOverviewScreen> {
     Provider.of<CurrentUserProvider>(context, listen: false);
     EnsoUser currentEnsoUser = currentUserProvider.currentEnsoUser;
 
-    if (currentEnsoUser.id != null && !currentEnsoUser.emailVerified && currentEnsoUser.hasTriggeredConfirmationEmail) {
+    if (!_globalService.hasShownEmailAppSnackBar && currentEnsoUser.id != null && !currentEnsoUser.emailVerified && currentEnsoUser.hasTriggeredConfirmationEmail) {
       Future.delayed(Duration.zero,() {
         log('Widget is rendered completely!');
         showOpenMailAppSnack(context);
@@ -144,12 +144,14 @@ class _MapItemOverviewScreenState extends State<MapItemOverviewScreen> {
 
   ScaffoldFeatureController<SnackBar, SnackBarClosedReason>?
   showOpenMailAppSnack(BuildContext context) {
+    _globalService.hasShownEmailAppSnackBar = true;
     return ScaffoldMessenger.of(context).showSnackBar(SnackBar(
       content: const Text("Email zur Bestätigung gesendet, bitte bestätigen."),
-      duration: const Duration(seconds: 30),
+      duration: const Duration(seconds: 15),
       action: SnackBarAction(
         label: 'Mail App auswählen',
         onPressed: () async {
+          ScaffoldMessenger.of(context).hideCurrentSnackBar();
           final OpenMailAppResult result = await OpenMailApp.openMailApp();
 
           // If no mail apps found, show error

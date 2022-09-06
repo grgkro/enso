@@ -81,7 +81,8 @@ class MyApp extends StatelessWidget {
         routes: {
           SuccessScreen.routeName: (ctx) => SuccessScreen(),
           // MrzScanner.routeName: (ctx) => MrzScanner(),
-          UserIdDetailsScreen.routeName: (ctx) => UserIdDetailsScreen()
+          UserIdDetailsScreen.routeName: (ctx) => UserIdDetailsScreen(),
+          VerificationOverviewScreen.routeName: (ctx) => VerificationOverviewScreen(),
         },
         // home: Home(),
       ),
@@ -110,6 +111,8 @@ class _MyAppState extends State<Home> {
         options: DefaultFirebaseOptions.currentPlatform,
       );
       _globalService.firebaseAuth = FirebaseAuth.instance;
+      _globalService.firebaseAuth.setLanguageCode("de");
+
       _globalService.isFirebaseInitialized = true;
       setState(() {
         _initialized = true;
@@ -183,10 +186,11 @@ class _MyAppState extends State<Home> {
       return ScaffoldMessenger.of(context).showSnackBar(SnackBar(
         content:
             const Text("Bitte prüfen, ob du mit dem Internet verbunden bist."),
-        duration: const Duration(seconds: 3),
+        duration: const Duration(seconds: 5),
         action: SnackBarAction(
           label: 'WLAN AKTIVIEREN',
           onPressed: () {
+            ScaffoldMessenger.of(context).hideCurrentSnackBar();
             AppSettings.openWIFISettings();
           },
         ),

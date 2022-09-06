@@ -116,7 +116,6 @@ class _OtpFormState extends State<OtpForm> {
                                         _globalService.phoneAuthVerificationId,
                                     smsCode: otpController.text);
 
-// Sign the user in (or link) with the credential
 // use .onError to handle wrong code, but needs to return Future
                             // TODO: try / catch
                             await _auth
@@ -175,7 +174,7 @@ class _OtpFormState extends State<OtpForm> {
                               return null;
                             });
                           },
-                          child: const Text(Constants.checkOtp),
+                          child: const Text(Constants.submitOtpText),
                           //   style: ButtonStyle(
                           //       // foregroundColor: MaterialStateProperty.all<Color>(
                           //       //     Constants.kPrimaryColor),

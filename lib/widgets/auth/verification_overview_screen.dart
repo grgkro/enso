@@ -18,19 +18,24 @@ import '../../models/enso_user.dart';
 import '../../models/photo_side.dart';
 import '../../models/photo_type.dart';
 import '../camera/take_picture_screen.dart';
+import '../firebase_repository/auth_repo.dart';
 import '../firestore_repository/database_repo.dart';
+import '../globals/enso_divider.dart';
 import '../provider/current_user_provider.dart';
 import '../service_locator.dart';
 import '../../constants/constants.dart' as Constants;
+import 'login_screen.dart';
 
 GlobalService _globalService = getIt<GlobalService>();
 DatabaseRepo _databaseRepo = getIt<DatabaseRepo>();
-final FirebaseAuth _auth = FirebaseAuth.instance;
+AuthRepo _authRepo = getIt<AuthRepo>();
 late final SharedPreferences prefs;
 bool hasTriggeredConfirmationSms = false;
 bool hasTriggeredConfirmationEmail = false;
 
 class VerificationOverviewScreen extends StatefulWidget {
+  static const String routeName = '/verification';
+
   @override
   State<VerificationOverviewScreen> createState() =>
       _VerificationOverviewScreenState();
@@ -43,15 +48,18 @@ class _VerificationOverviewScreenState
   @override
   void initState() {
     super.initState();
-    final currentUserProvider =
-    Provider.of<CurrentUserProvider>(context, listen: false);
+    getUser();
+  }
+
+  void getUser() {
+    final CurrentUserProvider currentUserProvider =
+        Provider.of<CurrentUserProvider>(context, listen: false);
     EnsoUser currentEnsoUser = currentUserProvider.currentEnsoUser;
 
     if (currentEnsoUser.id != null) {
       debugPrint(
           'Step 1, fetch data for _globalService.currentEnsoUser.id: ${currentEnsoUser.id!}');
-      _futureEnsoUser =
-          _databaseRepo.getUserFromDB(currentEnsoUser.id!);
+      _futureEnsoUser = _databaseRepo.getUserFromDB(currentEnsoUser.id!);
     } else {
       _futureEnsoUser = Future.value(EnsoUser(EnsoUserBuilder()));
     }
@@ -71,9 +79,7 @@ class _VerificationOverviewScreenState
       context,
       MaterialPageRoute(
         builder: (BuildContext context) => TakePictureScreen(
-            camera: camera,
-            photoType: PhotoType.id,
-            photoSide: idSide),
+            camera: camera, photoType: PhotoType.id, photoSide: idSide),
       ),
     );
   }
@@ -83,51 +89,71 @@ class _VerificationOverviewScreenState
     return FutureBuilder(
       initialData: false,
       future: _futureEnsoUser,
-      builder: (context, snapshot) {
+      builder: (BuildContext context, AsyncSnapshot<Object?> snapshot) {
         if (snapshot.connectionState != ConnectionState.done) {
-          return Center(child: CircularProgressIndicator());
-        } else if (snapshot.hasData && snapshot.data.runtimeType == EnsoUser) { // hasData is wrong for null values
-          EnsoUser ensoUser = snapshot.data! as EnsoUser;
+          return const Center(child: CircularProgressIndicator());
+        } else if (!snapshot.hasData) {
+          // hasData is wrong for null values
+          log("the loaded User was null or an error occured during loading");
+          final EnsoUser ensoUser = new EnsoUser(EnsoUserBuilder());
+          final User? user = _globalService.currentAuthUser;
+          return decideScreen(ensoUser, user);
+        } else if (snapshot.hasData && snapshot.data.runtimeType == EnsoUser) {
           User? user = _globalService.currentAuthUser;
-          if (ensoUser.idApproved && user != null && user.emailVerified) {
-            log("user is already approved. -> success screen");
-            return _buildSuccessScreen(ensoUser);
-          } else if (ensoUser.hasTriggeredIdApprovement){
-            log("user has triggered id Approval already, but is not approved yet. -> WaitForApprovalScreen");
-            return const WaitForApprovalScreen();
-          } else if (!ensoUser.hasTriggeredConfirmationEmail){
-            log("user has not triggered id Approval or email yet. -> _buildVerificationScreen");
-            return EmailAuthForm();
-            // return _buildEmailAuthFormScreen(ensoUser);
-          } else if (!ensoUser.hasTriggeredConfirmationSms) {
-            log("user has triggered email, but not id Approval or sms yet -> _buildPhoneScreen");
-            return PhoneAuthForm();
+          EnsoUser ensoUser = snapshot.data! as EnsoUser;
+          if (ensoUser.id != null && user != null) {
+            return decideScreen(ensoUser, user);
           } else {
-            log("user has not triggered id Approval or sms yet, but email. -> _buildIdVerificationScreen");
-
-            final List<CameraDescription>? cameras = _globalService.cameras;
-            late CameraDescription camera;
-            if (cameras != null) {
-              camera = cameras.first;
-            }
-
-
-            PhotoSide idSide = PhotoSide.front;
-            if (isIdFrontAdded()) {
-              idSide = PhotoSide.back;
-            }
-
-            return TakePictureScreen(
-                camera: camera,
-                photoType: PhotoType.id,
-                photoSide: idSide);
+            ensoUser = new EnsoUser(EnsoUserBuilder());
+            user = null;
+            return decideScreen(ensoUser, user);
           }
         } else {
-          //TODO: replace endless Spinner with Error Screen -> the loaded User was null or an error occured during loading
-          return Center(child: CircularProgressIndicator());
+          EnsoUser ensoUser = new EnsoUser(EnsoUserBuilder());
+          User? user;
+          return decideScreen(ensoUser, user);
         }
       },
     );
+  }
+
+  Widget decideScreen(EnsoUser ensoUser, User? user) {
+    if (ensoUser.idApproved && user != null && user.emailVerified) {
+      log("user is already approved. -> success screen");
+      return _buildSuccessScreen(ensoUser);
+    } else if (ensoUser.hasTriggeredIdApprovement) {
+      log("user has triggered id Approval already, but is not approved yet. -> WaitForApprovalScreen");
+      return const WaitForApprovalScreen();
+    } else if (!ensoUser.hasTriggeredConfirmationEmail) {
+      log("user has not triggered id Approval or email yet. -> _buildVerificationScreen");
+      return EmailAuthForm();
+      // return _buildEmailAuthFormScreen(ensoUser);
+    } else if (!ensoUser.hasTriggeredConfirmationSms) {
+      log("user has triggered email, but not id Approval or sms yet -> _buildPhoneScreen");
+      return PhoneAuthForm();
+    } else if (!ensoUser.hasTriggeredIdApprovement &&
+        ensoUser.hasTriggeredConfirmationEmail &&
+        ensoUser.hasTriggeredConfirmationSms) {
+      log("user has not triggered id Approval or sms yet, but email. -> _buildIdVerificationScreen");
+
+      final List<CameraDescription>? cameras = _globalService.cameras;
+      late CameraDescription camera;
+      if (cameras != null) {
+        camera = cameras.first;
+      }
+
+      PhotoSide idSide = PhotoSide.front;
+      if (isIdFrontAdded()) {
+        idSide = PhotoSide.back;
+      }
+
+      return TakePictureScreen(
+          camera: camera, photoType: PhotoType.id, photoSide: idSide);
+    } else {
+      // TODO: ??
+      log('user fell through the decideScreen logic');
+      return CircularProgressIndicator();
+    }
   }
 
   Widget _buildSuccessScreen(EnsoUser ensoUser) {
@@ -153,17 +179,17 @@ class _VerificationOverviewScreenState
           log("Pressed Jetzt ausleihen" + itemIndex.toString());
           switch (itemIndex) {
             case 0:
-              _globalService.showScreen(
-                  context, const Home());
+              _globalService.showScreen(context, const Home());
               break;
-
           }
         },
-      ),);
+      ),
+    );
   }
 
   Widget _buildEmailAuthFormScreen(EnsoUser ensoUser) {
-    debugPrint('Step 2, build overview widget, hasTriggeredConfirmationSms?: ${ensoUser.hasTriggeredConfirmationSms}'
+    debugPrint(
+        'Step 2, build overview widget, hasTriggeredConfirmationSms?: ${ensoUser.hasTriggeredConfirmationSms}'
         '\n hasTriggeredConfirmationEmail?: ${ensoUser.hasTriggeredConfirmationEmail}\n'
         'idApproved?: ${ensoUser.idApproved}\n');
     return Scaffold(
@@ -205,7 +231,7 @@ class _VerificationOverviewScreenState
                     ? startAddingIdBack
                     : null,
             child: const Text('Perso oder Pass fotografieren'),
-          )
+          ),
         ],
       ),
     );
