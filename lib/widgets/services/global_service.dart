@@ -27,6 +27,8 @@ class GlobalService {
 
   bool hasShownEmailAppSnackBar = false;
 
+  String? emailSharedPrefs;
+
   void showScreen(BuildContext ctx, Widget widget) {
     log("Going to next screen: ${widget.key}");
     Navigator.of(ctx).push(MaterialPageRoute(builder: (_) {

@@ -172,6 +172,8 @@ class _MyAppState extends State<Home> {
     initializeFlutterFire();
 
     getAvailableCameras();
+
+    getEmailFromSharedPrefsDoNotAwait();
   }
 
   @override
@@ -257,6 +259,18 @@ class _MyAppState extends State<Home> {
     final List<CameraDescription> cameras = await availableCameras();
     _globalService.cameras = cameras;
     log('Retrieved the available cameras, the device has ${cameras.length} different cameras.');
+  }
+
+  Future<String?> getEmailFromSharedPrefs() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+
+    return prefs.getString(Constants.emailKey);
+  }
+
+  void getEmailFromSharedPrefsDoNotAwait() async {
+    // the email is needed to decide if the drawer should show login options
+    _globalService.emailSharedPrefs = await getEmailFromSharedPrefs();
+    log("found following email in sharedPrefs: ${_globalService.emailSharedPrefs}");
   }
 }
 

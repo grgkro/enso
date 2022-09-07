@@ -1,5 +1,6 @@
 import 'dart:developer';
 
+import 'package:ensobox/widgets/auth/email_auth_form.dart';
 import 'package:ensobox/widgets/auth/login_screen.dart';
 import 'package:ensobox/widgets/provider/current_user_provider.dart';
 import 'package:ensobox/widgets/service_locator.dart';
@@ -11,6 +12,7 @@ import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../models/enso_user.dart';
+import 'auth/email_auth_registration_form.dart';
 import 'firebase_repository/auth_repo.dart';
 
 FirebaseAuth _firebaseAuth = FirebaseAuth.instance;
@@ -27,6 +29,7 @@ class EnsoDrawer extends StatefulWidget {
 }
 
 class _EnsoDrawerState extends State<EnsoDrawer> {
+
   @override
   Widget build(BuildContext context) {
     return Consumer<CurrentUserProvider>(
@@ -38,11 +41,11 @@ class _EnsoDrawerState extends State<EnsoDrawer> {
             children: [
               UserAccountsDrawerHeader(
                 accountName: Text(isSignedIn &&
-                        currentUserProvider.currentEnsoUser.email != null
+                    currentUserProvider.currentEnsoUser.email != null
                     ? currentUserProvider.currentEnsoUser.email!.split('@')[0]
                     : "Gast"),
                 accountEmail: Text(isSignedIn &&
-                        currentUserProvider.currentEnsoUser.email != null
+                    currentUserProvider.currentEnsoUser.email != null
                     ? currentUserProvider.currentEnsoUser.email!
                     : ""),
                 currentAccountPicture: CircleAvatar(
@@ -62,11 +65,6 @@ class _EnsoDrawerState extends State<EnsoDrawer> {
                       image: NetworkImage(
                           'https://oflutter.com/wp-content/uploads/2021/02/profile-bg3.jpg')),
                 ),
-              ),
-              ListTile(
-                leading: Icon(Icons.favorite),
-                title: Text('Favoriten'),
-                onTap: () => null,
               ),
               ListTile(
                 leading: Icon(Icons.list_rounded),
@@ -104,53 +102,54 @@ class _EnsoDrawerState extends State<EnsoDrawer> {
                 onTap: () => null,
               ),
               Divider(),
-              !isSignedIn
-                  ? ListTile(
-                      title: Text('Einloggen'),
-                      leading: Icon(Icons.exit_to_app),
-                      onTap: () async {
-                        log("Trying to log in from prefs.");
-
-                        _authRepo
-                            .signInAuthUserIfPossible()
-                            .then((authCredentials) {
-                          if (authCredentials != null &&
-                              authCredentials.user != null) {
-                            log("logged in from prefs");
-                            setState(() {
-                              isSignedIn = true;
-                            });
-                          } else {
-                            log("Couldn't log in from prefs, Going to log-in screen");
-                          }
-                        }).catchError((e) {
-                          log("Error while trying to log in from prefs: ${e}");
-                          log("Going to log-in screen");
-                          _globalService.showScreen(
-                              context, const LoginScreen());
+              if (!isSignedIn) ListTile(
+                title: Text('Registrieren'),
+                leading: Icon(Icons.favorite_rounded),
+                onTap: () async {
+                  log("Going to register at verification EmailAuthForm screen");
+                  _globalService.showScreen(context, EmailAuthRegistrationForm());
+                },
+              ),
+              if (!isSignedIn && _globalService.emailSharedPrefs != null) ListTile(
+                title: Text('Einloggen per Email'),
+                leading: Icon(Icons.login_rounded),
+                onTap: () async {
+                  log("Going to log-in screen");
+                  _globalService.showScreen(context, EmailAuthForm());
+                },
+              ),
+              if (!isSignedIn && _globalService.emailSharedPrefs != null) ListTile(
+                    title: Text('Einloggen per Sms'),
+                    leading: Icon(Icons.login_rounded),
+                    onTap: () async {
+                      log("Going to log-in screen");
+                      _globalService.showScreen(context, const LoginScreen());
+                    },
+                  ),
+              if (isSignedIn) ListTile(
+                    title: Text('Ausloggen'),
+                    leading: Icon(Icons.logout_rounded),
+                    onTap: () async {
+                      log("Trying to log out");
+                      _firebaseAuth.signOut().then((res) {
+                        _globalService.clearPwFromSharedPref();
+                        setState(() {
+                          isSignedIn = false;
                         });
-                      })
-                  : ListTile(
-                      title: Text('Ausloggen'),
-                      leading: Icon(Icons.exit_to_app),
-                      onTap: () async {
-                        log("Trying to log out");
-                        _firebaseAuth.signOut().then((res) {
-                          _globalService.clearPwFromSharedPref();
-                          setState(() {
-                            isSignedIn = false;
-                          });
-                          log("Successfully logged out: isloggedIn: ${isSignedIn}");
-                        }).catchError((error, stackTrace) => {
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                SnackBar(
-                                  content: Text(
-                                      'Fehler beim Ausloggen. Bitte versuch es später noch mal.'),
-                                  duration: Duration(seconds: 4),
-                                ),
-                              )
-                            });
-                      }),
+                        log(
+                            "Successfully logged out: isloggedIn: ${isSignedIn}");
+                      }).catchError((error, stackTrace) =>
+                      {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(
+                            content: Text(
+                                'Fehler beim Ausloggen. Bitte versuch es später noch mal.'),
+                            duration: Duration(seconds: 4),
+                          ),
+                        )
+                      });
+                    },
+                  ),
             ],
           ),
         );
