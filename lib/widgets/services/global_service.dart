@@ -1,9 +1,11 @@
 import 'dart:developer';
 
+import 'package:app_settings/app_settings.dart';
 import 'package:camera/camera.dart';
 import 'package:ensobox/models/enso_user.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:open_mail_app/open_mail_app.dart';
 import 'package:path/path.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -23,7 +25,9 @@ class GlobalService {
   bool isSignedIn = false;
   List<CameraDescription>? cameras;
 
-  String emailInput = "grgk.ro@gmail.com";
+  String email = "grgk.ro@gmail.com";
+  String phoneNumber = "+4915126448312";
+  String otp = "123456";
 
   bool hasShownEmailAppSnackBar = false;
 
@@ -93,82 +97,152 @@ class GlobalService {
     }
   }
 
+  showOpenMailAppSnack(BuildContext context) {
+    hasShownEmailAppSnackBar = true;
+    return ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+      content: const Text("Email zur Bestätigung gesendet, bitte bestätigen."),
+      duration: const Duration(seconds: 7),
+      action: SnackBarAction(
+        label: 'Email App auswählen',
+        onPressed: () async {
+          ScaffoldMessenger.of(context).hideCurrentSnackBar();
+          final OpenMailAppResult result = await OpenMailApp.openMailApp();
+
+          // If no mail apps found, show error
+          if (!result.didOpen && !result.canOpen) {
+            showNoMailAppsDialog(context);
+
+            // iOS: if multiple mail apps found, show dialog to select.
+            // There is no native intent/default app system in iOS so
+            // you have to do it yourself.
+          } else if (!result.didOpen && result.canOpen) {
+            showDialog(
+              context: context,
+              builder: (_) {
+                return MailAppPickerDialog(
+                  mailApps: result.options,
+                );
+              },
+            );
+          }
+        },
+      ),
+    ));
+  }
+
+  void showNoMailAppsDialog(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text("Email App öffnen"),
+          content: Text("Keine Email App gefunden"),
+          actions: <Widget>[
+            TextButton(
+              child: const Text("OK"),
+              onPressed: () {
+                Navigator.pop(context);
+              },
+            )
+          ],
+        );
+      },
+    );
+  }
+
   void handleFirebaseAuthException(BuildContext context, FirebaseAuthException e) {
+    log('handleFirebaseAuthException: ${e.code}\n${e.message}');
     if (e.code == 'provider-already-linked') {
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-          content: Text('Der Account wurde bereits verlinkt.'),
-          duration: Duration(seconds: 20),
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+          content: Text('Der Account wurde bereits mit dieser Handynummer verlinkt.'),
+          duration: Duration(seconds: 5),
       ),);
     } else if (e.code == 'invalid-credential') {
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
           content: Text('Ungültige Anmeldeinformationen.'),
-          duration: Duration(seconds: 20),
-
+          duration: Duration(seconds: 5),
       ),);
     } else if (e.code == 'credential-already-in-use') {
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-          content: Text('Anmeldeinformationen werden bereits von anderem Account benutzt.'),
-          duration: Duration(seconds: 20),
+          content: const Text('Anmeldeinformationen werden bereits von anderem Account benutzt.'),
+          duration: const Duration(seconds: 5),
           action: SnackBarAction(
             label: 'Admins informieren',
             onPressed: () {
-              informAdmins(context);
+              informAdmins(context, e);
               ScaffoldMessenger.of(context).hideCurrentSnackBar();
             },
           )
       ),);
     } else if (e.code == 'email-already-in-use') {
-      log('The account already exists for that email.');
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
           content: Text('Email existiert bereits. Bitte andere Email eingeben.'),
-          duration: Duration(seconds: 20),
+          duration: Duration(seconds: 5),
       ),);
     } else if (e.code == 'operation-not-allowed') {
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-          content: Text('Der Nutzer hat nicht die erforderlichen Rechte, um diese Aktion durchzuführen.'),
-          duration: Duration(seconds: 20),
+          content: const Text('Der Nutzer hat nicht die erforderlichen Rechte, um diese Aktion durchzuführen.'),
+          duration: const Duration(seconds: 5),
           action: SnackBarAction(
             label: 'Admins informieren',
             onPressed: () {
-              informAdmins(context);
+              informAdmins(context, e);
               ScaffoldMessenger.of(context).hideCurrentSnackBar();
             },
           )
       ),);
     } else if (e.code == 'invalid-email') {
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
           content: Text('Ungültige Email.'),
-          duration: Duration(seconds: 20),
+          duration: Duration(seconds: 5),
       ),);
     } else if (e.code == 'invalid-verification-code') {
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(
           content: Text('Ungültiger SMS Verifizierungscode.'),
           duration: Duration(seconds: 5),
-
       ),);
-    } else if (e.code == 'invalid-verification-id') {
+    } else if (e.code == 'weak-password') {
+      // sollte nicht passieren, da User PW nicht wählen darf.
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+        content: Text('Das Password sollte mind. 6 Zeichen haben, mit halt mind. 1 Zahl und nja 1 - 2 Sonderzeichen wär auch nicht schlecht.'),
+        duration: Duration(seconds: 10),
+      ),);
+      return;
+    } else if (e.code == 'user-not-found') {
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-          content: Text('Ungültige Verifizierungs-ID.'),
+          content: Text('Nutzer mit dieser Email konnte nicht gefunden werden.'),
+          duration: Duration(seconds: 10),
+      ),);
+    } else if (e.code == 'network-request-failed') {
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+        content: Text('Leider hat das nicht geklappt. Du scheinst gerade kein Internet zu haben.'),
+        duration: Duration(seconds: 10),
+          action: SnackBarAction(
+            label: 'WLAN AKTIVIEREN',
+            onPressed: () {
+              ScaffoldMessenger.of(context).hideCurrentSnackBar();
+              AppSettings.openWIFISettings();
+            },
+          )
+      ),);
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+          content: Text('Unerwarteter Fehler, bitte später erneut versuchen.'),
           duration: Duration(seconds: 20),
           action: SnackBarAction(
             label: 'Admins informieren',
             onPressed: () {
-              // TODO: add Admins informieren?
-              informAdmins(context);
+              informAdmins(context, e);
               ScaffoldMessenger.of(context).hideCurrentSnackBar();
             },
           )
       ),);
-    } else if (e.code == 'weak-password') {
-      log('The password provided is too weak.');
-      //TODO: macht keinen Sinn, da User PW nicht wählen darf.
-      return;
-    } else {
-      log('Unexpected FirebaseAuthException: ${e.code}');
-      // TODO: Show Snack
       return;
     }
   }
 
-  void informAdmins(BuildContext context) {}
+  void informAdmins(BuildContext context, FirebaseAuthException e) {
+    //TODO implement
+    log("User wishes to inform admins about error-code: ${e.code} \n error-message: ${e.message}");
+  }
 }

@@ -36,7 +36,7 @@ class _EmailAuthRegistrationFormState extends State<EmailAuthRegistrationForm> {
   final FirebaseAuth _firebaseAuth = _globalService.firebaseAuth;
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
   TextEditingController emailController =
-      TextEditingController(text: _globalService.emailInput);
+      TextEditingController(text: _globalService.email);
   TextEditingController otpCode = TextEditingController();
 
   OutlineInputBorder border = const OutlineInputBorder(
@@ -100,7 +100,7 @@ class _EmailAuthRegistrationFormState extends State<EmailAuthRegistrationForm> {
                                 });
 
                                 log("got email input: ${emailController.text}");
-                                _globalService.emailInput =
+                                _globalService.email =
                                     emailController.text;
 
                                 final SharedPreferences prefs =
@@ -114,7 +114,7 @@ class _EmailAuthRegistrationFormState extends State<EmailAuthRegistrationForm> {
                                   final credential = await _globalService
                                       .firebaseAuth
                                       .createUserWithEmailAndPassword(
-                                    email: emailController.text,
+                                    email: emailController.text.trim(),
                                     password: password,
                                   );
                                   if (credential.user != null) {

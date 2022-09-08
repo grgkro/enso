@@ -30,7 +30,7 @@ class _PhoneAuthFormState extends State<PhoneAuthForm> {
   final FirebaseAuth _auth = FirebaseAuth.instance;
   GlobalKey<FormState> _formKey = GlobalKey<FormState>();
   TextEditingController phoneNumberController =
-      TextEditingController(text: "+4915126448312");
+      TextEditingController(text: _globalService.phoneNumber);
   TextEditingController otpCode = TextEditingController();
 
   OutlineInputBorder border = OutlineInputBorder(
@@ -72,39 +72,19 @@ class _PhoneAuthFormState extends State<PhoneAuthForm> {
                 SizedBox(
                   width: size.width * 0.8,
                   child: TextFormField(
-                      keyboardType: TextInputType.phone,
-                      controller: phoneNumberController,
-                      decoration: InputDecoration(
-                        labelText: "Handynummer",
-                        contentPadding: EdgeInsets.symmetric(
-                            vertical: 15.0, horizontal: 10.0),
-                        border: border,
-                      )),
+                    keyboardType: TextInputType.phone,
+                    controller: phoneNumberController,
+                    decoration: InputDecoration(
+                      labelText: "Handynummer",
+                      contentPadding: EdgeInsets.symmetric(
+                          vertical: 15.0, horizontal: 10.0),
+                      border: border,
+                    ),
+                  ),
                 ),
                 SizedBox(
                   height: size.height * 0.01,
                 ),
-                // SizedBox(
-                //   width: size.width * 0.8,
-                //   child: TextFormField(
-                //     keyboardType: TextInputType.number,
-                //     controller: otpCode,
-                //     obscureText: true,
-                //     decoration: InputDecoration(
-                //       labelText: "Enter Otp",
-                //       contentPadding: EdgeInsets.symmetric(
-                //           vertical: 15.0, horizontal: 10.0),
-                //       border: border,
-                //       suffixIcon: Padding(
-                //         child: Icon(
-                //           Icons.add,
-                //           size: 15,
-                //         ),
-                //         padding: EdgeInsets.only(top: 15, left: 15),
-                //       ),
-                //     ),
-                //   ),
-                // ),
                 Padding(padding: EdgeInsets.only(bottom: size.height * 0.05)),
                 !isLoading
                     ? showProgress
@@ -113,6 +93,11 @@ class _PhoneAuthFormState extends State<PhoneAuthForm> {
                             width: size.width * 0.8,
                             child: OutlinedButton(
                               onPressed: () async {
+                                final prefs =
+                                    await SharedPreferences.getInstance();
+                                prefs.setString(Constants.phoneNumberKey,
+                                    phoneNumberController.text);
+
                                 if (!showOtpForm) {
                                   await startAddingPhoneNumber(context);
                                 } else {
@@ -144,8 +129,6 @@ class _PhoneAuthFormState extends State<PhoneAuthForm> {
                                     _databaseRepo.updateUser(currentEnsoUser);
                                     // _globalService.currentEnsoUser.hasTriggeredConfirmationSms = true;
 
-                                    final prefs =
-                                        await SharedPreferences.getInstance();
                                     // try {
                                     prefs.setBool(
                                         Constants.hasTriggeredConfirmationSms,
@@ -156,16 +139,19 @@ class _PhoneAuthFormState extends State<PhoneAuthForm> {
                                     setState(() {
                                       showProgress = false;
                                     });
-                                    _globalService.handleFirebaseAuthException(context, e);
+                                    _globalService.handleFirebaseAuthException(
+                                        context, e);
                                   } catch (e) {
                                     setState(() {
                                       showProgress = false;
                                     });
                                     log(e.toString());
-                                    ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                                    ScaffoldMessenger.of(context).showSnackBar(
+                                      SnackBar(
                                         content: Text(e.toString()),
                                         duration: Duration(seconds: 20),
-                                    ),);
+                                      ),
+                                    );
                                     // TODO: Show message
                                     return null;
                                   }

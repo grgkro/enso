@@ -13,6 +13,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 import '../models/enso_user.dart';
 import 'auth/email_auth_registration_form.dart';
+import 'auth/email_sign_in_form.dart';
 import 'firebase_repository/auth_repo.dart';
 
 FirebaseAuth _firebaseAuth = FirebaseAuth.instance;
@@ -29,6 +30,10 @@ class EnsoDrawer extends StatefulWidget {
 }
 
 class _EnsoDrawerState extends State<EnsoDrawer> {
+  bool networkError = false;
+  NetworkImage backgroundImage = const NetworkImage(
+      'https://oflutter.com/wp-content/uploads/2021/02/profile-bg3.jpg');
+  AssetImage backgroundImageFallback = AssetImage('assets/img/profile-bg3.jpg');
 
   @override
   Widget build(BuildContext context) {
@@ -41,31 +46,54 @@ class _EnsoDrawerState extends State<EnsoDrawer> {
             children: [
               UserAccountsDrawerHeader(
                 accountName: Text(isSignedIn &&
-                    currentUserProvider.currentEnsoUser.email != null
+                        currentUserProvider.currentEnsoUser.email != null
                     ? currentUserProvider.currentEnsoUser.email!.split('@')[0]
                     : "Gast"),
                 accountEmail: Text(isSignedIn &&
-                    currentUserProvider.currentEnsoUser.email != null
+                        currentUserProvider.currentEnsoUser.email != null
                     ? currentUserProvider.currentEnsoUser.email!
                     : ""),
                 currentAccountPicture: CircleAvatar(
                   child: ClipOval(
                     child: Image.network(
                       'https://firebasestorage.googleapis.com/v0/b/enso-fairleih.appspot.com/o/grid_0.png?alt=media&token=e9a37dbf-aa3a-4391-81b3-e59116139a26',
+                      errorBuilder: (BuildContext context, Object e, StackTrace? stackTrace) {
+                        log("Could not load the drawer background image, showing placeholder. Error: ${e.toString()}");
+                        if (stackTrace != null) {
+                          log(stackTrace.toString());
+                        }
+                        // TODO: Add analytics, e.g.
+                        // myAnalytics.recordError(
+                        //   'An error occurred loading "https://example.does.not.exist/image.jpg"',
+                        //   exception,
+                        //   stackTrace,
+                        // );
+                        return Image.asset('assets/img/profile.png');
+                      },
                       fit: BoxFit.cover,
                       width: 90,
                       height: 90,
                     ),
                   ),
                 ),
+
                 decoration: BoxDecoration(
                   color: Colors.blue,
-                  image: DecorationImage(
+                  image: !networkError ? DecorationImage(
                       fit: BoxFit.fill,
-                      image: NetworkImage(
-                          'https://oflutter.com/wp-content/uploads/2021/02/profile-bg3.jpg')),
-                ),
-              ),
+                      onError: (Object e, StackTrace? stackTrace) {
+                        log("Could not load the drawer background image, showing placeholder. Error: ${e.toString()}");
+                        if (stackTrace != null) {
+                          log(stackTrace.toString());
+                        }
+                        setState(() {
+                          networkError = true;
+                        });
+                      },
+                      image: backgroundImage) : DecorationImage(
+                      fit: BoxFit.fill,
+                      image: backgroundImageFallback),
+              ),),
               ListTile(
                 leading: Icon(Icons.list_rounded),
                 title: Text('Bisherige Ausleihen'),
@@ -102,54 +130,48 @@ class _EnsoDrawerState extends State<EnsoDrawer> {
                 onTap: () => null,
               ),
               Divider(),
-              if (!isSignedIn) ListTile(
-                title: Text('Registrieren'),
-                leading: Icon(Icons.favorite_rounded),
-                onTap: () async {
-                  log("Going to register at verification EmailAuthForm screen");
-                  _globalService.showScreen(context, EmailAuthRegistrationForm());
-                },
-              ),
-              if (!isSignedIn && _globalService.emailSharedPrefs != null) ListTile(
-                title: Text('Einloggen per Email'),
-                leading: Icon(Icons.login_rounded),
-                onTap: () async {
-                  log("Going to log-in screen");
-                  _globalService.showScreen(context, EmailAuthForm());
-                },
-              ),
-              if (!isSignedIn && _globalService.emailSharedPrefs != null) ListTile(
-                    title: Text('Einloggen per Sms'),
-                    leading: Icon(Icons.login_rounded),
-                    onTap: () async {
-                      log("Going to log-in screen");
-                      _globalService.showScreen(context, const LoginScreen());
-                    },
-                  ),
-              if (isSignedIn) ListTile(
-                    title: Text('Ausloggen'),
-                    leading: Icon(Icons.logout_rounded),
-                    onTap: () async {
-                      log("Trying to log out");
-                      _firebaseAuth.signOut().then((res) {
-                        _globalService.clearPwFromSharedPref();
-                        setState(() {
-                          isSignedIn = false;
-                        });
-                        log(
-                            "Successfully logged out: isloggedIn: ${isSignedIn}");
-                      }).catchError((error, stackTrace) =>
-                      {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(
-                            content: Text(
-                                'Fehler beim Ausloggen. Bitte versuch es später noch mal.'),
-                            duration: Duration(seconds: 4),
-                          ),
-                        )
+              if (!isSignedIn)
+                ListTile(
+                  title: Text('Registrieren'),
+                  leading: Icon(Icons.favorite_rounded),
+                  onTap: () async {
+                    log("Going to register at verification EmailAuthForm screen");
+                    _globalService.showScreen(
+                        context, EmailAuthRegistrationForm());
+                  },
+                ),
+              if (!isSignedIn && _globalService.emailSharedPrefs != null)
+                ListTile(
+                  title: Text('Einloggen per Email'),
+                  leading: Icon(Icons.login_rounded),
+                  onTap: () async {
+                    log("Going to log-in screen");
+                    _globalService.showScreen(context, EmailSignInForm());
+                  },
+                ),
+              if (isSignedIn)
+                ListTile(
+                  title: Text('Ausloggen'),
+                  leading: Icon(Icons.logout_rounded),
+                  onTap: () async {
+                    log("Trying to log out");
+                    _firebaseAuth.signOut().then((res) {
+                      _globalService.clearPwFromSharedPref();
+                      setState(() {
+                        isSignedIn = false;
                       });
-                    },
-                  ),
+                      log("Successfully logged out: isloggedIn: ${isSignedIn}");
+                    }).catchError((error, stackTrace) => {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(
+                              content: Text(
+                                  'Fehler beim Ausloggen. Bitte versuch es später noch mal.'),
+                              duration: Duration(seconds: 4),
+                            ),
+                          )
+                        });
+                  },
+                ),
             ],
           ),
         );
